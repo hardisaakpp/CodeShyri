@@ -173,27 +173,14 @@ onUnmounted(() => {
 const getInitialCode = (): string => {
   return `// Bienvenido a CodeShyri!
 // Escribe código para controlar a ${currentCharacter.value?.name || 'tu personaje'}
-
-function moveForward() {
-  // Mueve el personaje hacia adelante
-  console.log("Avanzando...");
-}
-
-function turnRight() {
-  // Gira a la derecha
-  console.log("Girando a la derecha...");
-}
-
-function turnLeft() {
-  // Gira a la izquierda
-  console.log("Girando a la izquierda...");
-}
+// Las funciones moveForward(), turnRight() y turnLeft() ya están disponibles
 
 // Intenta resolver el desafío:
+// Mueve el personaje hacia adelante 3 veces y luego gira a la derecha
+moveForward();
 moveForward();
 moveForward();
 turnRight();
-moveForward();
 `
 }
 

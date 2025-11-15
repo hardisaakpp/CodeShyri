@@ -46,8 +46,8 @@ async def health():
 @app.post("/api/execute", response_model=CodeExecutionResponse)
 async def execute_code(request: CodeExecutionRequest):
     """
-    Ejecuta código JavaScript de forma segura.
-    En producción, esto debería usar un sandbox más robusto (Docker, etc.)
+    Valida código JavaScript de forma segura.
+    El código se ejecuta en el frontend, aquí solo validamos sintaxis y seguridad.
     """
     try:
         # Validar código básico (prevenir imports peligrosos)
@@ -60,7 +60,13 @@ async def execute_code(request: CodeExecutionRequest):
             "fs.",
             "child_process",
             "__dirname",
-            "__filename"
+            "__filename",
+            "XMLHttpRequest",
+            "fetch(",
+            "window.",
+            "document.",
+            "localStorage",
+            "sessionStorage"
         ]
         
         code_lower = request.code.lower()
@@ -71,29 +77,48 @@ async def execute_code(request: CodeExecutionRequest):
                     error=f"Patrón no permitido: {pattern}"
                 )
         
+        # Validar sintaxis JavaScript usando Node.js en modo check-only
+        # Creamos un wrapper que define las funciones del juego como stubs
+        validation_code = f"""
+// Funciones stub para validación (no se ejecutan realmente)
+function moveForward() {{}}
+function turnRight() {{}}
+function turnLeft() {{}}
+const console = {{ log: function() {{}} }};
+
+// Código del usuario
+{request.code}
+"""
+        
         # Crear archivo temporal
         with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f:
-            f.write(request.code)
+            f.write(validation_code)
             temp_file = f.name
         
         try:
-            # Ejecutar con Node.js (timeout de 5 segundos)
+            # Validar sintaxis con Node.js usando --check (solo valida, no ejecuta)
+            # Si --check no está disponible, usamos un enfoque diferente
             result = subprocess.run(
-                ['node', temp_file],
+                ['node', '--check', temp_file],
                 capture_output=True,
                 text=True,
                 timeout=5
             )
             
             if result.returncode == 0:
+                # Sintaxis válida
                 return CodeExecutionResponse(
                     success=True,
-                    output=result.stdout
+                    output="Código válido"
                 )
             else:
+                # Error de sintaxis
+                error_msg = result.stderr or "Error de sintaxis desconocido"
+                # Limpiar rutas de archivos temporales del mensaje de error
+                error_msg = error_msg.replace(temp_file, "tu código")
                 return CodeExecutionResponse(
                     success=False,
-                    error=result.stderr or "Error desconocido"
+                    error=error_msg
                 )
         finally:
             # Limpiar archivo temporal
@@ -103,7 +128,13 @@ async def execute_code(request: CodeExecutionRequest):
     except subprocess.TimeoutExpired:
         return CodeExecutionResponse(
             success=False,
-            error="Tiempo de ejecución excedido"
+            error="Tiempo de validación excedido"
+        )
+    except FileNotFoundError:
+        # Node.js no está instalado, solo validamos patrones peligrosos
+        return CodeExecutionResponse(
+            success=True,
+            output="Validación básica completada (Node.js no disponible para validación de sintaxis)"
         )
     except Exception as e:
         return CodeExecutionResponse(

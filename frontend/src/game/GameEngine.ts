@@ -173,10 +173,43 @@ export class GameEngine {
       }
 
       // Ejecutar código del usuario con funciones disponibles
-      const userCode = new Function('moveForward', 'turnRight', 'turnLeft', 'console', code)
-      userCode(moveForward, turnRight, turnLeft, {
+      const consoleObj = {
         log: (msg: string) => this.log(msg, 'info')
-      })
+      }
+      
+      // Ejecutar código en el contexto seguro
+      try {
+        // Reemplazar cualquier definición de función que el usuario pueda tener
+        // para evitar que sobrescriban las funciones reales del juego
+        let sanitizedCode = code
+          // Eliminar definiciones de función tradicionales
+          .replace(/function\s+moveForward\s*\([^)]*\)\s*\{[^}]*\}/gs, '// moveForward ya está definida')
+          .replace(/function\s+turnRight\s*\([^)]*\)\s*\{[^}]*\}/gs, '// turnRight ya está definida')
+          .replace(/function\s+turnLeft\s*\([^)]*\)\s*\{[^}]*\}/gs, '// turnLeft ya está definida')
+          // Eliminar arrow functions
+          .replace(/const\s+moveForward\s*=\s*\([^)]*\)\s*=>\s*\{[^}]*\}/gs, '// moveForward ya está definida')
+          .replace(/const\s+turnRight\s*=\s*\([^)]*\)\s*=>\s*\{[^}]*\}/gs, '// turnRight ya está definida')
+          .replace(/const\s+turnLeft\s*=\s*\([^)]*\)\s*=>\s*\{[^}]*\}/gs, '// turnLeft ya está definida')
+          // Eliminar var/let
+          .replace(/(var|let)\s+moveForward\s*=\s*function\s*\([^)]*\)\s*\{[^}]*\}/gs, '// moveForward ya está definida')
+          .replace(/(var|let)\s+turnRight\s*=\s*function\s*\([^)]*\)\s*\{[^}]*\}/gs, '// turnRight ya está definida')
+          .replace(/(var|let)\s+turnLeft\s*=\s*function\s*\([^)]*\)\s*\{[^}]*\}/gs, '// turnLeft ya está definida')
+        
+        // Crear función con las funciones del contexto como parámetros
+        const userCode = new Function(
+          'moveForward', 
+          'turnRight', 
+          'turnLeft', 
+          'console',
+          sanitizedCode
+        )
+        
+        // Ejecutar con las funciones reales del juego
+        userCode(moveForward, turnRight, turnLeft, consoleObj)
+      } catch (execError) {
+        this.log(`Error de ejecución: ${execError}`, 'error')
+        throw execError
+      }
     } catch (error) {
       this.log(`Error: ${error}`, 'error')
     }
