@@ -81,9 +81,24 @@ async def execute_code(request: CodeExecutionRequest):
         # Creamos un wrapper que define las funciones del juego como stubs
         validation_code = f"""
 // Funciones stub para validación (no se ejecutan realmente)
-function moveForward() {{}}
-function turnRight() {{}}
-function turnLeft() {{}}
+function moveForward(steps) {{}}
+function moveBackward(steps) {{}}
+function moveUp(steps) {{}}
+function moveDown(steps) {{}}
+function moveLeft(steps) {{}}
+function moveRight(steps) {{}}
+function turnRight(degrees) {{}}
+function turnLeft(degrees) {{}}
+function turn(degrees) {{}}
+function faceDirection(direction) {{}}
+function moveTo(x, y) {{}}
+function moveDistance(distance) {{}}
+function jump() {{}}
+function attack() {{}}
+function sprint(steps) {{}}
+function wait(milliseconds) {{}}
+function teleport(x, y) {{}}
+function spin() {{}}
 const console = {{ log: function() {{}} }};
 
 // Código del usuario

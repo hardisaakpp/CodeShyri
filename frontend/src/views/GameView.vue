@@ -171,16 +171,41 @@ onUnmounted(() => {
 })
 
 const getInitialCode = (): string => {
-  return `// Bienvenido a CodeShyri!
-// Escribe código para controlar a ${currentCharacter.value?.name || 'tu personaje'}
-// Las funciones moveForward(), turnRight() y turnLeft() ya están disponibles
+  return `// Bienvenido a CodeShyri - Azeroth del Código!
+// Controla a ${currentCharacter.value?.name || 'tu personaje'} con estas funciones:
 
-// Intenta resolver el desafío:
-// Mueve el personaje hacia adelante 3 veces y luego gira a la derecha
-moveForward();
-moveForward();
-moveForward();
+// === MOVIMIENTO BÁSICO ===
+// moveForward(steps) - Avanza en la dirección actual (por defecto 1 paso)
+// moveBackward(steps) - Retrocede
+// moveUp(steps) - Mueve hacia arriba
+// moveDown(steps) - Mueve hacia abajo
+// moveLeft(steps) - Mueve hacia la izquierda
+// moveRight(steps) - Mueve hacia la derecha
+
+// === ROTACIÓN ===
+// turnRight(degrees) - Gira a la derecha (por defecto 90°)
+// turnLeft(degrees) - Gira a la izquierda (por defecto 90°)
+// turn(degrees) - Gira grados específicos (positivo = derecha, negativo = izquierda)
+// faceDirection('north'|'south'|'east'|'west') - Mira hacia una dirección
+
+// === MOVIMIENTO AVANZADO ===
+// moveTo(x, y) - Mueve a una posición específica
+// moveDistance(pixels) - Mueve una distancia específica en la dirección actual
+// sprint(steps) - Corre más rápido que moveForward
+// teleport(x, y) - Teletransporta instantáneamente
+
+// === ACCIONES ===
+// jump() - Salta
+// attack() - Ataca
+// spin() - Gira 360 grados
+// wait(milliseconds) - Espera (solo para logging)
+
+// Ejemplo básico:
+moveForward(2);
 turnRight();
+moveForward(1);
+jump();
+attack();
 `
 }
 

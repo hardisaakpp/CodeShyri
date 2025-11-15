@@ -32,6 +32,13 @@ export class GameEngine {
       },
       scene: {
         preload() {
+          // Verificar que el personaje existe, usar valores por defecto si no
+          const character = gameEngine.character || {
+            color: '#4A90E2',
+            icon: '⚔️',
+            name: 'Personaje'
+          }
+          
           // Crear sprite mejorado para el personaje con sombra y brillo
           const svgString = `
             <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
@@ -44,13 +51,13 @@ export class GameEngine {
                   </feMerge>
                 </filter>
                 <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:${gameEngine.character.color};stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:${gameEngine.character.color}88;stop-opacity:1" />
+                  <stop offset="0%" style="stop-color:${character.color};stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:${character.color}88;stop-opacity:1" />
                 </linearGradient>
               </defs>
               <circle cx="40" cy="40" r="35" fill="url(#grad)" filter="url(#glow)"/>
-              <circle cx="40" cy="40" r="30" fill="${gameEngine.character.color}"/>
-              <text x="40" y="52" font-size="36" text-anchor="middle" font-family="Arial">${gameEngine.character.icon}</text>
+              <circle cx="40" cy="40" r="30" fill="${character.color}"/>
+              <text x="40" y="52" font-size="36" text-anchor="middle" font-family="Arial">${character.icon}</text>
             </svg>
           `
           const base64 = btoa(unescape(encodeURIComponent(svgString)))
@@ -60,6 +67,13 @@ export class GameEngine {
           const scene = this
           const centerX = width / 2
           const centerY = height / 2
+
+          // Verificar que el personaje existe, usar valores por defecto si no
+          const characterData = gameEngine.character || {
+            color: '#4A90E2',
+            icon: '⚔️',
+            name: 'Personaje'
+          }
 
           // Crear grid sutil estilo medieval
           const graphics = this.add.graphics()
@@ -80,7 +94,7 @@ export class GameEngine {
           const titleBg = this.add.rectangle(centerX, 40, 450, 55, 0x1a0f08, 0.8)
           titleBg.setStrokeStyle(3, 0xd4af37, 0.6)
           
-          const title = this.add.text(centerX, 40, `Aventura con ${gameEngine.character.name}`, {
+          const title = this.add.text(centerX, 40, `Aventura con ${characterData.name}`, {
             fontSize: '24px',
             fontFamily: 'Cinzel, serif',
             color: '#d4af37',
@@ -119,7 +133,7 @@ export class GameEngine {
           ;(scene as any).player = character
           ;(scene as any).graphics = graphics
 
-          gameEngine.log(`✨ ¡Bienvenido, ${gameEngine.character.name}!`)
+          gameEngine.log(`✨ ¡Bienvenido, ${characterData.name}!`)
           gameEngine.log(`🎮 Usa moveForward(), turnRight() y turnLeft() para controlar tu personaje`)
         },
         update() {
@@ -142,38 +156,254 @@ export class GameEngine {
       const player = (scene as any).player
       if (!player) return
 
-      // Funciones disponibles para el usuario con animaciones
-      const moveForward = () => {
-        const targetX = player.x + 50
+      // Funciones de movimiento básico
+      const moveForward = (steps: number = 1) => {
+        const distance = steps * 50
+        const radians = Phaser.Math.DegToRad(player.angle)
+        const targetX = player.x + Math.cos(radians) * distance
+        const targetY = player.y + Math.sin(radians) * distance
+        
         scene.tweens.add({
           targets: player,
           x: targetX,
+          y: targetY,
+          duration: 300 * steps,
+          ease: 'Power2'
+        })
+        this.log(`➡️ Avanzando ${steps} paso(s)...`, 'info')
+      }
+
+      const moveBackward = (steps: number = 1) => {
+        const distance = steps * 50
+        const radians = Phaser.Math.DegToRad(player.angle + 180)
+        const targetX = player.x + Math.cos(radians) * distance
+        const targetY = player.y + Math.sin(radians) * distance
+        
+        scene.tweens.add({
+          targets: player,
+          x: targetX,
+          y: targetY,
+          duration: 300 * steps,
+          ease: 'Power2'
+        })
+        this.log(`⬅️ Retrocediendo ${steps} paso(s)...`, 'info')
+      }
+
+      const moveUp = (steps: number = 1) => {
+        const distance = steps * 50
+        const targetY = player.y - distance
+        scene.tweens.add({
+          targets: player,
+          y: targetY,
+          duration: 300 * steps,
+          ease: 'Power2'
+        })
+        this.log(`⬆️ Moviendo arriba ${steps} paso(s)...`, 'info')
+      }
+
+      const moveDown = (steps: number = 1) => {
+        const distance = steps * 50
+        const targetY = player.y + distance
+        scene.tweens.add({
+          targets: player,
+          y: targetY,
+          duration: 300 * steps,
+          ease: 'Power2'
+        })
+        this.log(`⬇️ Moviendo abajo ${steps} paso(s)...`, 'info')
+      }
+
+      const moveLeft = (steps: number = 1) => {
+        const distance = steps * 50
+        const targetX = player.x - distance
+        scene.tweens.add({
+          targets: player,
+          x: targetX,
+          duration: 300 * steps,
+          ease: 'Power2'
+        })
+        this.log(`⬅️ Moviendo izquierda ${steps} paso(s)...`, 'info')
+      }
+
+      const moveRight = (steps: number = 1) => {
+        const distance = steps * 50
+        const targetX = player.x + distance
+        scene.tweens.add({
+          targets: player,
+          x: targetX,
+          duration: 300 * steps,
+          ease: 'Power2'
+        })
+        this.log(`➡️ Moviendo derecha ${steps} paso(s)...`, 'info')
+      }
+
+      // Funciones de rotación
+      const turnRight = (degrees: number = 90) => {
+        const newAngle = player.angle + degrees
+        scene.tweens.add({
+          targets: player,
+          angle: newAngle,
+          duration: 200,
+          ease: 'Power2'
+        })
+        this.log(`↻ Girando ${degrees}° a la derecha...`, 'info')
+      }
+
+      const turnLeft = (degrees: number = 90) => {
+        const newAngle = player.angle - degrees
+        scene.tweens.add({
+          targets: player,
+          angle: newAngle,
+          duration: 200,
+          ease: 'Power2'
+        })
+        this.log(`↺ Girando ${degrees}° a la izquierda...`, 'info')
+      }
+
+      const turn = (degrees: number) => {
+        const newAngle = player.angle + degrees
+        scene.tweens.add({
+          targets: player,
+          angle: newAngle,
+          duration: 200,
+          ease: 'Power2'
+        })
+        this.log(`🔄 Girando ${degrees}°...`, 'info')
+      }
+
+      const faceDirection = (direction: string) => {
+        const directions: Record<string, number> = {
+          'north': 270,
+          'south': 90,
+          'east': 0,
+          'west': 180,
+          'norte': 270,
+          'sur': 90,
+          'este': 0,
+          'oeste': 180
+        }
+        const angle = directions[direction.toLowerCase()] ?? player.angle
+        scene.tweens.add({
+          targets: player,
+          angle: angle,
+          duration: 200,
+          ease: 'Power2'
+        })
+        this.log(`🧭 Mirando hacia ${direction}...`, 'info')
+      }
+
+      // Funciones de movimiento avanzado
+      const moveTo = (x: number, y: number) => {
+        const distance = Phaser.Math.Distance.Between(player.x, player.y, x, y)
+        const duration = Math.max(300, distance * 3)
+        
+        scene.tweens.add({
+          targets: player,
+          x: x,
+          y: y,
+          duration: duration,
+          ease: 'Power2'
+        })
+        this.log(`🎯 Moviendo a posición (${x}, ${y})...`, 'info')
+      }
+
+      const moveDistance = (distance: number) => {
+        const radians = Phaser.Math.DegToRad(player.angle)
+        const targetX = player.x + Math.cos(radians) * distance
+        const targetY = player.y + Math.sin(radians) * distance
+        
+        scene.tweens.add({
+          targets: player,
+          x: targetX,
+          y: targetY,
+          duration: Math.abs(distance) * 3,
+          ease: 'Power2'
+        })
+        this.log(`📏 Moviendo ${distance} píxeles...`, 'info')
+      }
+
+      // Funciones de acción
+      const jump = () => {
+        const originalY = player.y
+        scene.tweens.add({
+          targets: player,
+          y: originalY - 60,
+          duration: 200,
+          ease: 'Power2',
+          yoyo: true,
+          onComplete: () => {
+            player.y = originalY
+          }
+        })
+        this.log('🦘 Saltando...', 'info')
+      }
+
+      const attack = () => {
+        // Efecto visual de ataque
+        const attackEffect = scene.add.circle(player.x, player.y, 30, 0xff0000, 0.5)
+        scene.tweens.add({
+          targets: attackEffect,
+          scale: { from: 0.5, to: 1.5 },
+          alpha: { from: 0.8, to: 0 },
           duration: 300,
-          ease: 'Power2'
+          onComplete: () => attackEffect.destroy()
         })
-        this.log('➡️ Avanzando...', 'info')
+        this.log('⚔️ Atacando!', 'info')
       }
 
-      const turnRight = () => {
-        const newAngle = player.angle + 90
+      const sprint = (steps: number = 1) => {
+        const distance = steps * 75 // Más rápido que moveForward
+        const radians = Phaser.Math.DegToRad(player.angle)
+        const targetX = player.x + Math.cos(radians) * distance
+        const targetY = player.y + Math.sin(radians) * distance
+        
         scene.tweens.add({
           targets: player,
-          angle: newAngle,
-          duration: 200,
-          ease: 'Power2'
+          x: targetX,
+          y: targetY,
+          duration: 200 * steps,
+          ease: 'Power1'
         })
-        this.log('↻ Girando a la derecha...', 'info')
+        this.log(`💨 Corriendo ${steps} paso(s)...`, 'info')
       }
 
-      const turnLeft = () => {
-        const newAngle = player.angle - 90
+      const wait = (milliseconds: number) => {
+        this.log(`⏳ Esperando ${milliseconds}ms...`, 'info')
+        // En una implementación real, esto debería ser asíncrono
+        // Por ahora solo registramos el log
+      }
+
+      const teleport = (x: number, y: number) => {
+        // Efecto de desaparición
         scene.tweens.add({
           targets: player,
-          angle: newAngle,
-          duration: 200,
-          ease: 'Power2'
+          alpha: 0,
+          scale: 0.5,
+          duration: 150,
+          onComplete: () => {
+            player.setPosition(x, y)
+            player.setAlpha(1)
+            player.setScale(1.2)
+            // Efecto de aparición
+            scene.tweens.add({
+              targets: player,
+              alpha: 1,
+              scale: 1.2,
+              duration: 150
+            })
+          }
         })
-        this.log('↺ Girando a la izquierda...', 'info')
+        this.log(`✨ Teletransportando a (${x}, ${y})...`, 'info')
+      }
+
+      const spin = () => {
+        scene.tweens.add({
+          targets: player,
+          angle: player.angle + 360,
+          duration: 500,
+          ease: 'Power1'
+        })
+        this.log('🌀 Girando...', 'info')
       }
 
       // Ejecutar código del usuario con funciones disponibles
@@ -181,35 +411,49 @@ export class GameEngine {
         log: (msg: string) => this.log(msg, 'info')
       }
       
+      // Lista de todas las funciones disponibles
+      const functionNames = [
+        'moveForward', 'moveBackward', 'moveUp', 'moveDown', 'moveLeft', 'moveRight',
+        'turnRight', 'turnLeft', 'turn', 'faceDirection',
+        'moveTo', 'moveDistance', 'jump', 'attack', 'sprint', 'wait', 'teleport', 'spin'
+      ]
+      
       // Ejecutar código en el contexto seguro
       try {
         // Reemplazar cualquier definición de función que el usuario pueda tener
-        // para evitar que sobrescriban las funciones reales del juego
         let sanitizedCode = code
+        functionNames.forEach(funcName => {
           // Eliminar definiciones de función tradicionales
-          .replace(/function\s+moveForward\s*\([^)]*\)\s*\{[^}]*\}/gs, '// moveForward ya está definida')
-          .replace(/function\s+turnRight\s*\([^)]*\)\s*\{[^}]*\}/gs, '// turnRight ya está definida')
-          .replace(/function\s+turnLeft\s*\([^)]*\)\s*\{[^}]*\}/gs, '// turnLeft ya está definida')
+          sanitizedCode = sanitizedCode.replace(
+            new RegExp(`function\\s+${funcName}\\s*\\([^)]*\\)\\s*\\{[^}]*\\}`, 'gs'),
+            `// ${funcName} ya está definida`
+          )
           // Eliminar arrow functions
-          .replace(/const\s+moveForward\s*=\s*\([^)]*\)\s*=>\s*\{[^}]*\}/gs, '// moveForward ya está definida')
-          .replace(/const\s+turnRight\s*=\s*\([^)]*\)\s*=>\s*\{[^}]*\}/gs, '// turnRight ya está definida')
-          .replace(/const\s+turnLeft\s*=\s*\([^)]*\)\s*=>\s*\{[^}]*\}/gs, '// turnLeft ya está definida')
+          sanitizedCode = sanitizedCode.replace(
+            new RegExp(`const\\s+${funcName}\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{[^}]*\\}`, 'gs'),
+            `// ${funcName} ya está definida`
+          )
           // Eliminar var/let
-          .replace(/(var|let)\s+moveForward\s*=\s*function\s*\([^)]*\)\s*\{[^}]*\}/gs, '// moveForward ya está definida')
-          .replace(/(var|let)\s+turnRight\s*=\s*function\s*\([^)]*\)\s*\{[^}]*\}/gs, '// turnRight ya está definida')
-          .replace(/(var|let)\s+turnLeft\s*=\s*function\s*\([^)]*\)\s*\{[^}]*\}/gs, '// turnLeft ya está definida')
+          sanitizedCode = sanitizedCode.replace(
+            new RegExp(`(var|let)\\s+${funcName}\\s*=\\s*function\\s*\\([^)]*\\)\\s*\\{[^}]*\\}`, 'gs'),
+            `// ${funcName} ya está definida`
+          )
+        })
         
-        // Crear función con las funciones del contexto como parámetros
+        // Crear función con todas las funciones del contexto como parámetros
         const userCode = new Function(
-          'moveForward', 
-          'turnRight', 
-          'turnLeft', 
+          ...functionNames,
           'console',
           sanitizedCode
         )
         
-        // Ejecutar con las funciones reales del juego
-        userCode(moveForward, turnRight, turnLeft, consoleObj)
+        // Ejecutar con todas las funciones reales del juego
+        userCode(
+          moveForward, moveBackward, moveUp, moveDown, moveLeft, moveRight,
+          turnRight, turnLeft, turn, faceDirection,
+          moveTo, moveDistance, jump, attack, sprint, wait, teleport, spin,
+          consoleObj
+        )
       } catch (execError) {
         this.log(`Error de ejecución: ${execError}`, 'error')
         throw execError
