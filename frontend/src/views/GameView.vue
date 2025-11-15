@@ -103,33 +103,33 @@ let gameEngine: GameEngine | null = null
 const currentCharacter = ref<Character | null>(null)
 
 const characters: Record<string, Character> = {
-  viracocha: {
-    id: 'viracocha',
-    name: 'Viracocha',
-    icon: '👑',
-    description: 'El dios creador',
-    color: '#FFD700'
+  'human-paladin': {
+    id: 'human-paladin',
+    name: 'Paladín Humano',
+    icon: '⚔️',
+    description: 'Un noble paladín de la Alianza',
+    color: '#4A90E2'
   },
-  inti: {
-    id: 'inti',
-    name: 'Inti',
-    icon: '☀️',
-    description: 'El dios del sol',
-    color: '#FF6B35'
+  'orc-warrior': {
+    id: 'orc-warrior',
+    name: 'Guerrero Orco',
+    icon: '🪓',
+    description: 'Un feroz guerrero de la Horda',
+    color: '#8B4513'
   },
-  pachamama: {
-    id: 'pachamama',
-    name: 'Pachamama',
-    icon: '🌍',
-    description: 'La madre tierra',
-    color: '#4ECDC4'
+  'elf-mage': {
+    id: 'elf-mage',
+    name: 'Mago Élfico',
+    icon: '🔮',
+    description: 'Un sabio mago élfico',
+    color: '#9370DB'
   },
-  amaru: {
-    id: 'amaru',
-    name: 'Amaru',
-    icon: '🐍',
-    description: 'La serpiente sagrada',
-    color: '#95E1D3'
+  'human-warrior': {
+    id: 'human-warrior',
+    name: 'Guerrero Humano',
+    icon: '🛡️',
+    description: 'Un valiente guerrero humano',
+    color: '#1E90FF'
   }
 }
 
@@ -138,7 +138,7 @@ onMounted(async () => {
   if (characterId && characters[characterId]) {
     currentCharacter.value = characters[characterId]
   } else {
-    currentCharacter.value = characters.viracocha
+    currentCharacter.value = characters['human-paladin']
   }
 
   await nextTick()
@@ -243,8 +243,10 @@ const goHome = () => {
 .game-view {
   width: 100%;
   height: 100vh;
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
-  color: white;
+  background: 
+    linear-gradient(135deg, #2c1810 0%, #1a0f08 50%, #0d0603 100%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  color: #d4af37;
   overflow: hidden;
   position: relative;
 }
@@ -260,10 +262,15 @@ const goHome = () => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, rgba(22, 33, 62, 0.95) 0%, rgba(15, 52, 96, 0.95) 100%);
-  border-bottom: 3px solid rgba(255, 215, 0, 0.3);
+  background: 
+    linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 15, 8, 0.95) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
+  border-bottom: 4px solid rgba(212, 175, 55, 0.4);
+  border-style: double;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.6),
+    inset 0 -2px 10px rgba(212, 175, 55, 0.1);
   z-index: 10;
 }
 
@@ -278,24 +285,35 @@ const goHome = () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  border: 2px solid rgba(255, 215, 0, 0.3);
-  border-radius: 10px;
-  color: #FFD700;
-  font-family: 'Rajdhani', sans-serif;
+  background: 
+    linear-gradient(135deg, rgba(44, 24, 16, 0.8) 0%, rgba(26, 15, 8, 0.8) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+  border: 3px solid rgba(212, 175, 55, 0.4);
+  border-style: double;
+  border-radius: 8px;
+  color: #d4af37;
+  font-family: 'Cinzel', serif;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.3s;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 10px rgba(212, 175, 55, 0.1);
 }
 
 .home-button:hover {
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 100%);
-  border-color: rgba(255, 215, 0, 0.5);
+  background: 
+    linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(139, 69, 19, 0.2) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+  border-color: rgba(212, 175, 55, 0.6);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  box-shadow: 
+    0 4px 12px rgba(212, 175, 55, 0.4),
+    inset 0 0 15px rgba(212, 175, 55, 0.2);
 }
 
 .home-button:active {
@@ -316,24 +334,33 @@ const goHome = () => {
   align-items: center;
   gap: 1rem;
   padding: 0.5rem 1.5rem;
-  background: rgba(255, 215, 0, 0.1);
-  border-radius: 15px;
-  border: 2px solid rgba(255, 215, 0, 0.3);
+  background: 
+    linear-gradient(135deg, rgba(44, 24, 16, 0.8) 0%, rgba(26, 15, 8, 0.8) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+  border-radius: 8px;
+  border: 3px solid rgba(212, 175, 55, 0.4);
+  border-style: double;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 15px rgba(212, 175, 55, 0.1);
 }
 
 .character-icon-small {
   font-size: 2.5rem;
-  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
 }
 
 .character-info-header h2 {
   margin: 0;
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Cinzel', serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #FFD700;
+  color: #d4af37;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
+  text-shadow: 
+    0 0 10px rgba(212, 175, 55, 0.5),
+    2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .level-badge {
@@ -359,30 +386,45 @@ const goHome = () => {
   flex-direction: column;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: 
+    linear-gradient(135deg, rgba(44, 24, 16, 0.6) 0%, rgba(26, 15, 8, 0.6) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+  border-radius: 8px;
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-style: double;
   min-width: 80px;
   transition: all 0.3s;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 10px rgba(212, 175, 55, 0.05);
 }
 
 .stat-item:hover {
-  background: rgba(255, 215, 0, 0.1);
-  border-color: rgba(255, 215, 0, 0.3);
+  background: 
+    linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(139, 69, 19, 0.15) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+  border-color: rgba(212, 175, 55, 0.5);
   transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(212, 175, 55, 0.3),
+    inset 0 0 15px rgba(212, 175, 55, 0.1);
 }
 
 .stat-icon {
   font-size: 1.5rem;
   margin-bottom: 0.3rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
 }
 
 .stat-value {
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Cinzel', serif;
   font-size: 1.3rem;
   font-weight: 700;
-  color: #FFD700;
+  color: #d4af37;
   margin-bottom: 0.2rem;
+  text-shadow: 
+    0 0 10px rgba(212, 175, 55, 0.5),
+    2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .stat-label {
@@ -401,12 +443,15 @@ const goHome = () => {
 
 .game-canvas-container {
   flex: 1;
-  background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+  background: 
+    linear-gradient(135deg, #2c1810 0%, #1a0f08 50%, #0d0603 100%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  border-right: 3px solid rgba(255, 215, 0, 0.2);
+  border-right: 4px solid rgba(212, 175, 55, 0.3);
+  border-style: double;
 }
 
 .game-canvas-container::before {
@@ -417,8 +462,8 @@ const goHome = () => {
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(255, 107, 53, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(139, 69, 19, 0.08) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -433,9 +478,12 @@ const goHome = () => {
   width: 550px;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #1e1e1e 0%, #252526 100%);
-  border-left: 3px solid rgba(255, 215, 0, 0.2);
-  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+  background: 
+    linear-gradient(180deg, #1a0f08 0%, #0d0603 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
+  border-left: 4px solid rgba(212, 175, 55, 0.3);
+  border-style: double;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.8);
 }
 
 .editor-header {
@@ -443,20 +491,24 @@ const goHome = () => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #252526 0%, #2d2d30 100%);
-  border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+  background: 
+    linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 15, 8, 0.95) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+  border-bottom: 3px solid rgba(212, 175, 55, 0.3);
+  border-style: double;
 }
 
 .editor-title {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Cinzel', serif;
   font-weight: 600;
   font-size: 1rem;
-  color: #FFD700;
+  color: #d4af37;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .editor-icon {
@@ -480,22 +532,32 @@ const goHome = () => {
   font-size: 0.9rem;
   font-weight: 600;
   transition: all 0.3s;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: 'Cinzel', serif;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   position: relative;
   overflow: hidden;
 }
 
 .run-button {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-  color: white;
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+  background: 
+    linear-gradient(135deg, #556b2f 0%, #6b8e23 50%, #8b6914 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+  color: #fff;
+  border: 2px solid rgba(212, 175, 55, 0.4);
+  border-style: double;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.6),
+    inset 0 0 10px rgba(212, 175, 55, 0.1);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .run-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+  box-shadow: 
+    0 6px 20px rgba(107, 142, 35, 0.6),
+    inset 0 0 15px rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.6);
 }
 
 .run-button:disabled {
@@ -504,14 +566,24 @@ const goHome = () => {
 }
 
 .reset-button {
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-  color: white;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+  background: 
+    linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+  color: #fff;
+  border: 2px solid rgba(212, 175, 55, 0.4);
+  border-style: double;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.6),
+    inset 0 0 10px rgba(212, 175, 55, 0.1);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .reset-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
+  box-shadow: 
+    0 6px 20px rgba(139, 69, 19, 0.6),
+    inset 0 0 15px rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.6);
 }
 
 .button-icon {
@@ -529,11 +601,14 @@ const goHome = () => {
 
 .game-console {
   height: 180px;
-  background: linear-gradient(180deg, #1e1e1e 0%, #252526 100%);
-  border-top: 3px solid rgba(255, 215, 0, 0.2);
+  background: 
+    linear-gradient(180deg, #1a0f08 0%, #0d0603 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
+  border-top: 4px solid rgba(212, 175, 55, 0.3);
+  border-style: double;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.8);
 }
 
 .console-header {
@@ -541,14 +616,18 @@ const goHome = () => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #252526 0%, #2d2d30 100%);
-  border-bottom: 2px solid rgba(255, 215, 0, 0.2);
-  font-family: 'Orbitron', sans-serif;
+  background: 
+    linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 15, 8, 0.95) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+  border-bottom: 3px solid rgba(212, 175, 55, 0.3);
+  border-style: double;
+  font-family: 'Cinzel', serif;
   font-weight: 600;
   font-size: 0.9rem;
-  color: #FFD700;
+  color: #d4af37;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .console-icon {
@@ -557,20 +636,29 @@ const goHome = () => {
 
 .clear-console-btn {
   margin-left: auto;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.7);
+  background: 
+    linear-gradient(135deg, rgba(44, 24, 16, 0.6) 0%, rgba(26, 15, 8, 0.6) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-style: double;
+  color: rgba(212, 175, 55, 0.8);
   padding: 0.3rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.8rem;
+  font-family: 'Cinzel', serif;
   transition: all 0.3s;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .clear-console-btn:hover {
-  background: rgba(255, 215, 0, 0.2);
-  border-color: rgba(255, 215, 0, 0.4);
-  color: #FFD700;
+  background: 
+    linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(139, 69, 19, 0.2) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+  border-color: rgba(212, 175, 55, 0.5);
+  color: #d4af37;
+  box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3);
 }
 
 .console-output {

@@ -150,9 +150,9 @@ async def get_level(level_id: str):
     levels = {
         "1": {
             "id": "1",
-            "title": "Primeros Pasos con Viracocha",
+            "title": "Primeros Pasos en Azeroth",
             "description": "Aprende los comandos básicos de movimiento",
-            "character": "viracocha",
+            "character": "human-paladin",
             "objectives": [
                 "Mueve el personaje 3 casillas hacia adelante",
                 "Gira a la derecha",
@@ -173,32 +173,40 @@ async def get_characters():
     return {
         "characters": [
             {
-                "id": "viracocha",
-                "name": "Viracocha",
-                "icon": "👑",
-                "description": "El dios creador te guiará en tus primeros pasos",
-                "color": "#FFD700"
+                "id": "human-paladin",
+                "name": "Paladín Humano",
+                "icon": "⚔️",
+                "description": "Un noble paladín de la Alianza, maestro del honor y la justicia",
+                "color": "#4A90E2",
+                "race": "human",
+                "faction": "alliance"
             },
             {
-                "id": "inti",
-                "name": "Inti",
-                "icon": "☀️",
-                "description": "El dios del sol iluminará tu camino",
-                "color": "#FF6B35"
+                "id": "orc-warrior",
+                "name": "Guerrero Orco",
+                "icon": "🪓",
+                "description": "Un feroz guerrero de la Horda, forjado en batalla",
+                "color": "#8B4513",
+                "race": "orc",
+                "faction": "horde"
             },
             {
-                "id": "pachamama",
-                "name": "Pachamama",
-                "icon": "🌍",
-                "description": "La madre tierra te protegerá",
-                "color": "#4ECDC4"
+                "id": "elf-mage",
+                "name": "Mago Élfico",
+                "icon": "🔮",
+                "description": "Un sabio mago élfico, maestro de las artes arcanas",
+                "color": "#9370DB",
+                "race": "elf",
+                "faction": "alliance"
             },
             {
-                "id": "amaru",
-                "name": "Amaru",
-                "icon": "🐍",
-                "description": "La serpiente sagrada te enseñará sabiduría",
-                "color": "#95E1D3"
+                "id": "human-warrior",
+                "name": "Guerrero Humano",
+                "icon": "🛡️",
+                "description": "Un valiente guerrero humano de la Alianza",
+                "color": "#1E90FF",
+                "race": "human",
+                "faction": "alliance"
             }
         ]
     }

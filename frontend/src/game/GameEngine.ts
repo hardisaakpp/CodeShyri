@@ -22,7 +22,7 @@ export class GameEngine {
       width: width,
       height: height,
       parent: canvasId,
-      backgroundColor: '#0f3460',
+      backgroundColor: '#1a0f08',
       physics: {
         default: 'arcade',
         arcade: {
@@ -61,9 +61,9 @@ export class GameEngine {
           const centerX = width / 2
           const centerY = height / 2
 
-          // Crear grid sutil
+          // Crear grid sutil estilo medieval
           const graphics = this.add.graphics()
-          graphics.lineStyle(1, 0x1a4a6a, 0.3)
+          graphics.lineStyle(1, 0xd4af37, 0.2)
           
           const gridSize = 50
           for (let x = 0; x <= width; x += gridSize) {
@@ -76,16 +76,20 @@ export class GameEngine {
           }
           graphics.strokePath()
 
-          // Título estilizado
-          const titleBg = this.add.rectangle(centerX, 40, 400, 50, 0x000000, 0.5)
-          titleBg.setStrokeStyle(2, 0xffd700, 0.5)
+          // Título estilizado medieval
+          const titleBg = this.add.rectangle(centerX, 40, 450, 55, 0x1a0f08, 0.8)
+          titleBg.setStrokeStyle(3, 0xd4af37, 0.6)
           
           const title = this.add.text(centerX, 40, `Aventura con ${gameEngine.character.name}`, {
-            fontSize: '22px',
-            fontFamily: 'Orbitron, Arial',
-            color: '#FFD700',
+            fontSize: '24px',
+            fontFamily: 'Cinzel, serif',
+            color: '#d4af37',
             fontStyle: 'bold'
           }).setOrigin(0.5)
+          
+          // Sombra del texto
+          title.setStroke('#000000', 4)
+          title.setShadow(2, 2, '#000000', 4, true, true)
           
           // Efecto de brillo en el título
           this.tweens.add({

@@ -4,5 +4,7 @@ export interface Character {
   icon: string
   description: string
   color: string
+  race?: string
+  faction?: string
 }
 
