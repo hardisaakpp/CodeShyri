@@ -1,0 +1,174 @@
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import subprocess
+import tempfile
+import os
+from typing import Optional
+
+app = FastAPI(title="CodeShyri API", version="0.1.0")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class CodeExecutionRequest(BaseModel):
+    code: str
+    levelId: str
+
+
+class CodeExecutionResponse(BaseModel):
+    success: bool
+    output: Optional[str] = None
+    error: Optional[str] = None
+
+
+@app.get("/")
+async def root():
+    return {
+        "message": "CodeShyri API",
+        "version": "0.1.0",
+        "status": "running"
+    }
+
+
+@app.get("/api/health")
+async def health():
+    return {"status": "healthy"}
+
+
+@app.post("/api/execute", response_model=CodeExecutionResponse)
+async def execute_code(request: CodeExecutionRequest):
+    """
+    Ejecuta código JavaScript de forma segura.
+    En producción, esto debería usar un sandbox más robusto (Docker, etc.)
+    """
+    try:
+        # Validar código básico (prevenir imports peligrosos)
+        dangerous_patterns = [
+            "require(",
+            "import(",
+            "eval(",
+            "Function(",
+            "process.",
+            "fs.",
+            "child_process",
+            "__dirname",
+            "__filename"
+        ]
+        
+        code_lower = request.code.lower()
+        for pattern in dangerous_patterns:
+            if pattern.lower() in code_lower:
+                return CodeExecutionResponse(
+                    success=False,
+                    error=f"Patrón no permitido: {pattern}"
+                )
+        
+        # Crear archivo temporal
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f:
+            f.write(request.code)
+            temp_file = f.name
+        
+        try:
+            # Ejecutar con Node.js (timeout de 5 segundos)
+            result = subprocess.run(
+                ['node', temp_file],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            
+            if result.returncode == 0:
+                return CodeExecutionResponse(
+                    success=True,
+                    output=result.stdout
+                )
+            else:
+                return CodeExecutionResponse(
+                    success=False,
+                    error=result.stderr or "Error desconocido"
+                )
+        finally:
+            # Limpiar archivo temporal
+            if os.path.exists(temp_file):
+                os.unlink(temp_file)
+                
+    except subprocess.TimeoutExpired:
+        return CodeExecutionResponse(
+            success=False,
+            error="Tiempo de ejecución excedido"
+        )
+    except Exception as e:
+        return CodeExecutionResponse(
+            success=False,
+            error=f"Error del servidor: {str(e)}"
+        )
+
+
+@app.get("/api/levels/{level_id}")
+async def get_level(level_id: str):
+    """Obtiene información de un nivel específico"""
+    # Esto se puede expandir con una base de datos
+    levels = {
+        "1": {
+            "id": "1",
+            "title": "Primeros Pasos con Viracocha",
+            "description": "Aprende los comandos básicos de movimiento",
+            "character": "viracocha",
+            "objectives": [
+                "Mueve el personaje 3 casillas hacia adelante",
+                "Gira a la derecha",
+                "Llega al objetivo"
+            ]
+        }
+    }
+    
+    if level_id not in levels:
+        raise HTTPException(status_code=404, detail="Nivel no encontrado")
+    
+    return levels[level_id]
+
+
+@app.get("/api/characters")
+async def get_characters():
+    """Obtiene la lista de personajes disponibles"""
+    return {
+        "characters": [
+            {
+                "id": "viracocha",
+                "name": "Viracocha",
+                "icon": "👑",
+                "description": "El dios creador te guiará en tus primeros pasos",
+                "color": "#FFD700"
+            },
+            {
+                "id": "inti",
+                "name": "Inti",
+                "icon": "☀️",
+                "description": "El dios del sol iluminará tu camino",
+                "color": "#FF6B35"
+            },
+            {
+                "id": "pachamama",
+                "name": "Pachamama",
+                "icon": "🌍",
+                "description": "La madre tierra te protegerá",
+                "color": "#4ECDC4"
+            },
+            {
+                "id": "amaru",
+                "name": "Amaru",
+                "icon": "🐍",
+                "description": "La serpiente sagrada te enseñará sabiduría",
+                "color": "#95E1D3"
+            }
+        ]
+    }
+
