@@ -1,10 +1,15 @@
 import Phaser from 'phaser'
 import type { Character } from '@/types/character'
 
+type CommandAction = () => void
+
 export class GameEngine {
   private game: Phaser.Game | null = null
   private character: Character
   public onLog?: (message: string, type?: string) => void
+  private commandQueue: CommandAction[] = []
+  private isExecutingQueue: boolean = false
+  private currentTween: Phaser.Tweens.Tween | null = null
 
   constructor(canvasId: string, character: Character) {
     this.character = character
@@ -32,36 +37,9 @@ export class GameEngine {
       },
       scene: {
         preload() {
-          // Verificar que el personaje existe, usar valores por defecto si no
-          const character = gameEngine.character || {
-            color: '#4A90E2',
-            icon: '⚔️',
-            name: 'Personaje'
-          }
-          
-          // Crear sprite mejorado para el personaje con sombra y brillo
-          const svgString = `
-            <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-                <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:${character.color};stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:${character.color}88;stop-opacity:1" />
-                </linearGradient>
-              </defs>
-              <circle cx="40" cy="40" r="35" fill="url(#grad)" filter="url(#glow)"/>
-              <circle cx="40" cy="40" r="30" fill="${character.color}"/>
-              <text x="40" y="52" font-size="36" text-anchor="middle" font-family="Arial">${character.icon}</text>
-            </svg>
-          `
-          const base64 = btoa(unescape(encodeURIComponent(svgString)))
-          this.load.image('character', 'data:image/svg+xml;base64,' + base64)
+          // Cargar sprite del personaje desde archivo PNG
+          // El archivo kitu.png está en public/assets/characters/
+          this.load.image('character', '/assets/characters/kitu.png')
         },
         create() {
           const scene = this
@@ -114,16 +92,23 @@ export class GameEngine {
             repeat: -1
           })
 
-          // Crear personaje con efectos
-          const character = this.physics.add.sprite(100, centerY, 'character')
-          character.setCollideWorldBounds(true)
-          character.setScale(1.2)
+          // Crear personaje con el sprite cargado
+          // Ajustar escala según el tamaño del sprite (182x270)
+          const targetHeight = 100 // Altura objetivo en píxeles del juego
+          const scale = targetHeight / 270 // 270 es la altura original del sprite
           
-          // Efecto de pulso en el personaje
+          const character = this.physics.add.sprite(100, centerY + 50, 'character')
+          character.setCollideWorldBounds(true)
+          character.setScale(scale)
+          
+          // Establecer punto de anclaje en el centro (0.5, 0.5) para mejor control
+          character.setOrigin(0.5, 0.5)
+          
+          // Efecto sutil de brillo en el personaje (opcional)
           this.tweens.add({
             targets: character,
-            scale: { from: 1.2, to: 1.25 },
-            duration: 1500,
+            alpha: { from: 0.95, to: 1 },
+            duration: 2000,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
@@ -145,265 +130,487 @@ export class GameEngine {
     this.game = new Phaser.Game(config)
   }
 
+  /**
+   * Agrega un comando a la cola de ejecución
+   */
+  private queueCommand(action: CommandAction) {
+    this.commandQueue.push(action)
+    if (!this.isExecutingQueue) {
+      this.processQueue()
+    }
+  }
+
+  /**
+   * Procesa la cola de comandos secuencialmente
+   */
+  private processQueue() {
+    if (this.commandQueue.length === 0) {
+      this.isExecutingQueue = false
+      return
+    }
+
+    this.isExecutingQueue = true
+    const command = this.commandQueue.shift()
+    
+    if (command) {
+      command()
+    }
+  }
+
+  /**
+   * Marca el comando actual como completado y procesa el siguiente
+   */
+  private onCommandComplete() {
+    this.currentTween = null
+    // Esperar un frame antes de ejecutar el siguiente comando
+    // para asegurar que las animaciones se vean claramente separadas
+    if (this.game) {
+      this.game.scene.getScenes()[0].time.delayedCall(50, () => {
+        this.processQueue()
+      })
+    }
+  }
+
+  /**
+   * Crea un tween que se ejecuta de forma secuencial
+   */
+  private createSequentialTween(
+    scene: Phaser.Scene,
+    config: Phaser.Types.Tweens.TweenBuilderConfig
+  ): Phaser.Tweens.Tween {
+    // Si hay un tween ejecutándose, lo detenemos primero
+    if (this.currentTween && this.currentTween.isPlaying()) {
+      this.currentTween.stop()
+    }
+
+    // Agregar callback onComplete para procesar el siguiente comando
+    const originalOnComplete = config.onComplete
+    config.onComplete = (tween: Phaser.Tweens.Tween, targets: any[]) => {
+      if (originalOnComplete) {
+        // Llamar al callback original con los argumentos que Phaser proporciona
+        if (typeof originalOnComplete === 'function') {
+          originalOnComplete(tween, targets)
+        }
+      }
+      this.onCommandComplete()
+    }
+
+    this.currentTween = scene.tweens.add(config)
+    return this.currentTween
+  }
+
   public executeCode(code: string) {
     if (!this.game) return
 
     const scene = this.game.scene.getScenes()[0]
     if (!scene) return
 
+    // Limpiar cola anterior si existe
+    this.commandQueue = []
+    this.isExecutingQueue = false
+    if (this.currentTween) {
+      this.currentTween.stop()
+      this.currentTween = null
+    }
+
     try {
       // Crear contexto seguro para ejecutar código
       const player = (scene as any).player
       if (!player) return
 
+      // Función auxiliar para crear movimientos paso a paso
+      const createStepByStepMovement = (
+        totalSteps: number,
+        calculateStep: (currentX: number, currentY: number, currentAngle: number) => { targetX: number; targetY: number },
+        logMessage: string,
+        directionLabel: string
+      ) => {
+        if (totalSteps <= 1) {
+          // Un solo paso, ejecutar normalmente
+          this.queueCommand(() => {
+            const { targetX, targetY } = calculateStep(player.x, player.y, player.angle)
+            this.log(`${directionLabel} 1 paso...`, 'info')
+            this.createSequentialTween(scene, {
+              targets: player,
+              x: targetX,
+              y: targetY,
+              duration: 300,
+              ease: 'Power2'
+            })
+          })
+        } else {
+          // Múltiples pasos, crear un comando por cada paso
+          this.log(`${logMessage} ${totalSteps} paso(s)...`, 'info')
+          
+          for (let step = 1; step <= totalSteps; step++) {
+            // Comando para el movimiento del paso
+            this.queueCommand(() => {
+              // Capturar posición actual en el momento de ejecución
+              const { targetX, targetY } = calculateStep(player.x, player.y, player.angle)
+              
+              this.createSequentialTween(scene, {
+                targets: player,
+                x: targetX,
+                y: targetY,
+                duration: 300,
+                ease: 'Power2'
+              })
+            })
+            
+            // Comando para la pausa entre pasos (excepto después del último paso)
+            if (step < totalSteps) {
+              this.queueCommand(() => {
+                // Pausa breve entre pasos (100ms)
+                scene.time.delayedCall(100, () => {
+                  this.onCommandComplete()
+                })
+              })
+            }
+          }
+        }
+      }
+
       // Funciones de movimiento básico
       const moveForward = (steps: number = 1) => {
-        const distance = steps * 50
-        const radians = Phaser.Math.DegToRad(player.angle)
-        const targetX = player.x + Math.cos(radians) * distance
-        const targetY = player.y + Math.sin(radians) * distance
-        
-        scene.tweens.add({
-          targets: player,
-          x: targetX,
-          y: targetY,
-          duration: 300 * steps,
-          ease: 'Power2'
-        })
-        this.log(`➡️ Avanzando ${steps} paso(s)...`, 'info')
+        createStepByStepMovement(
+          steps,
+          (currentX, currentY, currentAngle) => {
+            const distance = 50
+            const radians = Phaser.Math.DegToRad(currentAngle)
+            return {
+              targetX: currentX + Math.cos(radians) * distance,
+              targetY: currentY + Math.sin(radians) * distance
+            }
+          },
+          '➡️ Avanzando',
+          '➡️ Avanzando'
+        )
       }
 
       const moveBackward = (steps: number = 1) => {
-        const distance = steps * 50
-        const radians = Phaser.Math.DegToRad(player.angle + 180)
-        const targetX = player.x + Math.cos(radians) * distance
-        const targetY = player.y + Math.sin(radians) * distance
-        
-        scene.tweens.add({
-          targets: player,
-          x: targetX,
-          y: targetY,
-          duration: 300 * steps,
-          ease: 'Power2'
-        })
-        this.log(`⬅️ Retrocediendo ${steps} paso(s)...`, 'info')
+        createStepByStepMovement(
+          steps,
+          (currentX, currentY, currentAngle) => {
+            const distance = 50
+            const radians = Phaser.Math.DegToRad(currentAngle + 180)
+            return {
+              targetX: currentX + Math.cos(radians) * distance,
+              targetY: currentY + Math.sin(radians) * distance
+            }
+          },
+          '⬅️ Retrocediendo',
+          '⬅️ Retrocediendo'
+        )
       }
 
       const moveUp = (steps: number = 1) => {
-        const distance = steps * 50
-        const targetY = player.y - distance
-        scene.tweens.add({
-          targets: player,
-          y: targetY,
-          duration: 300 * steps,
-          ease: 'Power2'
-        })
-        this.log(`⬆️ Moviendo arriba ${steps} paso(s)...`, 'info')
+        createStepByStepMovement(
+          steps,
+          (currentX, currentY) => {
+            const distance = 50
+            return {
+              targetX: currentX,
+              targetY: currentY - distance
+            }
+          },
+          '⬆️ Moviendo arriba',
+          '⬆️ Moviendo arriba'
+        )
       }
 
       const moveDown = (steps: number = 1) => {
-        const distance = steps * 50
-        const targetY = player.y + distance
-        scene.tweens.add({
-          targets: player,
-          y: targetY,
-          duration: 300 * steps,
-          ease: 'Power2'
-        })
-        this.log(`⬇️ Moviendo abajo ${steps} paso(s)...`, 'info')
+        createStepByStepMovement(
+          steps,
+          (currentX, currentY) => {
+            const distance = 50
+            return {
+              targetX: currentX,
+              targetY: currentY + distance
+            }
+          },
+          '⬇️ Moviendo abajo',
+          '⬇️ Moviendo abajo'
+        )
       }
 
       const moveLeft = (steps: number = 1) => {
-        const distance = steps * 50
-        const targetX = player.x - distance
-        scene.tweens.add({
-          targets: player,
-          x: targetX,
-          duration: 300 * steps,
-          ease: 'Power2'
-        })
-        this.log(`⬅️ Moviendo izquierda ${steps} paso(s)...`, 'info')
+        createStepByStepMovement(
+          steps,
+          (currentX, currentY) => {
+            const distance = 50
+            return {
+              targetX: currentX - distance,
+              targetY: currentY
+            }
+          },
+          '⬅️ Moviendo izquierda',
+          '⬅️ Moviendo izquierda'
+        )
       }
 
       const moveRight = (steps: number = 1) => {
-        const distance = steps * 50
-        const targetX = player.x + distance
-        scene.tweens.add({
-          targets: player,
-          x: targetX,
-          duration: 300 * steps,
-          ease: 'Power2'
-        })
-        this.log(`➡️ Moviendo derecha ${steps} paso(s)...`, 'info')
+        createStepByStepMovement(
+          steps,
+          (currentX, currentY) => {
+            const distance = 50
+            return {
+              targetX: currentX + distance,
+              targetY: currentY
+            }
+          },
+          '➡️ Moviendo derecha',
+          '➡️ Moviendo derecha'
+        )
       }
 
       // Funciones de rotación
       const turnRight = (degrees: number = 90) => {
-        const newAngle = player.angle + degrees
-        scene.tweens.add({
-          targets: player,
-          angle: newAngle,
-          duration: 200,
-          ease: 'Power2'
+        this.queueCommand(() => {
+          const newAngle = player.angle + degrees
+          
+          this.log(`↻ Girando ${degrees}° a la derecha...`, 'info')
+          this.createSequentialTween(scene, {
+            targets: player,
+            angle: newAngle,
+            duration: 200,
+            ease: 'Power2'
+          })
         })
-        this.log(`↻ Girando ${degrees}° a la derecha...`, 'info')
       }
 
       const turnLeft = (degrees: number = 90) => {
-        const newAngle = player.angle - degrees
-        scene.tweens.add({
-          targets: player,
-          angle: newAngle,
-          duration: 200,
-          ease: 'Power2'
+        this.queueCommand(() => {
+          const newAngle = player.angle - degrees
+          
+          this.log(`↺ Girando ${degrees}° a la izquierda...`, 'info')
+          this.createSequentialTween(scene, {
+            targets: player,
+            angle: newAngle,
+            duration: 200,
+            ease: 'Power2'
+          })
         })
-        this.log(`↺ Girando ${degrees}° a la izquierda...`, 'info')
       }
 
       const turn = (degrees: number) => {
-        const newAngle = player.angle + degrees
-        scene.tweens.add({
-          targets: player,
-          angle: newAngle,
-          duration: 200,
-          ease: 'Power2'
+        this.queueCommand(() => {
+          const newAngle = player.angle + degrees
+          
+          this.log(`🔄 Girando ${degrees}°...`, 'info')
+          this.createSequentialTween(scene, {
+            targets: player,
+            angle: newAngle,
+            duration: 200,
+            ease: 'Power2'
+          })
         })
-        this.log(`🔄 Girando ${degrees}°...`, 'info')
       }
 
       const faceDirection = (direction: string) => {
-        const directions: Record<string, number> = {
-          'north': 270,
-          'south': 90,
-          'east': 0,
-          'west': 180,
-          'norte': 270,
-          'sur': 90,
-          'este': 0,
-          'oeste': 180
-        }
-        const angle = directions[direction.toLowerCase()] ?? player.angle
-        scene.tweens.add({
-          targets: player,
-          angle: angle,
-          duration: 200,
-          ease: 'Power2'
+        this.queueCommand(() => {
+          const directions: Record<string, number> = {
+            'north': 270,
+            'south': 90,
+            'east': 0,
+            'west': 180,
+            'norte': 270,
+            'sur': 90,
+            'este': 0,
+            'oeste': 180
+          }
+          const angle = directions[direction.toLowerCase()] ?? player.angle
+          
+          this.log(`🧭 Mirando hacia ${direction}...`, 'info')
+          this.createSequentialTween(scene, {
+            targets: player,
+            angle: angle,
+            duration: 200,
+            ease: 'Power2'
+          })
         })
-        this.log(`🧭 Mirando hacia ${direction}...`, 'info')
       }
 
       // Funciones de movimiento avanzado
       const moveTo = (x: number, y: number) => {
-        const distance = Phaser.Math.Distance.Between(player.x, player.y, x, y)
-        const duration = Math.max(300, distance * 3)
-        
-        scene.tweens.add({
-          targets: player,
-          x: x,
-          y: y,
-          duration: duration,
-          ease: 'Power2'
+        this.queueCommand(() => {
+          const distance = Phaser.Math.Distance.Between(player.x, player.y, x, y)
+          const duration = Math.max(300, distance * 3)
+          
+          this.log(`🎯 Moviendo a posición (${x}, ${y})...`, 'info')
+          this.createSequentialTween(scene, {
+            targets: player,
+            x: x,
+            y: y,
+            duration: duration,
+            ease: 'Power2'
+          })
         })
-        this.log(`🎯 Moviendo a posición (${x}, ${y})...`, 'info')
       }
 
       const moveDistance = (distance: number) => {
-        const radians = Phaser.Math.DegToRad(player.angle)
-        const targetX = player.x + Math.cos(radians) * distance
-        const targetY = player.y + Math.sin(radians) * distance
-        
-        scene.tweens.add({
-          targets: player,
-          x: targetX,
-          y: targetY,
-          duration: Math.abs(distance) * 3,
-          ease: 'Power2'
+        this.queueCommand(() => {
+          const radians = Phaser.Math.DegToRad(player.angle)
+          const targetX = player.x + Math.cos(radians) * distance
+          const targetY = player.y + Math.sin(radians) * distance
+          
+          this.log(`📏 Moviendo ${distance} píxeles...`, 'info')
+          this.createSequentialTween(scene, {
+            targets: player,
+            x: targetX,
+            y: targetY,
+            duration: Math.abs(distance) * 3,
+            ease: 'Power2'
+          })
         })
-        this.log(`📏 Moviendo ${distance} píxeles...`, 'info')
       }
 
       // Funciones de acción
       const jump = () => {
-        const originalY = player.y
-        scene.tweens.add({
-          targets: player,
-          y: originalY - 60,
-          duration: 200,
-          ease: 'Power2',
-          yoyo: true,
-          onComplete: () => {
-            player.y = originalY
-          }
+        this.queueCommand(() => {
+          const originalY = player.y
+          
+          this.log('🦘 Saltando...', 'info')
+          // Salto hacia arriba
+          this.createSequentialTween(scene, {
+            targets: player,
+            y: originalY - 60,
+            duration: 200,
+            ease: 'Power2',
+            onComplete: () => {
+              // Caída hacia abajo
+              this.createSequentialTween(scene, {
+                targets: player,
+                y: originalY,
+                duration: 200,
+                ease: 'Power2'
+              })
+            }
+          })
         })
-        this.log('🦘 Saltando...', 'info')
       }
 
       const attack = () => {
-        // Efecto visual de ataque
-        const attackEffect = scene.add.circle(player.x, player.y, 30, 0xff0000, 0.5)
-        scene.tweens.add({
-          targets: attackEffect,
-          scale: { from: 0.5, to: 1.5 },
-          alpha: { from: 0.8, to: 0 },
-          duration: 300,
-          onComplete: () => attackEffect.destroy()
+        this.queueCommand(() => {
+          // Efecto visual de ataque
+          const attackEffect = scene.add.circle(player.x, player.y, 30, 0xff0000, 0.5)
+          scene.tweens.add({
+            targets: attackEffect,
+            scale: { from: 0.5, to: 1.5 },
+            alpha: { from: 0.8, to: 0 },
+            duration: 300,
+            onComplete: () => attackEffect.destroy()
+          })
+          
+          this.log('⚔️ Atacando!', 'info')
+          
+          // Marcar como completado después de la animación
+          scene.time.delayedCall(300, () => {
+            this.onCommandComplete()
+          })
         })
-        this.log('⚔️ Atacando!', 'info')
       }
 
       const sprint = (steps: number = 1) => {
-        const distance = steps * 75 // Más rápido que moveForward
-        const radians = Phaser.Math.DegToRad(player.angle)
-        const targetX = player.x + Math.cos(radians) * distance
-        const targetY = player.y + Math.sin(radians) * distance
-        
-        scene.tweens.add({
-          targets: player,
-          x: targetX,
-          y: targetY,
-          duration: 200 * steps,
-          ease: 'Power1'
-        })
-        this.log(`💨 Corriendo ${steps} paso(s)...`, 'info')
+        // Sprint es similar a moveForward pero más rápido
+        if (steps <= 1) {
+          this.queueCommand(() => {
+            const distance = 75 // Más rápido que moveForward
+            const radians = Phaser.Math.DegToRad(player.angle)
+            const targetX = player.x + Math.cos(radians) * distance
+            const targetY = player.y + Math.sin(radians) * distance
+            
+            this.log(`💨 Corriendo 1 paso...`, 'info')
+            this.createSequentialTween(scene, {
+              targets: player,
+              x: targetX,
+              y: targetY,
+              duration: 200, // Más rápido
+              ease: 'Power1'
+            })
+          })
+        } else {
+          this.log(`💨 Corriendo ${steps} paso(s)...`, 'info')
+          
+          for (let step = 1; step <= steps; step++) {
+            // Comando para el movimiento del paso
+            this.queueCommand(() => {
+              // Capturar posición actual en el momento de ejecución
+              const distance = 75
+              const radians = Phaser.Math.DegToRad(player.angle)
+              const targetX = player.x + Math.cos(radians) * distance
+              const targetY = player.y + Math.sin(radians) * distance
+              
+              this.createSequentialTween(scene, {
+                targets: player,
+                x: targetX,
+                y: targetY,
+                duration: 200, // Más rápido que moveForward
+                ease: 'Power1'
+              })
+            })
+            
+            // Comando para la pausa entre pasos (excepto después del último paso)
+            if (step < steps) {
+              this.queueCommand(() => {
+                // Pausa breve entre pasos (80ms - más corta que moveForward)
+                scene.time.delayedCall(80, () => {
+                  this.onCommandComplete()
+                })
+              })
+            }
+          }
+        }
       }
 
       const wait = (milliseconds: number) => {
-        this.log(`⏳ Esperando ${milliseconds}ms...`, 'info')
-        // En una implementación real, esto debería ser asíncrono
-        // Por ahora solo registramos el log
+        this.queueCommand(() => {
+          this.log(`⏳ Esperando ${milliseconds}ms...`, 'info')
+          // Esperar el tiempo especificado antes de continuar
+          scene.time.delayedCall(milliseconds, () => {
+            this.onCommandComplete()
+          })
+        })
       }
 
       const teleport = (x: number, y: number) => {
-        // Efecto de desaparición
-        scene.tweens.add({
-          targets: player,
-          alpha: 0,
-          scale: 0.5,
-          duration: 150,
-          onComplete: () => {
-            player.setPosition(x, y)
-            player.setAlpha(1)
-            player.setScale(1.2)
-            // Efecto de aparición
-            scene.tweens.add({
-              targets: player,
-              alpha: 1,
-              scale: 1.2,
-              duration: 150
-            })
-          }
+        this.queueCommand(() => {
+          this.log(`✨ Teletransportando a (${x}, ${y})...`, 'info')
+          
+          // Efecto de desaparición
+          this.createSequentialTween(scene, {
+            targets: player,
+            alpha: 0,
+            scale: 0.5,
+            duration: 150,
+            onComplete: () => {
+              player.setPosition(x, y)
+              // Obtener la escala original del personaje
+              const originalScale = player.scaleX
+              player.setAlpha(1)
+              player.setScale(originalScale)
+              
+              // Efecto de aparición (este también debe estar en la cola)
+              this.createSequentialTween(scene, {
+                targets: player,
+                alpha: 1,
+                scale: originalScale,
+                duration: 150
+              })
+            }
+          })
         })
-        this.log(`✨ Teletransportando a (${x}, ${y})...`, 'info')
       }
 
       const spin = () => {
-        scene.tweens.add({
-          targets: player,
-          angle: player.angle + 360,
-          duration: 500,
-          ease: 'Power1'
+        this.queueCommand(() => {
+          this.log('🌀 Girando...', 'info')
+          this.createSequentialTween(scene, {
+            targets: player,
+            angle: player.angle + 360,
+            duration: 500,
+            ease: 'Power1'
+          })
         })
-        this.log('🌀 Girando...', 'info')
       }
 
       // Ejecutar código del usuario con funciones disponibles
@@ -469,10 +676,24 @@ export class GameEngine {
     const scene = this.game.scene.getScenes()[0]
     if (!scene) return
 
+    // Limpiar cola de comandos y detener animaciones actuales
+    this.commandQueue = []
+    this.isExecutingQueue = false
+    if (this.currentTween) {
+      this.currentTween.stop()
+      this.currentTween = null
+    }
+
     const player = (scene as any).player
     if (player) {
-      player.setPosition(100, 300)
+      // Obtener dimensiones del juego
+      const gameHeight = this.game.config.height as number || 600
+      const centerY = gameHeight / 2
+      // Usar la misma posición inicial que en create()
+      player.setPosition(100, centerY + 50)
       player.setAngle(0)
+      // Detener cualquier tween activo en el player
+      scene.tweens.killTweensOf(player)
     }
 
     this.log('Juego reiniciado', 'info')
