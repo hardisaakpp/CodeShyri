@@ -47,7 +47,7 @@ export class BackgroundRenderer {
     groundRenderer.render()
     
     // Renderizar lago primero para obtener su información
-    const lakeRenderer = new LakeRenderer(bgGraphics, this.scene, this.width, this.height, this.horizonY)
+    const lakeRenderer = new LakeRenderer(this.scene, this.width, this.horizonY)
     const lake = lakeRenderer.render()
     
     // Función helper para verificar si una posición está sobre el lago

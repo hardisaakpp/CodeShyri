@@ -2,10 +2,8 @@ import type Phaser from 'phaser'
 
 export class LakeRenderer {
   constructor(
-    private graphics: Phaser.GameObjects.Graphics,
     private scene: Phaser.Scene,
     private width: number,
-    private height: number,
     private horizonY: number
   ) {}
 

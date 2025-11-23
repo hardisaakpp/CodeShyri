@@ -22,11 +22,11 @@ export class IncaCastleRenderer {
     // Centro del escenario para el primer poblado (con castillos y casitas)
     const villageCenterX = this.width / 2
     
-    // Crear 6 estructuras agrupadas como un pequeño poblado en el centro
-    // 2 castillos y 4 casitas
-    for (let i = 0; i < 6; i++) {
+    // Crear 8 estructuras agrupadas como un pequeño poblado en el centro
+    // 2 castillos y 6 casitas
+    for (let i = 0; i < 8; i++) {
       // Agrupar estructuras alrededor del centro con pequeñas variaciones
-      const offsetX = (i - 2.5) * 32 + (Math.random() - 0.5) * 18 // Distribución más compacta
+      const offsetX = (i - 3.5) * 30 + (Math.random() - 0.5) * 16 // Distribución ajustada para 8 estructuras
       const structureX = villageCenterX + offsetX
       
       // Calcular la posición Y en la base de la montaña más cercana
@@ -43,8 +43,8 @@ export class IncaCastleRenderer {
       
       if (isOverLake && isOverLake(structureX, structureY)) continue
       
-      // Mezclar casitas y castillos (2 castillos y 4 casitas)
-      const isCastle = i < 2 // Primeras 2 son castillos, últimas 4 son casitas
+      // Mezclar casitas y castillos (2 castillos y 6 casitas)
+      const isCastle = i < 2 // Primeras 2 son castillos, últimas 6 son casitas
       const baseSize = isCastle ? (28 + Math.random() * 12) : (18 + Math.random() * 10)
       
       const structureGraphics = this.scene.add.graphics()
@@ -56,41 +56,6 @@ export class IncaCastleRenderer {
         // Renderizar casita inca
         this.renderIncaHouse(structureGraphics, baseSize)
       }
-      
-      structureGraphics.setPosition(structureX, structureY)
-      structureGraphics.setDepth(2)
-      structures.push(structureGraphics)
-    }
-    
-    // Segundo poblado de casitas (solo casitas) a la derecha, en área libre de árboles
-    // Los árboles evitan el centro (25% a cada lado), así que colocamos este poblado
-    // más hacia la derecha, pero en el terreno plano, no en las faldas donde están los árboles
-    const secondVillageCenterX = this.width * 0.75
-    const numHouses = 5 // 5 casitas en el segundo poblado
-    
-    for (let i = 0; i < numHouses; i++) {
-      // Agrupar casitas con pequeñas variaciones
-      const offsetX = (i - 1) * 30 + (Math.random() - 0.5) * 15
-      const structureX = secondVillageCenterX + offsetX
-      
-      // Calcular la posición Y en la base de la montaña más cercana
-      const mountainIndex = Math.floor((structureX / this.width) * mountainPoints)
-      const varAmount = Math.sin(mountainIndex * 0.5 + seed) * mountainVariation + 
-                       Math.cos(mountainIndex * 0.3 + seed * 0.7) * (mountainVariation * 0.6) +
-                       Math.sin(mountainIndex * 1.2 + seed * 1.3) * (mountainVariation * 0.4)
-      const mountainBaseYAtX = mountainBaseY + varAmount
-      
-      // Colocar casita en el terreno plano, más abajo que los árboles
-      // Los árboles están en las faldas (mountainBaseYAtX - 15), así que las casitas
-      // van más abajo en el terreno plano para no superponerse
-      const structureY = mountainBaseYAtX + 25 + Math.random() * 15
-      
-      if (isOverLake && isOverLake(structureX, structureY)) continue
-      
-      const baseSize = 18 + Math.random() * 10
-      
-      const structureGraphics = this.scene.add.graphics()
-      this.renderIncaHouse(structureGraphics, baseSize)
       
       structureGraphics.setPosition(structureX, structureY)
       structureGraphics.setDepth(2)

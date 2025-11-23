@@ -22,27 +22,24 @@ export class TreeRenderer {
     // Zonas de poblados a evitar (con margen de seguridad)
     const village1Center = this.width / 2 // Poblado central
     const village1Radius = 120 // Radio del poblado central + margen
-    const village2Center = this.width * 0.75 // Poblado derecho
-    const village2Radius = 100 // Radio del poblado derecho + margen
     
     // Función para verificar si una posición está demasiado cerca de un poblado
     const isTooCloseToVillage = (x: number): boolean => {
       const distToVillage1 = Math.abs(x - village1Center)
-      const distToVillage2 = Math.abs(x - village2Center)
-      return distToVillage1 < village1Radius || distToVillage2 < village2Radius
+      return distToVillage1 < village1Radius
     }
     
     // Crear grupos de bosques pequeños dispersos
     // Definir posiciones de grupos de bosques (centros de cada bosquecito)
     const forestGroups: number[] = []
-    const numForestGroups = 6 // 6 grupos de bosques pequeños
+    const numForestGroups = 7 // 7 grupos de bosques pequeños (aumentado para compensar el segundo poblado)
     
     // Generar posiciones de grupos evitando poblados
     for (let g = 0; g < numForestGroups; g++) {
       let groupX: number
       let attempts = 0
       do {
-        // Distribuir grupos a lo largo del ancho
+        // Distribuir grupos a lo largo del ancho, incluyendo el área donde estaba el segundo poblado
         groupX = this.width * (0.15 + Math.random() * 0.7) // Entre 15% y 85% del ancho
         attempts++
       } while (attempts < 50 && isTooCloseToVillage(groupX))
@@ -52,9 +49,15 @@ export class TreeRenderer {
       }
     }
     
+    // Agregar un grupo adicional en el área donde estaba el segundo poblado (75% del ancho)
+    const secondVillageAreaX = this.width * 0.75
+    if (!isTooCloseToVillage(secondVillageAreaX)) {
+      forestGroups.push(secondVillageAreaX)
+    }
+    
     // Crear árboles agrupados en cada bosquecito
     let totalTrees = 0
-    const maxTrees = 32
+    const maxTrees = 40 // Aumentado para compensar el segundo poblado eliminado
     
     for (const groupCenterX of forestGroups) {
       if (totalTrees >= maxTrees) break
