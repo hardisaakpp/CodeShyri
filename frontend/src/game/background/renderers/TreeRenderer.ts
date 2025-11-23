@@ -93,38 +93,106 @@ export class TreeRenderer {
         const treeHeight = 40 + Math.random() * 50
         const trunkWidth = 8 + Math.random() * 6
         const crownSize = 25 + Math.random() * 30
+        const treeType = Math.random() // Variación en el tipo de árbol
         
         const treeGraphics = this.scene.add.graphics()
         
-        // Tronco más robusto y oscuro (estilo medieval)
-        treeGraphics.fillStyle(0x5C4033, 1) // Marrón más oscuro
-        treeGraphics.fillRect(-trunkWidth / 2, 0, trunkWidth, treeHeight)
+        // Tronco más orgánico con forma ligeramente cónica
+        const trunkTopWidth = trunkWidth * 0.7
+        const trunkBottomWidth = trunkWidth
         
-        // Textura del tronco (grietas y nudos)
-        treeGraphics.fillStyle(0x3D2817, 0.8)
-        treeGraphics.fillRect(-trunkWidth / 2 + 1, 0, trunkWidth * 0.3, treeHeight)
-        treeGraphics.fillRect(trunkWidth / 2 - trunkWidth * 0.3, treeHeight * 0.3, trunkWidth * 0.2, treeHeight * 0.2)
+        // Base del tronco (más ancha)
+        treeGraphics.fillStyle(0x5C4033, 1) // Marrón oscuro base
+        treeGraphics.fillRect(-trunkBottomWidth / 2, treeHeight * 0.7, trunkBottomWidth, treeHeight * 0.3)
         
-        // Sombra del tronco más pronunciada
-        treeGraphics.fillStyle(0x4A3428, 0.7)
-        treeGraphics.fillRect(-trunkWidth / 2 + 2, 0, trunkWidth / 2, treeHeight)
+        // Cuerpo principal del tronco (más estrecho arriba)
+        treeGraphics.beginPath()
+        treeGraphics.moveTo(-trunkBottomWidth / 2, treeHeight * 0.7)
+        treeGraphics.lineTo(-trunkTopWidth / 2, 0)
+        treeGraphics.lineTo(trunkTopWidth / 2, 0)
+        treeGraphics.lineTo(trunkBottomWidth / 2, treeHeight * 0.7)
+        treeGraphics.closePath()
+        treeGraphics.fillPath()
         
-        // Copa del árbol más oscura y densa (estilo medieval)
-        treeGraphics.fillStyle(0x1B3D1B, 0.95) // Verde más oscuro y profundo
-        treeGraphics.fillCircle(0, -treeHeight * 0.2, crownSize)
-        treeGraphics.fillCircle(crownSize * 0.4, -treeHeight * 0.3, crownSize * 0.8)
-        treeGraphics.fillCircle(-crownSize * 0.4, -treeHeight * 0.3, crownSize * 0.8)
-        treeGraphics.fillCircle(0, -treeHeight * 0.5, crownSize * 0.7)
+        // Textura del tronco con grietas verticales
+        treeGraphics.fillStyle(0x3D2817, 0.6)
+        treeGraphics.fillRect(-trunkWidth / 2 + 1, treeHeight * 0.1, trunkWidth * 0.25, treeHeight * 0.6)
+        treeGraphics.fillRect(trunkWidth / 2 - trunkWidth * 0.25, treeHeight * 0.2, trunkWidth * 0.25, treeHeight * 0.5)
         
-        // Capa intermedia con tonos más apagados
-        treeGraphics.fillStyle(0x2A4A2A, 0.75)
-        treeGraphics.fillCircle(0, -treeHeight * 0.25, crownSize * 0.7)
-        treeGraphics.fillCircle(crownSize * 0.3, -treeHeight * 0.35, crownSize * 0.6)
-        treeGraphics.fillCircle(-crownSize * 0.3, -treeHeight * 0.35, crownSize * 0.6)
+        // Nudos en el tronco
+        const knotY = treeHeight * 0.3 + Math.random() * treeHeight * 0.3
+        treeGraphics.fillStyle(0x2A1A0F, 0.8)
+        treeGraphics.fillCircle(0, knotY, trunkWidth * 0.3)
         
-        // Detalles de sombra en la copa
-        treeGraphics.fillStyle(0x0F2A0F, 0.6)
-        treeGraphics.fillCircle(-crownSize * 0.2, -treeHeight * 0.2, crownSize * 0.5)
+        // Sombra lateral del tronco (iluminación desde la izquierda)
+        treeGraphics.fillStyle(0x4A3428, 0.5)
+        treeGraphics.beginPath()
+        treeGraphics.moveTo(-trunkBottomWidth / 2, treeHeight * 0.7)
+        treeGraphics.lineTo(-trunkTopWidth / 2, 0)
+        treeGraphics.lineTo(-trunkTopWidth / 2 + trunkWidth * 0.2, 0)
+        treeGraphics.lineTo(-trunkBottomWidth / 2 + trunkWidth * 0.2, treeHeight * 0.7)
+        treeGraphics.closePath()
+        treeGraphics.fillPath()
+        
+        // Ramas principales visibles (solo para árboles más grandes)
+        if (treeHeight > 60) {
+          const branchY = -treeHeight * 0.1
+          treeGraphics.fillStyle(0x4A3428, 1)
+          // Rama izquierda
+          treeGraphics.fillRect(-trunkTopWidth / 2 - 3, branchY, 8, 3)
+          // Rama derecha
+          treeGraphics.fillRect(trunkTopWidth / 2 - 5, branchY - 5, 8, 3)
+        }
+        
+        // Copa del árbol mejorada con más capas y variación
+        const crownBaseY = -treeHeight * 0.15
+        
+        // Capa base de la copa (más grande y oscura)
+        treeGraphics.fillStyle(0x1B3D1B, 0.95)
+        treeGraphics.fillCircle(0, crownBaseY, crownSize)
+        
+        // Capas superiores de la copa (creando volumen)
+        if (treeType > 0.3) {
+          // Estilo más frondoso
+          treeGraphics.fillCircle(crownSize * 0.5, crownBaseY - crownSize * 0.2, crownSize * 0.85)
+          treeGraphics.fillCircle(-crownSize * 0.5, crownBaseY - crownSize * 0.2, crownSize * 0.85)
+          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.5, crownSize * 0.75)
+          
+          // Capa adicional para más densidad
+          treeGraphics.fillStyle(0x2A4A2A, 0.8)
+          treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.3, crownSize * 0.65)
+          treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.3, crownSize * 0.65)
+          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.4, crownSize * 0.6)
+        } else {
+          // Estilo más cónico/piramidal
+          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.3, crownSize * 0.9)
+          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.6, crownSize * 0.7)
+          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.85, crownSize * 0.5)
+          
+          treeGraphics.fillStyle(0x2A4A2A, 0.8)
+          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.35, crownSize * 0.7)
+          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.65, crownSize * 0.55)
+        }
+        
+        // Detalles de sombra en la copa (lado izquierdo más oscuro)
+        treeGraphics.fillStyle(0x0F2A0F, 0.7)
+        treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.1, crownSize * 0.6)
+        treeGraphics.fillCircle(-crownSize * 0.2, crownBaseY - crownSize * 0.4, crownSize * 0.5)
+        
+        // Puntos de luz en la copa (lado derecho más claro - efecto de iluminación)
+        treeGraphics.fillStyle(0x2D5A2D, 0.5)
+        treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.2, crownSize * 0.4)
+        treeGraphics.fillCircle(crownSize * 0.25, crownBaseY - crownSize * 0.5, crownSize * 0.35)
+        
+        // Detalles de textura en la copa (pequeños círculos para simular hojas)
+        treeGraphics.fillStyle(0x1B3D1B, 0.6)
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2
+          const dist = crownSize * (0.4 + Math.random() * 0.3)
+          const leafX = Math.cos(angle) * dist
+          const leafY = crownBaseY + Math.sin(angle) * dist * 0.6
+          treeGraphics.fillCircle(leafX, leafY, 3 + Math.random() * 2)
+        }
         
         treeGraphics.setPosition(treeX, treeY)
         treeGraphics.setDepth(2)
