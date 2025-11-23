@@ -1,100 +1,104 @@
 import type Phaser from 'phaser'
 
 export class MountainRenderer {
+  private cloudElements: Phaser.GameObjects.Graphics[] = []
+
   constructor(
     private graphics: Phaser.GameObjects.Graphics,
+    private scene: Phaser.Scene,
     private width: number,
     private height: number,
     private horizonY: number
   ) {}
 
   /**
-   * Renderiza las montañas en múltiples capas mejoradas
+   * Renderiza las montañas en múltiples capas con diseño de bosque mágico
    */
   public render() {
-    // Efecto de niebla atmosférica entre capas
+    // Efecto de niebla atmosférica entre capas (más sutil)
     this.renderAtmosphericFog()
     
-    // Montañas muy lejanas - capa 0 (atmosférica) - mejoradas
-    this.graphics.fillStyle(0x6A5ACD, 0.6)
-    this.drawMountainRange(this.horizonY - 50, 18, 10, 140)
+    // Montañas muy lejanas - capa 0 - azul púrpura mágico
+    this.graphics.fillStyle(0x6B5B8C, 0.7) // Púrpura azulado mágico
+    this.drawAndeanMountainRange(this.horizonY - 50, 16, 10, 150)
     
-    // Gradiente adicional en montañas muy lejanas
-    this.graphics.fillStyle(0x8A7BC8, 0.3)
-    this.drawMountainGradient(this.horizonY - 50, 18, 140, 'top')
+    // Gradiente mágico en montañas muy lejanas
+    this.graphics.fillStyle(0x7A6B9C, 0.4)
+    this.drawMountainGradient(this.horizonY - 50, 16, 150, 'top')
 
-    // Montañas lejanas - capa 1 - mejoradas
-    this.graphics.fillStyle(0x6C5CE7, 0.8)
-    this.drawMountainRange(this.horizonY - 30, 14, 15, 170)
+    // Montañas lejanas - capa 1 - azul esmeralda mágico
+    this.graphics.fillStyle(0x4A7C8C, 0.85) // Azul turquesa mágico
+    this.drawAndeanMountainRange(this.horizonY - 30, 14, 15, 180)
     
-    // Detalles sutiles en montañas lejanas (mejorados)
-    this.graphics.fillStyle(0x5A4CD7, 0.5)
-    this.drawMountainDetails(this.horizonY - 30, 14, 170)
+    // Nubes mágicas animadas en montañas lejanas (con toque azulado)
+    this.drawSnowCaps(this.horizonY - 30, 14, 180, 0xD4E8F0, 0.9)
     
-    // Resaltes sutiles en montañas lejanas
-    this.graphics.fillStyle(0x7D6CEF, 0.25)
-    this.drawMountainHighlights(this.horizonY - 30, 14, 170)
+    // Resaltes sutiles mágicos
+    this.graphics.fillStyle(0x5A8C9C, 0.25)
+    this.drawMountainHighlights(this.horizonY - 30, 14, 180)
 
-    // Volcán nevado (Cotopaxi) - entre montañas lejanas y medias
-    this.renderSnowVolcano()
+    // Volcán Cotopaxi nevado (gris y grande) - entre montañas lejanas y medias
+    this.renderMagicVolcano()
 
-    // Montañas medias - capa 2 - mejoradas
-    this.graphics.fillStyle(0x8E44AD, 0.95)
-    this.drawMountainRange(this.horizonY - 10, 12, 22, 120)
+    // Montañas medias - capa 2 - verde esmeralda mágico
+    this.graphics.fillStyle(0x3D7C5A, 0.95) // Verde esmeralda mágico
+    this.drawAndeanMountainRange(this.horizonY - 10, 12, 22, 130)
     
-    // Sombra de las montañas medias (mejorada con gradiente)
-    this.graphics.fillStyle(0x5B2C91, 0.75)
+    // Sombra mágica de las montañas medias
+    this.graphics.fillStyle(0x2D6C4A, 0.7)
     this.drawMountainShadow(this.horizonY - 10, 12, 22)
     
-    // Resaltes de luz en montañas medias (mejorados)
-    this.graphics.fillStyle(0xA569BD, 0.4)
-    this.drawMountainHighlights(this.horizonY - 10, 12, 120)
+    // Nubes mágicas animadas en montañas medias
+    this.drawSnowCaps(this.horizonY - 10, 12, 130, 0xE8F4F8, 0.95)
     
-    // Gradiente de luz en montañas medias
-    this.graphics.fillStyle(0xB87BCF, 0.25)
-    this.drawMountainGradient(this.horizonY - 10, 12, 120, 'right')
+    // Resaltes de luz mágica en montañas medias
+    this.graphics.fillStyle(0x4D8C6A, 0.4)
+    this.drawMountainHighlights(this.horizonY - 10, 12, 130)
+    
+    // Gradiente de luz mágica
+    this.graphics.fillStyle(0x5D9C7A, 0.25)
+    this.drawMountainGradient(this.horizonY - 10, 12, 130, 'right')
 
-    // Montañas cercanas - capa 3 - mejoradas
-    this.graphics.fillStyle(0x2ECC71, 1)
-    this.drawMountainRange(this.horizonY, 10, 30, 80)
+    // Montañas cercanas - capa 3 - verde jade con toques púrpura
+    this.graphics.fillStyle(0x4A8C6B, 1) // Verde jade mágico
+    this.drawAndeanMountainRange(this.horizonY, 10, 30, 90)
     
-    // Sombra de las montañas cercanas (mejorada)
-    this.graphics.fillStyle(0x229954, 0.7)
+    // Sombra mágica de las montañas cercanas
+    this.graphics.fillStyle(0x3A7C5B, 0.7)
     this.drawMountainShadow(this.horizonY, 10, 30)
     
-    // Resaltes de luz en montañas cercanas (mejorados)
-    this.graphics.fillStyle(0x52BE80, 0.5)
-    this.drawMountainHighlights(this.horizonY, 10, 80)
+    // Resaltes de luz mágica en montañas cercanas
+    this.graphics.fillStyle(0x5A9C7B, 0.5)
+    this.drawMountainHighlights(this.horizonY, 10, 90)
     
-    // Gradiente de luz en montañas cercanas
-    this.graphics.fillStyle(0x6BCF8F, 0.3)
-    this.drawMountainGradient(this.horizonY, 10, 80, 'right')
+    // Gradiente de luz mágica
+    this.graphics.fillStyle(0x6AAC8B, 0.3)
+    this.drawMountainGradient(this.horizonY, 10, 90, 'right')
     
-    // Detalles de textura en las montañas cercanas (mejorados)
-    this.drawMountainTextures(this.horizonY, 10, 80)
+    // Detalles de textura mágica (reducidos)
+    this.drawMagicMountainTextures(this.horizonY, 10, 90)
     
-    // Rocas y acantilados en montañas cercanas
-    this.drawMountainCliffs(this.horizonY, 10, 80)
+    return this.cloudElements
   }
 
   /**
-   * Renderiza niebla atmosférica entre capas de montañas
+   * Renderiza niebla atmosférica entre capas de montañas (más sutil)
    */
   private renderAtmosphericFog() {
-    // Niebla entre montañas lejanas y medias
-    this.graphics.fillStyle(0xFFFFFF, 0.15)
-    this.graphics.fillRect(0, this.horizonY - 35, this.width, 25)
+    // Niebla entre montañas lejanas y medias (reducida)
+    this.graphics.fillStyle(0xFFFFFF, 0.08)
+    this.graphics.fillRect(0, this.horizonY - 35, this.width, 20)
     
-    // Niebla entre montañas medias y cercanas
-    this.graphics.fillStyle(0xFFFFFF, 0.1)
-    this.graphics.fillRect(0, this.horizonY - 5, this.width, 15)
+    // Niebla entre montañas medias y cercanas (reducida)
+    this.graphics.fillStyle(0xFFFFFF, 0.06)
+    this.graphics.fillRect(0, this.horizonY - 5, this.width, 12)
     
-    // Efecto de desvanecimiento suave
-    for (let i = 0; i < 3; i++) {
-      const fogY = this.horizonY - 20 + i * 10
-      const alpha = 0.08 - i * 0.02
+    // Efecto de desvanecimiento suave (reducido)
+    for (let i = 0; i < 2; i++) {
+      const fogY = this.horizonY - 20 + i * 12
+      const alpha = 0.05 - i * 0.015
       this.graphics.fillStyle(0xE8E8E8, alpha)
-      this.graphics.fillRect(0, fogY, this.width, 8)
+      this.graphics.fillRect(0, fogY, this.width, 6)
     }
   }
 
@@ -130,72 +134,24 @@ export class MountainRenderer {
   }
 
   /**
-   * Dibuja acantilados y formaciones rocosas en las montañas
+   * Renderiza el volcán Cotopaxi nevado (gris y grande)
    */
-  private drawMountainCliffs(
-    baseY: number,
-    points: number,
-    peakHeight: number
-  ) {
-    const seed = baseY * 0.1
-    
-    for (let i = 0; i < points * 2; i++) {
-      if (Math.random() > 0.6) {
-        const x = (this.width / points) * (i / 2) + Math.random() * (this.width / points)
-        const varAmount = Math.sin((i / 2) * 0.5 + seed) * 30
-        const currentBaseY = baseY + varAmount
-        const peakVariation = 0.6 + Math.sin((i / 2) * 0.8 + seed) * 0.4
-        const currentPeakY = baseY - peakHeight * peakVariation - Math.abs(varAmount) * 1.8
-        
-        const cliffY = currentBaseY - (currentBaseY - currentPeakY) * (0.2 + Math.random() * 0.5)
-        
-        // Acantilado vertical
-        this.graphics.fillStyle(0x34495E, 0.6)
-        const cliffWidth = 8 + Math.random() * 12
-        const cliffHeight = 15 + Math.random() * 25
-        
-        this.graphics.beginPath()
-        this.graphics.moveTo(x, cliffY)
-        this.graphics.lineTo(x + cliffWidth, cliffY)
-        this.graphics.lineTo(x + cliffWidth * 0.7, cliffY + cliffHeight)
-        this.graphics.lineTo(x + cliffWidth * 0.3, cliffY + cliffHeight)
-        this.graphics.closePath()
-        this.graphics.fillPath()
-        
-        // Sombra del acantilado
-        this.graphics.fillStyle(0x2C3E50, 0.4)
-        this.graphics.fillRect(x, cliffY, cliffWidth * 0.4, cliffHeight)
-        
-        // Resalte en el acantilado
-        this.graphics.fillStyle(0x5D6D7E, 0.3)
-        this.graphics.fillRect(x + cliffWidth * 0.6, cliffY, cliffWidth * 0.2, cliffHeight * 0.6)
-      }
-    }
-  }
-
-  /**
-   * Renderiza un volcán nevado mejorado similar al Cotopaxi
-   */
-  private renderSnowVolcano() {
+  private renderMagicVolcano() {
     // Posición del volcán (centro-derecha del fondo)
     const volcanoX = this.width * 0.65
     const volcanoBaseY = this.horizonY - 20
-    const volcanoWidth = 200 // Ancho de la base (más ancho)
-    const volcanoHeight = 240 // Altura total del volcán (más alto)
+    const volcanoWidth = 220 // Más ancho para ser más grande
+    const volcanoHeight = 260 // Más alto para ser más grande
     const snowLine = volcanoHeight * 0.32 // Línea de nieve (32% desde la cima)
     
-    // Cuerpo del volcán (forma cónica mejorada con curvas)
-    this.graphics.fillStyle(0x4A4A4A, 0.85) // Gris oscuro para roca volcánica
+    // Cuerpo del volcán con color gris (roca volcánica)
+    this.graphics.fillStyle(0x4A4A4A, 0.85)
     this.graphics.beginPath()
-    
-    // Base izquierda
     this.graphics.moveTo(volcanoX - volcanoWidth / 2, volcanoBaseY)
     
-    // Lado izquierdo con curva suave hasta la línea de nieve (usando puntos intermedios)
     const leftSnowX = volcanoX - (volcanoWidth / 2) * (1 - snowLine / volcanoHeight)
     const leftSnowY = volcanoBaseY - snowLine
     
-    // Aproximar curva con puntos intermedios
     const steps1 = 4
     for (let step = 1; step <= steps1; step++) {
       const t = step / steps1
@@ -204,7 +160,6 @@ export class MountainRenderer {
       this.graphics.lineTo(interpX, interpY)
     }
     
-    // Lado izquierdo desde la línea de nieve hasta la cima
     const steps2 = 4
     for (let step = 1; step <= steps2; step++) {
       const t = step / steps2
@@ -213,7 +168,6 @@ export class MountainRenderer {
       this.graphics.lineTo(interpX, interpY)
     }
     
-    // Lado derecho desde la cima hasta la línea de nieve
     const rightSnowX = volcanoX + (volcanoWidth / 2) * (1 - snowLine / volcanoHeight)
     const rightSnowY = volcanoBaseY - snowLine
     const steps3 = 4
@@ -224,7 +178,6 @@ export class MountainRenderer {
       this.graphics.lineTo(interpX, interpY)
     }
     
-    // Lado derecho desde la línea de nieve hasta la base
     const steps4 = 4
     for (let step = 1; step <= steps4; step++) {
       const t = step / steps4
@@ -233,11 +186,10 @@ export class MountainRenderer {
       this.graphics.lineTo(interpX, interpY)
     }
     
-    // Cerrar la base
     this.graphics.closePath()
     this.graphics.fillPath()
     
-    // Sombra mejorada en el lado izquierdo del volcán
+    // Sombra del volcán
     this.graphics.fillStyle(0x2C2C2C, 0.7)
     this.graphics.beginPath()
     this.graphics.moveTo(volcanoX - volcanoWidth / 2, volcanoBaseY)
@@ -253,7 +205,7 @@ export class MountainRenderer {
     this.graphics.closePath()
     this.graphics.fillPath()
     
-    // Capa de nieve en la cima mejorada (blanca con gradiente)
+    // Capa de nieve en la cima del Cotopaxi (blanca con gradiente)
     this.graphics.fillStyle(0xFFFFFF, 0.98)
     this.graphics.beginPath()
     this.graphics.moveTo(leftSnowX, leftSnowY)
@@ -272,7 +224,7 @@ export class MountainRenderer {
       this.graphics.lineTo(interpX, interpY)
     }
     
-    // Borde inferior de la nieve con forma más irregular y natural
+    // Borde inferior de la nieve con forma irregular y natural
     const snowPoints = 12
     for (let i = 0; i <= snowPoints; i++) {
       const t = i / snowPoints
@@ -287,7 +239,7 @@ export class MountainRenderer {
     this.graphics.closePath()
     this.graphics.fillPath()
     
-    // Detalles de nieve más brillante en la cima (mejorados)
+    // Detalles de nieve más brillante en la cima
     this.graphics.fillStyle(0xE8F4F8, 0.9)
     this.graphics.fillCircle(volcanoX, volcanoBaseY - volcanoHeight + 12, 28)
     this.graphics.fillCircle(volcanoX - 12, volcanoBaseY - volcanoHeight + 18, 18)
@@ -295,7 +247,7 @@ export class MountainRenderer {
     this.graphics.fillCircle(volcanoX - 6, volcanoBaseY - volcanoHeight + 8, 12)
     this.graphics.fillCircle(volcanoX + 6, volcanoBaseY - volcanoHeight + 8, 12)
     
-    // Resaltes de luz mejorados en el lado derecho (efecto de sol)
+    // Resaltes de luz en el lado derecho (efecto de sol)
     this.graphics.fillStyle(0x6A6A6A, 0.6)
     this.graphics.beginPath()
     this.graphics.moveTo(volcanoX + volcanoWidth / 3, volcanoBaseY - snowLine * 0.4)
@@ -316,20 +268,12 @@ export class MountainRenderer {
     this.graphics.lineTo(volcanoX + volcanoWidth / 3, volcanoBaseY - snowLine * 0.4)
     this.graphics.closePath()
     this.graphics.fillPath()
-    
-    // Detalles de textura en el volcán (grietas, rocas)
-    this.graphics.fillStyle(0x3A3A3A, 0.4)
-    for (let i = 0; i < 8; i++) {
-      const detailX = volcanoX - volcanoWidth / 4 + Math.random() * (volcanoWidth / 2)
-      const detailY = volcanoBaseY - snowLine - Math.random() * (volcanoHeight - snowLine) * 0.5
-      this.graphics.fillCircle(detailX, detailY, 3 + Math.random() * 5)
-    }
   }
 
   /**
-   * Dibuja una cadena de montañas mejorada con formas más naturales y variadas
+   * Dibuja una cadena de montañas con estilo andino: picos más angulares y dramáticos
    */
-  private drawMountainRange(
+  private drawAndeanMountainRange(
     baseY: number,
     points: number,
     variation: number,
@@ -341,43 +285,49 @@ export class MountainRenderer {
     const mountainPoints: { x: number, y: number }[] = []
     mountainPoints.push({ x: 0, y: baseY })
     
-    // Semilla para variación consistente pero aleatoria
     const seed = baseY * 0.1
     
     for (let i = 0; i <= points; i++) {
       const x = (this.width / points) * i
-      // Variación más natural usando múltiples ondas con diferentes frecuencias
       const varAmount = Math.sin(i * 0.5 + seed) * variation + 
                        Math.cos(i * 0.3 + seed * 0.7) * (variation * 0.6) +
-                       Math.sin(i * 1.2 + seed * 1.3) * (variation * 0.4) +
-                       Math.cos(i * 2.1 + seed * 0.5) * (variation * 0.2)
+                       Math.sin(i * 1.2 + seed * 1.3) * (variation * 0.4)
       const currentBaseY = baseY + varAmount
       
-      // Altura variable de picos para más realismo (más variación)
-      const peakVariation = 0.6 + Math.sin(i * 0.8 + seed) * 0.4
-      const secondaryPeak = Math.sin(i * 1.5 + seed * 2) * 0.15
-      const currentPeakY = baseY - peakHeight * (peakVariation + secondaryPeak) - Math.abs(varAmount) * 1.8
+      // Picos más dramáticos y variados (estilo andino)
+      const peakVariation = 0.5 + Math.sin(i * 0.7 + seed) * 0.5
+      const secondaryPeak = Math.sin(i * 1.8 + seed * 2) * 0.2
+      const tertiaryPeak = Math.cos(i * 2.5 + seed * 1.5) * 0.15
+      const currentPeakY = baseY - peakHeight * (peakVariation + secondaryPeak + tertiaryPeak) - Math.abs(varAmount) * 2.2
       const midX = x + (this.width / points) / 2
       
       if (i < points) {
-        // Crear picos más suaves y naturales con múltiples puntos intermedios
         if (i > 0) {
           const prevPoint = mountainPoints[mountainPoints.length - 1]
           
-          // Subida al pico con curva más natural (usando easing)
-          const steps = 4
+          // Subida más angular y dramática (estilo andino)
+          const steps = 3 // Menos pasos = más angular
           for (let step = 1; step <= steps; step++) {
             const t = step / steps
-            // Easing cuadrático para subida más natural
-            const easedT = t * t
+            // Easing más agresivo para picos más puntiagudos
+            const easedT = t * t * t
             const interpX = prevPoint.x + (midX - prevPoint.x) * easedT
-            // Variación en la altura para crear formas más interesantes
-            const heightVariation = Math.sin(t * Math.PI) * 3
+            
+            // Variación más pronunciada para crear picos más dramáticos
+            const heightVariation = Math.sin(t * Math.PI) * 4 + Math.sin(t * Math.PI * 3) * 1.5
             const interpY = prevPoint.y + (currentPeakY - prevPoint.y) * easedT - heightVariation
+            
+            // Añadir pequeñas crestas secundarias (reducidas para evitar amontonamiento)
+            if (step === Math.floor(steps / 2) && Math.random() > 0.85) {
+              const ridgeY = interpY - 6 - Math.random() * 8
+              this.graphics.lineTo(interpX, ridgeY)
+              this.graphics.lineTo(interpX + 2, interpY)
+            }
+            
             this.graphics.lineTo(interpX, interpY)
           }
           
-          // Descenso desde el pico con variación natural
+          // Descenso más pronunciado (laderas empinadas andinas)
           const nextX = x + (this.width / points)
           const nextVar = Math.sin((i + 1) * 0.5 + seed) * variation + 
                          Math.cos((i + 1) * 0.3 + seed * 0.7) * (variation * 0.6)
@@ -385,11 +335,9 @@ export class MountainRenderer {
           
           for (let step = 1; step <= steps; step++) {
             const t = step / steps
-            // Easing para descenso más suave
-            const easedT = 1 - (1 - t) * (1 - t)
+            const easedT = 1 - (1 - t) * (1 - t) * (1 - t)
             const interpX = midX + (nextX - midX) * easedT
-            // Pequeña variación para hacer el descenso más interesante
-            const descentVariation = Math.sin(t * Math.PI * 0.5) * 2
+            const descentVariation = Math.sin(t * Math.PI * 0.5) * 3
             const interpY = currentPeakY + (nextBaseY - currentPeakY) * easedT + descentVariation
             this.graphics.lineTo(interpX, interpY)
           }
@@ -413,53 +361,84 @@ export class MountainRenderer {
     this.graphics.closePath()
     this.graphics.fillPath()
   }
-  
+
   /**
-   * Dibuja detalles sutiles mejorados en las montañas (grietas, rocas, formaciones)
+   * Dibuja nubes animadas en las cimas de las montañas
    */
-  private drawMountainDetails(
+  private drawSnowCaps(
     baseY: number,
     points: number,
-    peakHeight: number
+    peakHeight: number,
+    cloudColor: number,
+    cloudAlpha: number
   ) {
     const seed = baseY * 0.1
     
     for (let i = 0; i < points; i++) {
       const x = (this.width / points) * i + (this.width / points) / 2
-      const varAmount = Math.sin(i * 0.5 + seed) * 15
-      const peakVariation = 0.6 + Math.sin(i * 0.8 + seed) * 0.4
-      const currentBaseY = baseY + varAmount
-      const currentPeakY = baseY - peakHeight * peakVariation - Math.abs(varAmount) * 1.8
+      const varAmount = Math.sin(i * 0.5 + seed) * 18
+      const peakVariation = 0.5 + Math.sin(i * 0.7 + seed) * 0.5
+      const currentPeakY = baseY - peakHeight * peakVariation - Math.abs(varAmount) * 2.2
       
-      // Dibujar líneas de detalle (grietas) mejoradas
-      if (Math.random() > 0.65) {
-        const detailY = currentBaseY - (currentBaseY - currentPeakY) * (0.25 + Math.random() * 0.45)
-        const crackLength = 8 + Math.random() * 12
-        const crackAngle = (Math.random() - 0.5) * 0.5
+      // Solo dibujar nubes en picos altos
+      if (currentPeakY < baseY - peakHeight * 0.4 && Math.random() > 0.4) {
+        const cloudY = currentPeakY - 15 - Math.random() * 20
+        const cloudBaseX = x + (Math.random() - 0.5) * 30
         
-        this.graphics.lineStyle(1.2, 0x4A4A4A, 0.25)
-        this.graphics.moveTo(x - crackLength * 0.5, detailY)
-        this.graphics.lineTo(x + crackLength * 0.5, detailY + crackLength * Math.sin(crackAngle))
-        this.graphics.strokePath()
+        // Crear nube como objeto Phaser animable
+        const cloudGraphics = this.scene.add.graphics()
+        cloudGraphics.fillStyle(cloudColor, cloudAlpha)
         
-        // Pequeñas ramificaciones de la grieta
-        if (Math.random() > 0.5) {
-          this.graphics.lineStyle(0.8, 0x4A4A4A, 0.15)
-          this.graphics.moveTo(x, detailY + crackLength * 0.3 * Math.sin(crackAngle))
-          this.graphics.lineTo(x + (Math.random() - 0.5) * 6, detailY + crackLength * 0.5 * Math.sin(crackAngle))
-          this.graphics.strokePath()
+        // Crear nube con múltiples círculos superpuestos para forma esponjosa
+        const numClouds = 3 + Math.floor(Math.random() * 3)
+        const cloudSize = 20 + Math.random() * 25
+        
+        for (let j = 0; j < numClouds; j++) {
+          const cloudX = (Math.random() - 0.5) * cloudSize * 1.2
+          const cloudYOffset = (Math.random() - 0.5) * cloudSize * 0.6
+          const cloudRadius = cloudSize * (0.6 + Math.random() * 0.4)
+          
+          // Nube principal
+          cloudGraphics.fillCircle(cloudX, cloudYOffset, cloudRadius)
+          
+          // Círculos adicionales para dar forma más orgánica
+          if (j < numClouds - 1) {
+            const offsetX = cloudX + (Math.random() - 0.5) * cloudRadius * 0.8
+            const offsetY = cloudYOffset + (Math.random() - 0.5) * cloudRadius * 0.6
+            const smallRadius = cloudRadius * (0.5 + Math.random() * 0.3)
+            cloudGraphics.fillCircle(offsetX, offsetY, smallRadius)
+          }
         }
-      }
-      
-      // Pequeñas formaciones rocosas
-      if (Math.random() > 0.8) {
-        const rockY = currentBaseY - (currentBaseY - currentPeakY) * (0.2 + Math.random() * 0.6)
-        this.graphics.fillStyle(0x5A5A5A, 0.3)
-        this.graphics.fillCircle(x + (Math.random() - 0.5) * 15, rockY, 2 + Math.random() * 4)
+        
+        // Resaltes de luz en las nubes
+        cloudGraphics.fillStyle(0xFFFFFF, 0.7)
+        const highlightX = -cloudSize * 0.3
+        const highlightY = -cloudSize * 0.2
+        cloudGraphics.fillCircle(highlightX, highlightY, cloudSize * 0.4)
+        
+        // Posicionar la nube
+        cloudGraphics.setPosition(cloudBaseX, cloudY)
+        cloudGraphics.setDepth(2)
+        
+        // Animación discreta y suave (movimiento horizontal muy lento)
+        const moveDistance = 15 + Math.random() * 20 // Distancia pequeña
+        const moveSpeed = 8000 + Math.random() * 4000 // Muy lento (8-12 segundos)
+        const direction = Math.random() > 0.5 ? 1 : -1
+        
+        this.scene.tweens.add({
+          targets: cloudGraphics,
+          x: cloudBaseX + (moveDistance * direction),
+          duration: moveSpeed,
+          ease: 'Sine.easeInOut',
+          yoyo: true,
+          repeat: -1
+        })
+        
+        this.cloudElements.push(cloudGraphics)
       }
     }
   }
-  
+
   /**
    * Dibuja resaltes de luz en las montañas
    */
@@ -483,71 +462,60 @@ export class MountainRenderer {
   }
   
   /**
-   * Dibuja texturas mejoradas en las montañas cercanas
+   * Dibuja texturas mágicas simplificadas en las montañas (menos elementos)
    */
-  private drawMountainTextures(
+  private drawMagicMountainTextures(
     baseY: number,
     points: number,
     peakHeight: number
   ) {
     const seed = baseY * 0.1
     
-    // Texturas de rocas mejoradas
-    for (let i = 0; i < 35; i++) {
+    // Texturas mágicas reducidas (solo 12 elementos en lugar de 35)
+    for (let i = 0; i < 12; i++) {
       const x = Math.random() * this.width
       const varAmount = Math.sin((x / this.width) * points * 0.5 + seed) * 30
       const currentBaseY = baseY + varAmount
-      const peakVariation = 0.6 + Math.sin((x / this.width) * points * 0.8 + seed) * 0.4
-      const currentPeakY = baseY - peakHeight * peakVariation - Math.abs(varAmount) * 1.8
+      const peakVariation = 0.5 + Math.sin((x / this.width) * points * 0.7 + seed) * 0.5
+      const currentPeakY = baseY - peakHeight * peakVariation - Math.abs(varAmount) * 2.2
       
       if (x >= 0 && x <= this.width) {
-        const y = currentBaseY - (currentBaseY - currentPeakY) * (0.15 + Math.random() * 0.65)
+        const y = currentBaseY - (currentBaseY - currentPeakY) * (0.3 + Math.random() * 0.5)
         
-        // Rocas con más variación
-        if (Math.random() > 0.4) {
-          const rockSize = 3 + Math.random() * 8
-          this.graphics.fillStyle(0x34495E, 0.6)
+        // Rocas mágicas con colores del bosque
+        if (Math.random() > 0.5) {
+          const rockSize = 4 + Math.random() * 6
+          this.graphics.fillStyle(0x4A6B5C, 0.5)
           this.graphics.fillCircle(x, y, rockSize)
           
-          // Sombra de la roca
-          this.graphics.fillStyle(0x2C3E50, 0.4)
-          this.graphics.fillCircle(x - rockSize * 0.3, y + rockSize * 0.2, rockSize * 0.7)
-          
-          // Resalte de la roca
-          this.graphics.fillStyle(0x5D6D7E, 0.3)
+          // Resalte mágico
+          this.graphics.fillStyle(0x5A7B6C, 0.3)
           this.graphics.fillCircle(x + rockSize * 0.2, y - rockSize * 0.2, rockSize * 0.5)
         } else {
-          // Vegetación mejorada
-          const vegSize = 2 + Math.random() * 6
-          const vegColors = [0x27AE60, 0x229954, 0x1E8449, 0x2ECC71]
+          // Vegetación mágica reducida
+          const vegSize = 3 + Math.random() * 4
+          const vegColors = [0x3D8C5A, 0x4A9C6B, 0x5AAC7B]
           const vegColor = vegColors[Math.floor(Math.random() * vegColors.length)]
           
           this.graphics.fillStyle(vegColor, 0.4)
           this.graphics.fillCircle(x, y, vegSize)
-          
-          // Variación en la vegetación (múltiples círculos para arbustos)
-          if (Math.random() > 0.7) {
-            this.graphics.fillCircle(x + vegSize * 0.5, y, vegSize * 0.8)
-            this.graphics.fillCircle(x - vegSize * 0.5, y, vegSize * 0.8)
-            this.graphics.fillCircle(x, y - vegSize * 0.5, vegSize * 0.7)
-          }
         }
       }
     }
     
-    // Líneas de grietas y formaciones geológicas
-    for (let i = 0; i < 8; i++) {
+    // Líneas de grietas mágicas reducidas (solo 3 en lugar de 8)
+    for (let i = 0; i < 3; i++) {
       const startX = Math.random() * this.width
       const varAmount = Math.sin((startX / this.width) * points * 0.5 + seed) * 30
       const currentBaseY = baseY + varAmount
-      const peakVariation = 0.6 + Math.sin((startX / this.width) * points * 0.8 + seed) * 0.4
-      const currentPeakY = baseY - peakHeight * peakVariation - Math.abs(varAmount) * 1.8
+      const peakVariation = 0.5 + Math.sin((startX / this.width) * points * 0.7 + seed) * 0.5
+      const currentPeakY = baseY - peakHeight * peakVariation - Math.abs(varAmount) * 2.2
       
-      const startY = currentBaseY - (currentBaseY - currentPeakY) * (0.3 + Math.random() * 0.5)
-      const endX = startX + (Math.random() - 0.5) * 40
-      const endY = startY + 10 + Math.random() * 20
+      const startY = currentBaseY - (currentBaseY - currentPeakY) * (0.4 + Math.random() * 0.4)
+      const endX = startX + (Math.random() - 0.5) * 30
+      const endY = startY + 8 + Math.random() * 15
       
-      this.graphics.lineStyle(1.5, 0x2C3E50, 0.3)
+      this.graphics.lineStyle(1.2, 0x3A6B4C, 0.25)
       this.graphics.moveTo(startX, startY)
       this.graphics.lineTo(endX, endY)
       this.graphics.strokePath()

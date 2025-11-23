@@ -36,8 +36,8 @@ export class BackgroundRenderer {
     skyRenderer.render()
     
     // Renderizar montañas
-    const mountainRenderer = new MountainRenderer(bgGraphics, this.width, this.height, this.horizonY)
-    mountainRenderer.render()
+    const mountainRenderer = new MountainRenderer(bgGraphics, this.scene, this.width, this.height, this.horizonY)
+    const mountainClouds = mountainRenderer.render()
     
     // Renderizar suelo
     const groundRenderer = new GroundRenderer(bgGraphics, this.width, this.height, this.horizonY)
@@ -57,7 +57,7 @@ export class BackgroundRenderer {
 
     return {
       backgroundGraphics: bgGraphics,
-      animatedElements: animatedElements,
+      animatedElements: [...animatedElements, ...mountainClouds],
       trees: trees,
       rocks: rocks
     }
