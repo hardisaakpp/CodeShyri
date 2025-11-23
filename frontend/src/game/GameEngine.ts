@@ -53,20 +53,112 @@ export class GameEngine {
             name: 'Personaje'
           }
 
-          // Crear grid sutil estilo medieval
-          const graphics = this.add.graphics()
-          graphics.lineStyle(1, 0xd4af37, 0.2)
+          // Crear escenario de fondo con gráficos de Phaser
+          const bgGraphics = this.add.graphics()
           
-          const gridSize = 50
-          for (let x = 0; x <= width; x += gridSize) {
-            graphics.moveTo(x, 0)
-            graphics.lineTo(x, height)
+          // Cielo con gradiente (de azul oscuro a naranja/dorado)
+          bgGraphics.fillGradientStyle(
+            0x1a1a2e,  // Color superior izquierdo
+            0x2d1b1b,  // Color superior derecho
+            0x3d2817,  // Color inferior izquierdo
+            0x4a2c1a   // Color inferior derecho
+          )
+          bgGraphics.fillRect(0, 0, width, height * 0.6)
+          
+          // Horizonte con montañas
+          const horizonY = height * 0.6
+          bgGraphics.fillStyle(0x2d1b1b, 1)
+          bgGraphics.beginPath()
+          bgGraphics.moveTo(0, horizonY)
+          
+          // Crear silueta de montañas
+          const mountainPoints = 8
+          for (let i = 0; i <= mountainPoints; i++) {
+            const x = (width / mountainPoints) * i
+            const baseY = horizonY + Math.random() * 30
+            const peakY = horizonY - 80 - Math.random() * 60
+            const midX = x + (width / mountainPoints) / 2
+            
+            if (i < mountainPoints) {
+              bgGraphics.lineTo(midX, peakY)
+              bgGraphics.lineTo(x + (width / mountainPoints), baseY)
+            }
           }
-          for (let y = 0; y <= height; y += gridSize) {
-            graphics.moveTo(0, y)
-            graphics.lineTo(width, y)
+          
+          bgGraphics.lineTo(width, height)
+          bgGraphics.lineTo(0, height)
+          bgGraphics.closePath()
+          bgGraphics.fillPath()
+          
+          // Montañas más lejanas (más oscuras)
+          bgGraphics.fillStyle(0x1a0f08, 0.8)
+          bgGraphics.beginPath()
+          bgGraphics.moveTo(0, horizonY - 20)
+          for (let i = 0; i <= 6; i++) {
+            const x = (width / 6) * i
+            const baseY = horizonY - 20 + Math.random() * 20
+            const peakY = horizonY - 120 - Math.random() * 40
+            const midX = x + (width / 6) / 2
+            
+            if (i < 6) {
+              bgGraphics.lineTo(midX, peakY)
+              bgGraphics.lineTo(x + (width / 6), baseY)
+            }
           }
-          graphics.strokePath()
+          bgGraphics.lineTo(width, horizonY - 20)
+          bgGraphics.closePath()
+          bgGraphics.fillPath()
+          
+          // Suelo con textura
+          bgGraphics.fillStyle(0x3d2817, 1)
+          bgGraphics.fillRect(0, horizonY, width, height - horizonY)
+          
+          // Patrón de suelo (hierba/piedras)
+          bgGraphics.fillStyle(0x4a2c1a, 0.3)
+          for (let i = 0; i < 20; i++) {
+            const x = Math.random() * width
+            const y = horizonY + Math.random() * (height - horizonY)
+            const size = 5 + Math.random() * 10
+            bgGraphics.fillCircle(x, y, size)
+          }
+          
+          // Nubes decorativas
+          bgGraphics.fillStyle(0x2d1b1b, 0.4)
+          for (let i = 0; i < 5; i++) {
+            const cloudX = Math.random() * width
+            const cloudY = 50 + Math.random() * 100
+            const cloudSize = 30 + Math.random() * 40
+            
+            // Nube con múltiples círculos
+            bgGraphics.fillCircle(cloudX, cloudY, cloudSize)
+            bgGraphics.fillCircle(cloudX + cloudSize * 0.6, cloudY, cloudSize * 0.8)
+            bgGraphics.fillCircle(cloudX - cloudSize * 0.6, cloudY, cloudSize * 0.8)
+            bgGraphics.fillCircle(cloudX, cloudY - cloudSize * 0.5, cloudSize * 0.7)
+          }
+          
+          // Estrellas en el cielo
+          bgGraphics.fillStyle(0xd4af37, 0.6)
+          for (let i = 0; i < 30; i++) {
+            const starX = Math.random() * width
+            const starY = Math.random() * (horizonY - 50)
+            const starSize = 1 + Math.random() * 2
+            bgGraphics.fillCircle(starX, starY, starSize)
+          }
+          
+          // Brillo de luna (círculo difuminado)
+          bgGraphics.fillStyle(0xd4af37, 0.15)
+          bgGraphics.fillCircle(width * 0.85, height * 0.15, 80)
+          bgGraphics.fillStyle(0xd4af37, 0.25)
+          bgGraphics.fillCircle(width * 0.85, height * 0.15, 50)
+          
+          // Línea del horizonte sutil
+          bgGraphics.lineStyle(2, 0xd4af37, 0.2)
+          bgGraphics.moveTo(0, horizonY)
+          bgGraphics.lineTo(width, horizonY)
+          bgGraphics.strokePath()
+          
+          // Guardar referencia del fondo
+          ;(scene as any).backgroundGraphics = bgGraphics
 
           // Título estilizado medieval
           const titleBg = this.add.rectangle(centerX, 40, 450, 55, 0x1a0f08, 0.8)
@@ -116,7 +208,7 @@ export class GameEngine {
 
           // Guardar referencias
           ;(scene as any).player = character
-          ;(scene as any).graphics = graphics
+          ;(scene as any).backgroundGraphics = bgGraphics
 
           gameEngine.log(`✨ ¡Bienvenido, ${characterData.name}!`)
           gameEngine.log(`🎮 Usa moveForward(), turnRight() y turnLeft() para controlar tu personaje`)
