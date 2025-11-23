@@ -36,7 +36,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    const centerX = this.width / 2
     const centerY = this.height / 2
 
     // Renderizar fondo
@@ -53,9 +52,6 @@ export class GameScene extends Phaser.Scene {
     this.rotationCommands = new RotationCommands(this.commandQueue, player, this.log.bind(this))
     this.actionCommands = new ActionCommands(this.commandQueue, player, this.log.bind(this))
 
-    // Crear título
-    this.createTitle(centerX)
-
     // Guardar referencias en la escena
     ;(this as any).player = player
     ;(this as any).backgroundGraphics = backgroundData.backgroundGraphics
@@ -69,34 +65,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el título estilizado
-   */
-  private createTitle(centerX: number) {
-    const titleBg = this.add.rectangle(centerX, 40, 450, 55, 0x1a0f08, 0.8)
-    titleBg.setStrokeStyle(3, 0xd4af37, 0.6)
-    titleBg.setDepth(20)
-
-    const title = this.add.text(centerX, 40, `Aventura con ${this.character.name}`, {
-      fontSize: '24px',
-      fontFamily: 'Cinzel, serif',
-      color: '#d4af37',
-      fontStyle: 'bold'
-    }).setOrigin(0.5)
-    title.setDepth(21)
-
-    title.setStroke('#000000', 4)
-    title.setShadow(2, 2, '#000000', 4, true, true)
-
-    this.tweens.add({
-      targets: title,
-      alpha: { from: 0.7, to: 1 },
-      duration: 2000,
-      yoyo: true,
-      repeat: -1
-    })
-  }
-
-  /**
    * Ejecuta código del usuario
    */
   public executeCode(code: string) {
@@ -106,19 +74,27 @@ export class GameScene extends Phaser.Scene {
     if (!player) return
 
     try {
-      // Crear funciones disponibles para el usuario
-      const {
-        moveForward, moveBackward, moveUp, moveDown, moveLeft, moveRight,
-        moveTo, moveDistance, sprint
-      } = this.movementCommands
+      // Crear funciones disponibles para el usuario (bind para mantener el contexto)
+      const moveForward = this.movementCommands.moveForward.bind(this.movementCommands)
+      const moveBackward = this.movementCommands.moveBackward.bind(this.movementCommands)
+      const moveUp = this.movementCommands.moveUp.bind(this.movementCommands)
+      const moveDown = this.movementCommands.moveDown.bind(this.movementCommands)
+      const moveLeft = this.movementCommands.moveLeft.bind(this.movementCommands)
+      const moveRight = this.movementCommands.moveRight.bind(this.movementCommands)
+      const moveTo = this.movementCommands.moveTo.bind(this.movementCommands)
+      const moveDistance = this.movementCommands.moveDistance.bind(this.movementCommands)
+      const sprint = this.movementCommands.sprint.bind(this.movementCommands)
 
-      const {
-        turnRight, turnLeft, turn, faceDirection
-      } = this.rotationCommands
+      const turnRight = this.rotationCommands.turnRight.bind(this.rotationCommands)
+      const turnLeft = this.rotationCommands.turnLeft.bind(this.rotationCommands)
+      const turn = this.rotationCommands.turn.bind(this.rotationCommands)
+      const faceDirection = this.rotationCommands.faceDirection.bind(this.rotationCommands)
 
-      const {
-        jump, attack, wait, teleport, spin
-      } = this.actionCommands
+      const jump = this.actionCommands.jump.bind(this.actionCommands)
+      const attack = this.actionCommands.attack.bind(this.actionCommands)
+      const wait = this.actionCommands.wait.bind(this.actionCommands)
+      const teleport = this.actionCommands.teleport.bind(this.actionCommands)
+      const spin = this.actionCommands.spin.bind(this.actionCommands)
 
       const consoleObj = {
         log: (msg: string) => this.log(msg, 'info')

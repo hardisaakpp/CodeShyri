@@ -56,6 +56,9 @@ export class BackgroundRenderer {
     graphics.fillStyle(0x6C5CE7, 0.7)
     this.drawMountainRange(graphics, this.horizonY - 30, 12, 15, 150)
 
+    // Volcán nevado (Cotopaxi) - entre montañas lejanas y medias
+    this.renderSnowVolcano(graphics)
+
     // Montañas medias - capa 2
     graphics.fillStyle(0x8E44AD, 0.85)
     this.drawMountainRange(graphics, this.horizonY - 10, 10, 20, 100)
@@ -76,6 +79,91 @@ export class BackgroundRenderer {
       const size = 3 + Math.random() * 8
       graphics.fillCircle(x, y, size)
     }
+  }
+
+  /**
+   * Renderiza un volcán nevado similar al Cotopaxi
+   */
+  private renderSnowVolcano(graphics: Phaser.GameObjects.Graphics) {
+    // Posición del volcán (centro-derecha del fondo)
+    const volcanoX = this.width * 0.65
+    const volcanoBaseY = this.horizonY - 20
+    const volcanoWidth = 180 // Ancho de la base
+    const volcanoHeight = 220 // Altura total del volcán
+    const snowLine = volcanoHeight * 0.35 // Línea de nieve (35% desde la cima)
+    
+    // Cuerpo del volcán (forma cónica simétrica)
+    graphics.fillStyle(0x4A4A4A, 0.8) // Gris oscuro para roca volcánica
+    graphics.beginPath()
+    
+    // Base izquierda
+    graphics.moveTo(volcanoX - volcanoWidth / 2, volcanoBaseY)
+    
+    // Lado izquierdo hasta la línea de nieve
+    const leftSnowX = volcanoX - (volcanoWidth / 2) * (1 - snowLine / volcanoHeight)
+    const leftSnowY = volcanoBaseY - snowLine
+    graphics.lineTo(leftSnowX, leftSnowY)
+    
+    // Lado izquierdo desde la línea de nieve hasta la cima
+    graphics.lineTo(volcanoX, volcanoBaseY - volcanoHeight)
+    
+    // Lado derecho desde la cima hasta la línea de nieve
+    const rightSnowX = volcanoX + (volcanoWidth / 2) * (1 - snowLine / volcanoHeight)
+    const rightSnowY = volcanoBaseY - snowLine
+    graphics.lineTo(rightSnowX, rightSnowY)
+    
+    // Lado derecho desde la línea de nieve hasta la base
+    graphics.lineTo(volcanoX + volcanoWidth / 2, volcanoBaseY)
+    
+    // Cerrar la base
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Sombra en el lado izquierdo del volcán
+    graphics.fillStyle(0x2C2C2C, 0.6)
+    graphics.beginPath()
+    graphics.moveTo(volcanoX - volcanoWidth / 2, volcanoBaseY)
+    graphics.lineTo(leftSnowX, leftSnowY)
+    graphics.lineTo(volcanoX - volcanoWidth / 4, volcanoBaseY - snowLine * 0.7)
+    graphics.lineTo(volcanoX - volcanoWidth / 2, volcanoBaseY)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Capa de nieve en la cima (blanca)
+    graphics.fillStyle(0xFFFFFF, 0.95)
+    graphics.beginPath()
+    graphics.moveTo(leftSnowX, leftSnowY)
+    graphics.lineTo(volcanoX, volcanoBaseY - volcanoHeight)
+    graphics.lineTo(rightSnowX, rightSnowY)
+    
+    // Borde inferior de la nieve con forma irregular (usando sin para forma determinística)
+    const snowPoints = 8
+    for (let i = 0; i <= snowPoints; i++) {
+      const t = i / snowPoints
+      const x = leftSnowX + (rightSnowX - leftSnowX) * t
+      // Usar múltiples ondas sinusoidales para crear una forma irregular pero determinística
+      const y = leftSnowY + Math.sin(t * Math.PI) * 8 + Math.sin(t * Math.PI * 3) * 3
+      graphics.lineTo(x, y)
+    }
+    
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Detalles de nieve más brillante en la cima
+    graphics.fillStyle(0xE8F4F8, 0.8)
+    graphics.fillCircle(volcanoX, volcanoBaseY - volcanoHeight + 15, 25)
+    graphics.fillCircle(volcanoX - 10, volcanoBaseY - volcanoHeight + 20, 15)
+    graphics.fillCircle(volcanoX + 10, volcanoBaseY - volcanoHeight + 20, 15)
+    
+    // Resaltes de luz en el lado derecho (efecto de sol)
+    graphics.fillStyle(0x6A6A6A, 0.5)
+    graphics.beginPath()
+    graphics.moveTo(volcanoX + volcanoWidth / 4, volcanoBaseY - snowLine * 0.5)
+    graphics.lineTo(rightSnowX, rightSnowY)
+    graphics.lineTo(volcanoX, volcanoBaseY - volcanoHeight)
+    graphics.lineTo(volcanoX + volcanoWidth / 4, volcanoBaseY - snowLine * 0.5)
+    graphics.closePath()
+    graphics.fillPath()
   }
 
   /**
