@@ -11,12 +11,21 @@ export class RockRenderer {
   /**
    * Renderiza las rocas
    */
-  public render(): Phaser.GameObjects.Graphics[] {
+  public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
     const rocks: Phaser.GameObjects.Graphics[] = []
     
     for (let i = 0; i < 12; i++) {
-      const rockX = Math.random() * this.width
-      const rockY = this.horizonY + 10 + Math.random() * (this.height - this.horizonY - 10)
+      let rockX: number
+      let rockY: number
+      let attempts = 0
+      do {
+        rockX = Math.random() * this.width
+        rockY = this.horizonY + 10 + Math.random() * (this.height - this.horizonY - 10)
+        attempts++
+      } while (attempts < 30 && isOverLake && isOverLake(rockX, rockY))
+      
+      if (isOverLake && isOverLake(rockX, rockY)) continue
+      
       const rockSize = 8 + Math.random() * 15
       
       const rockGraphics = this.scene.add.graphics()

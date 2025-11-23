@@ -18,65 +18,65 @@ export class MountainRenderer {
     // Efecto de niebla atmosférica entre capas (más sutil)
     this.renderAtmosphericFog()
     
-    // Montañas muy lejanas - capa 0 - azul púrpura mágico con toque medieval
+    // Montañas muy lejanas - capa 0 - azul púrpura mágico con toque medieval (reducidas)
     this.graphics.fillStyle(0x5B4B7C, 0.7) // Púrpura azulado más apagado (medieval)
-    this.drawAndeanMountainRange(this.horizonY - 50, 16, 10, 150)
+    this.drawAndeanMountainRange(this.horizonY - 28, 14, 8, 85)
     
     // Gradiente mágico en montañas muy lejanas (más sutil)
     this.graphics.fillStyle(0x6A5B8C, 0.35)
-    this.drawMountainGradient(this.horizonY - 50, 16, 150, 'top')
+    this.drawMountainGradient(this.horizonY - 28, 14, 85, 'top')
 
-    // Montañas lejanas - capa 1 - azul esmeralda mágico con toque medieval
+    // Montañas lejanas - capa 1 - azul esmeralda mágico con toque medieval (reducidas)
     this.graphics.fillStyle(0x3A6C7C, 0.85) // Azul turquesa más apagado (medieval)
-    this.drawAndeanMountainRange(this.horizonY - 30, 14, 15, 180)
+    this.drawAndeanMountainRange(this.horizonY - 17, 12, 12, 100)
     
     // Nubes mágicas animadas en montañas lejanas (con toque azulado)
-    this.drawSnowCaps(this.horizonY - 30, 14, 180, 0xD4E8F0, 0.9)
+    this.drawSnowCaps(this.horizonY - 17, 12, 100, 0xD4E8F0, 0.9)
     
     // Resaltes sutiles mágicos
     this.graphics.fillStyle(0x5A8C9C, 0.25)
-    this.drawMountainHighlights(this.horizonY - 30, 14, 180)
+    this.drawMountainHighlights(this.horizonY - 17, 12, 100)
 
-    // Volcán Cotopaxi nevado (gris y grande) - entre montañas lejanas y medias
+    // Volcán Cotopaxi nevado (gris y grande) - entre montañas lejanas y medias (reducido)
     this.renderMagicVolcano()
 
-    // Montañas medias - capa 2 - verde esmeralda mágico con toque medieval
+    // Montañas medias - capa 2 - verde esmeralda mágico con toque medieval (reducidas)
     this.graphics.fillStyle(0x2D6C4A, 0.95) // Verde esmeralda más oscuro (medieval)
-    this.drawAndeanMountainRange(this.horizonY - 10, 12, 22, 130)
+    this.drawAndeanMountainRange(this.horizonY - 6, 10, 18, 72)
     
     // Sombra mágica de las montañas medias (más profunda)
     this.graphics.fillStyle(0x1D5C3A, 0.75)
-    this.drawMountainShadow(this.horizonY - 10, 12, 22)
+    this.drawMountainShadow(this.horizonY - 6, 10, 18)
     
     // Nubes mágicas animadas en montañas medias
-    this.drawSnowCaps(this.horizonY - 10, 12, 130, 0xE8F4F8, 0.95)
+    this.drawSnowCaps(this.horizonY - 6, 10, 72, 0xE8F4F8, 0.95)
     
     // Resaltes de luz mágica en montañas medias
     this.graphics.fillStyle(0x4D8C6A, 0.4)
-    this.drawMountainHighlights(this.horizonY - 10, 12, 130)
+    this.drawMountainHighlights(this.horizonY - 6, 10, 72)
     
     // Gradiente de luz mágica
     this.graphics.fillStyle(0x5D9C7A, 0.25)
-    this.drawMountainGradient(this.horizonY - 10, 12, 130, 'right')
+    this.drawMountainGradient(this.horizonY - 6, 10, 72, 'right')
 
-    // Montañas cercanas - capa 3 - verde jade con toques púrpura (medieval)
+    // Montañas cercanas - capa 3 - verde jade con toques púrpura (medieval, reducidas)
     this.graphics.fillStyle(0x3A7C5B, 1) // Verde jade más oscuro (medieval)
-    this.drawAndeanMountainRange(this.horizonY, 10, 30, 90)
+    this.drawAndeanMountainRange(this.horizonY, 8, 25, 50)
     
     // Sombra mágica de las montañas cercanas (más profunda)
     this.graphics.fillStyle(0x2A6C4B, 0.75)
-    this.drawMountainShadow(this.horizonY, 10, 30)
+    this.drawMountainShadow(this.horizonY, 8, 25)
     
     // Resaltes de luz mágica en montañas cercanas
     this.graphics.fillStyle(0x5A9C7B, 0.5)
-    this.drawMountainHighlights(this.horizonY, 10, 90)
+    this.drawMountainHighlights(this.horizonY, 8, 50)
     
     // Gradiente de luz mágica
     this.graphics.fillStyle(0x6AAC8B, 0.3)
-    this.drawMountainGradient(this.horizonY, 10, 90, 'right')
+    this.drawMountainGradient(this.horizonY, 8, 50, 'right')
     
     // Detalles de textura mágica (reducidos)
-    this.drawMagicMountainTextures(this.horizonY, 10, 90)
+    this.drawMagicMountainTextures(this.horizonY, 8, 50)
     
     return this.cloudElements
   }
@@ -85,20 +85,20 @@ export class MountainRenderer {
    * Renderiza niebla atmosférica entre capas de montañas (más sutil)
    */
   private renderAtmosphericFog() {
-    // Niebla entre montañas lejanas y medias (reducida)
+    // Niebla entre montañas lejanas y medias (reducida y ajustada)
     this.graphics.fillStyle(0xFFFFFF, 0.08)
-    this.graphics.fillRect(0, this.horizonY - 35, this.width, 20)
+    this.graphics.fillRect(0, this.horizonY - 20, this.width, 12)
     
-    // Niebla entre montañas medias y cercanas (reducida)
+    // Niebla entre montañas medias y cercanas (reducida y ajustada)
     this.graphics.fillStyle(0xFFFFFF, 0.06)
-    this.graphics.fillRect(0, this.horizonY - 5, this.width, 12)
+    this.graphics.fillRect(0, this.horizonY - 3, this.width, 8)
     
-    // Efecto de desvanecimiento suave (reducido)
+    // Efecto de desvanecimiento suave (reducido y ajustado)
     for (let i = 0; i < 2; i++) {
-      const fogY = this.horizonY - 20 + i * 12
+      const fogY = this.horizonY - 12 + i * 8
       const alpha = 0.05 - i * 0.015
       this.graphics.fillStyle(0xE8E8E8, alpha)
-      this.graphics.fillRect(0, fogY, this.width, 6)
+      this.graphics.fillRect(0, fogY, this.width, 4)
     }
   }
 
@@ -137,11 +137,11 @@ export class MountainRenderer {
    * Renderiza el volcán Cotopaxi nevado (gris y grande)
    */
   private renderMagicVolcano() {
-    // Posición del volcán (centro-derecha del fondo)
+    // Posición del volcán (centro-derecha del fondo, reducido proporcionalmente)
     const volcanoX = this.width * 0.65
-    const volcanoBaseY = this.horizonY - 20
-    const volcanoWidth = 220 // Más ancho para ser más grande
-    const volcanoHeight = 260 // Más alto para ser más grande
+    const volcanoBaseY = this.horizonY - 12
+    const volcanoWidth = 140 // Reducido proporcionalmente
+    const volcanoHeight = 150 // Reducido proporcionalmente
     const snowLine = volcanoHeight * 0.32 // Línea de nieve (32% desde la cima)
     
     // Cuerpo del volcán con color gris (roca volcánica)

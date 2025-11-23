@@ -6,6 +6,8 @@ import { TreeRenderer } from './renderers/TreeRenderer'
 import { RockRenderer } from './renderers/RockRenderer'
 import { AnimatedElementsRenderer } from './renderers/AnimatedElementsRenderer'
 import { IncaCastleRenderer } from './renderers/IncaCastleRenderer'
+import { MushroomFlowerRenderer } from './renderers/MushroomFlowerRenderer'
+import { LakeRenderer } from './renderers/LakeRenderer'
 
 /**
  * Orquestador principal para renderizar todos los elementos del fondo del juego.
@@ -22,7 +24,7 @@ export class BackgroundRenderer {
     this.scene = scene
     this.width = width
     this.height = height
-    this.horizonY = height * 0.6
+    this.horizonY = height * 0.33 // 1/3 para paisaje, 2/3 para terreno
   }
 
   /**
@@ -44,28 +46,43 @@ export class BackgroundRenderer {
     const groundRenderer = new GroundRenderer(bgGraphics, this.width, this.height, this.horizonY)
     groundRenderer.render()
     
-    // Renderizar árboles
+    // Renderizar lago primero para obtener su información
+    const lakeRenderer = new LakeRenderer(bgGraphics, this.scene, this.width, this.height, this.horizonY)
+    const lake = lakeRenderer.render()
+    
+    // Función helper para verificar si una posición está sobre el lago
+    const isOverLake = (x: number, y: number): boolean => {
+      return lakeRenderer.isOverLake(x, y)
+    }
+    
+    // Renderizar árboles (evitando el lago)
     const treeRenderer = new TreeRenderer(this.scene, this.width, this.horizonY)
-    const trees = treeRenderer.render()
+    const trees = treeRenderer.render(isOverLake)
     
-    // Renderizar rocas
+    // Renderizar rocas (evitando el lago)
     const rockRenderer = new RockRenderer(this.scene, this.width, this.height, this.horizonY)
-    const rocks = rockRenderer.render()
+    const rocks = rockRenderer.render(isOverLake)
     
-    // Renderizar castillos incas
+    // Renderizar castillos incas (evitando el lago)
     const castleRenderer = new IncaCastleRenderer(this.scene, this.width, this.horizonY)
-    const castles = castleRenderer.render()
+    const castles = castleRenderer.render(isOverLake)
     
     // Renderizar elementos animados
     const animatedRenderer = new AnimatedElementsRenderer(this.scene, this.width, this.height, this.horizonY)
     const animatedElements = animatedRenderer.render()
+    
+    // Renderizar hongos y flores mágicas (evitando el lago)
+    const mushroomFlowerRenderer = new MushroomFlowerRenderer(this.scene, this.width, this.height, this.horizonY)
+    const mushroomsFlowers = mushroomFlowerRenderer.render(isOverLake)
 
     return {
       backgroundGraphics: bgGraphics,
       animatedElements: [...animatedElements, ...mountainClouds],
       trees: trees,
       rocks: rocks,
-      castles: castles
+      castles: castles,
+      mushroomsFlowers: mushroomsFlowers,
+      lake: lake
     }
   }
 }
