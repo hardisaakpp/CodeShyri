@@ -55,7 +55,7 @@ export class RockRenderer {
       }
       
       rockGraphics.setPosition(rockX, rockY)
-      rockGraphics.setDepth(2)
+      rockGraphics.setDepth(1.8) // Detrás de los árboles (árboles tienen depth 2)
       rocks.push(rockGraphics)
     }
     

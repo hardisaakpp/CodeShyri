@@ -8,6 +8,11 @@ import { AnimatedElementsRenderer } from './renderers/AnimatedElementsRenderer'
 import { IncaCastleRenderer } from './renderers/IncaCastleRenderer'
 import { MushroomFlowerRenderer } from './renderers/MushroomFlowerRenderer'
 import { LakeRenderer } from './renderers/LakeRenderer'
+import { BirdRenderer } from './renderers/BirdRenderer'
+import { SmokeRenderer } from './renderers/SmokeRenderer'
+import { PathRenderer } from './renderers/PathRenderer'
+import { TotemRenderer } from './renderers/TotemRenderer'
+import { WaterLilyRenderer } from './renderers/WaterLilyRenderer'
 
 /**
  * Orquestador principal para renderizar todos los elementos del fondo del juego.
@@ -74,15 +79,37 @@ export class BackgroundRenderer {
     // Renderizar hongos y flores mágicas (evitando el lago)
     const mushroomFlowerRenderer = new MushroomFlowerRenderer(this.scene, this.width, this.height, this.horizonY)
     const mushroomsFlowers = mushroomFlowerRenderer.render(isOverLake)
+    
+    // Renderizar aves volando
+    const birdRenderer = new BirdRenderer(this.scene, this.width, this.horizonY)
+    const birds = birdRenderer.render()
+    
+    // Renderizar humo de chimeneas (necesita posiciones de los castillos)
+    const smokeRenderer = new SmokeRenderer(this.scene, this.width, this.horizonY)
+    const smokeElements = smokeRenderer.render(castles.map(c => ({ x: c.x, y: c.y })))
+    
+    // Renderizar camino/sendero
+    const pathRenderer = new PathRenderer(bgGraphics, this.width, this.horizonY)
+    pathRenderer.render()
+    
+    // Renderizar tótems incas
+    const totemRenderer = new TotemRenderer(this.scene, this.width, this.horizonY)
+    const totems = totemRenderer.render(isOverLake)
+    
+    // Renderizar lirios acuáticos en el lago
+    const waterLilyRenderer = new WaterLilyRenderer(this.scene)
+    const waterLilies = waterLilyRenderer.render(lakeRenderer.lakeInfo)
 
     return {
       backgroundGraphics: bgGraphics,
-      animatedElements: [...animatedElements, ...mountainClouds],
+      animatedElements: [...animatedElements, ...mountainClouds, ...birds, ...smokeElements],
       trees: trees,
       rocks: rocks,
       castles: castles,
       mushroomsFlowers: mushroomsFlowers,
-      lake: lake
+      lake: lake,
+      totems: totems,
+      waterLilies: waterLilies
     }
   }
 }

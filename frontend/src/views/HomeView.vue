@@ -16,7 +16,7 @@
               {{ letter === ' ' ? '\u00A0' : letter }}
             </span>
           </span>
-          <span class="title-subtitle">Code-Shyri</span>
+          <span class="title-subtitle">Shyri-Code</span>
         </h1>
         <p class="subtitle">Domina la programación en el mundo de los Kitus</p>
       </div>
