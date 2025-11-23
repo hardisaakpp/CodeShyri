@@ -5,6 +5,7 @@ import { GroundRenderer } from './renderers/GroundRenderer'
 import { TreeRenderer } from './renderers/TreeRenderer'
 import { RockRenderer } from './renderers/RockRenderer'
 import { AnimatedElementsRenderer } from './renderers/AnimatedElementsRenderer'
+import { IncaCastleRenderer } from './renderers/IncaCastleRenderer'
 
 /**
  * Orquestador principal para renderizar todos los elementos del fondo del juego.
@@ -51,6 +52,10 @@ export class BackgroundRenderer {
     const rockRenderer = new RockRenderer(this.scene, this.width, this.height, this.horizonY)
     const rocks = rockRenderer.render()
     
+    // Renderizar castillos incas
+    const castleRenderer = new IncaCastleRenderer(this.scene, this.width, this.horizonY)
+    const castles = castleRenderer.render()
+    
     // Renderizar elementos animados
     const animatedRenderer = new AnimatedElementsRenderer(this.scene, this.width, this.height, this.horizonY)
     const animatedElements = animatedRenderer.render()
@@ -59,7 +64,8 @@ export class BackgroundRenderer {
       backgroundGraphics: bgGraphics,
       animatedElements: [...animatedElements, ...mountainClouds],
       trees: trees,
-      rocks: rocks
+      rocks: rocks,
+      castles: castles
     }
   }
 }

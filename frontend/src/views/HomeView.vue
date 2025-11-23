@@ -16,9 +16,9 @@
               {{ letter === ' ' ? '\u00A0' : letter }}
             </span>
           </span>
-          <span class="title-subtitle">Azeroth del Código</span>
+          <span class="title-subtitle">Code-Shyri</span>
         </h1>
-        <p class="subtitle">Domina la programación en el mundo de Warcraft</p>
+        <p class="subtitle">Domina la programación en el mundo de los Kitus</p>
       </div>
       
       <div class="characters-preview">

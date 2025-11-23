@@ -18,16 +18,16 @@ export class MountainRenderer {
     // Efecto de niebla atmosférica entre capas (más sutil)
     this.renderAtmosphericFog()
     
-    // Montañas muy lejanas - capa 0 - azul púrpura mágico
-    this.graphics.fillStyle(0x6B5B8C, 0.7) // Púrpura azulado mágico
+    // Montañas muy lejanas - capa 0 - azul púrpura mágico con toque medieval
+    this.graphics.fillStyle(0x5B4B7C, 0.7) // Púrpura azulado más apagado (medieval)
     this.drawAndeanMountainRange(this.horizonY - 50, 16, 10, 150)
     
-    // Gradiente mágico en montañas muy lejanas
-    this.graphics.fillStyle(0x7A6B9C, 0.4)
+    // Gradiente mágico en montañas muy lejanas (más sutil)
+    this.graphics.fillStyle(0x6A5B8C, 0.35)
     this.drawMountainGradient(this.horizonY - 50, 16, 150, 'top')
 
-    // Montañas lejanas - capa 1 - azul esmeralda mágico
-    this.graphics.fillStyle(0x4A7C8C, 0.85) // Azul turquesa mágico
+    // Montañas lejanas - capa 1 - azul esmeralda mágico con toque medieval
+    this.graphics.fillStyle(0x3A6C7C, 0.85) // Azul turquesa más apagado (medieval)
     this.drawAndeanMountainRange(this.horizonY - 30, 14, 15, 180)
     
     // Nubes mágicas animadas en montañas lejanas (con toque azulado)
@@ -40,12 +40,12 @@ export class MountainRenderer {
     // Volcán Cotopaxi nevado (gris y grande) - entre montañas lejanas y medias
     this.renderMagicVolcano()
 
-    // Montañas medias - capa 2 - verde esmeralda mágico
-    this.graphics.fillStyle(0x3D7C5A, 0.95) // Verde esmeralda mágico
+    // Montañas medias - capa 2 - verde esmeralda mágico con toque medieval
+    this.graphics.fillStyle(0x2D6C4A, 0.95) // Verde esmeralda más oscuro (medieval)
     this.drawAndeanMountainRange(this.horizonY - 10, 12, 22, 130)
     
-    // Sombra mágica de las montañas medias
-    this.graphics.fillStyle(0x2D6C4A, 0.7)
+    // Sombra mágica de las montañas medias (más profunda)
+    this.graphics.fillStyle(0x1D5C3A, 0.75)
     this.drawMountainShadow(this.horizonY - 10, 12, 22)
     
     // Nubes mágicas animadas en montañas medias
@@ -59,12 +59,12 @@ export class MountainRenderer {
     this.graphics.fillStyle(0x5D9C7A, 0.25)
     this.drawMountainGradient(this.horizonY - 10, 12, 130, 'right')
 
-    // Montañas cercanas - capa 3 - verde jade con toques púrpura
-    this.graphics.fillStyle(0x4A8C6B, 1) // Verde jade mágico
+    // Montañas cercanas - capa 3 - verde jade con toques púrpura (medieval)
+    this.graphics.fillStyle(0x3A7C5B, 1) // Verde jade más oscuro (medieval)
     this.drawAndeanMountainRange(this.horizonY, 10, 30, 90)
     
-    // Sombra mágica de las montañas cercanas
-    this.graphics.fillStyle(0x3A7C5B, 0.7)
+    // Sombra mágica de las montañas cercanas (más profunda)
+    this.graphics.fillStyle(0x2A6C4B, 0.75)
     this.drawMountainShadow(this.horizonY, 10, 30)
     
     // Resaltes de luz mágica en montañas cercanas

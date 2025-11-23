@@ -21,22 +21,29 @@ export class RockRenderer {
       
       const rockGraphics = this.scene.add.graphics()
       
-      // Forma de roca
-      rockGraphics.fillStyle(0x5D6D7E, 1)
+      // Forma de roca más terrosa y medieval
+      rockGraphics.fillStyle(0x4A4A3A, 1) // Gris terroso oscuro
       rockGraphics.fillCircle(0, 0, rockSize)
       rockGraphics.fillCircle(rockSize * 0.3, rockSize * 0.2, rockSize * 0.6)
       rockGraphics.fillCircle(-rockSize * 0.3, rockSize * 0.2, rockSize * 0.6)
       rockGraphics.fillCircle(0, -rockSize * 0.3, rockSize * 0.7)
       
-      // Sombra
-      rockGraphics.fillStyle(0x34495E, 0.7)
+      // Sombra más profunda
+      rockGraphics.fillStyle(0x2C2C1F, 0.8)
       rockGraphics.fillCircle(-rockSize * 0.3, rockSize * 0.2, rockSize * 0.5)
       rockGraphics.fillCircle(rockSize * 0.2, rockSize * 0.3, rockSize * 0.4)
       
-      // Resaltes
-      rockGraphics.fillStyle(0x7F8C8D, 0.5)
+      // Resaltes más sutiles
+      rockGraphics.fillStyle(0x6A6A5A, 0.4)
       rockGraphics.fillCircle(rockSize * 0.2, -rockSize * 0.2, rockSize * 0.3)
       rockGraphics.fillCircle(-rockSize * 0.1, -rockSize * 0.3, rockSize * 0.25)
+      
+      // Musgo en algunas rocas (toque medieval)
+      if (Math.random() > 0.6) {
+        rockGraphics.fillStyle(0x2D4A2D, 0.5) // Verde musgo oscuro
+        rockGraphics.fillCircle(rockSize * 0.2, rockSize * 0.1, rockSize * 0.4)
+        rockGraphics.fillCircle(-rockSize * 0.15, rockSize * 0.15, rockSize * 0.3)
+      }
       
       rockGraphics.setPosition(rockX, rockY)
       rockGraphics.setDepth(2)
