@@ -122,47 +122,118 @@ export class GameEngine {
             bgGraphics.fillCircle(x, y, size)
           }
           
-          // Nubes decorativas
-          bgGraphics.fillStyle(0x2d1b1b, 0.4)
-          for (let i = 0; i < 5; i++) {
-            const cloudX = Math.random() * width
-            const cloudY = 50 + Math.random() * 100
-            const cloudSize = 30 + Math.random() * 40
-            
-            // Nube con múltiples círculos
-            bgGraphics.fillCircle(cloudX, cloudY, cloudSize)
-            bgGraphics.fillCircle(cloudX + cloudSize * 0.6, cloudY, cloudSize * 0.8)
-            bgGraphics.fillCircle(cloudX - cloudSize * 0.6, cloudY, cloudSize * 0.8)
-            bgGraphics.fillCircle(cloudX, cloudY - cloudSize * 0.5, cloudSize * 0.7)
-          }
-          
-          // Estrellas en el cielo
-          bgGraphics.fillStyle(0xd4af37, 0.6)
-          for (let i = 0; i < 30; i++) {
-            const starX = Math.random() * width
-            const starY = Math.random() * (horizonY - 50)
-            const starSize = 1 + Math.random() * 2
-            bgGraphics.fillCircle(starX, starY, starSize)
-          }
-          
-          // Brillo de luna (círculo difuminado)
-          bgGraphics.fillStyle(0xd4af37, 0.15)
-          bgGraphics.fillCircle(width * 0.85, height * 0.15, 80)
-          bgGraphics.fillStyle(0xd4af37, 0.25)
-          bgGraphics.fillCircle(width * 0.85, height * 0.15, 50)
-          
           // Línea del horizonte sutil
           bgGraphics.lineStyle(2, 0xd4af37, 0.2)
           bgGraphics.moveTo(0, horizonY)
           bgGraphics.lineTo(width, horizonY)
           bgGraphics.strokePath()
           
-          // Guardar referencia del fondo
+          // Guardar referencia del fondo estático
           ;(scene as any).backgroundGraphics = bgGraphics
+          
+          // Crear elementos animables del fondo
+          const animatedElements: any[] = []
+          
+          // Nubes decorativas animadas (se mueven lentamente)
+          const clouds: Phaser.GameObjects.Graphics[] = []
+          for (let i = 0; i < 5; i++) {
+            const startX = -200 - Math.random() * 200 // Empezar fuera de la pantalla
+            const cloudY = 50 + Math.random() * 100
+            const cloudSize = 30 + Math.random() * 40
+            const speed = 0.15 + Math.random() * 0.25 // Velocidad variable (píxeles por segundo)
+            
+            const cloudGraphics = this.add.graphics()
+            cloudGraphics.fillStyle(0x2d1b1b, 0.4)
+            
+            // Nube con múltiples círculos
+            cloudGraphics.fillCircle(0, 0, cloudSize)
+            cloudGraphics.fillCircle(cloudSize * 0.6, 0, cloudSize * 0.8)
+            cloudGraphics.fillCircle(-cloudSize * 0.6, 0, cloudSize * 0.8)
+            cloudGraphics.fillCircle(0, -cloudSize * 0.5, cloudSize * 0.7)
+            
+            cloudGraphics.setPosition(startX, cloudY)
+            cloudGraphics.setDepth(1) // Detrás del personaje pero encima del fondo estático
+            
+            // Función para crear animación de movimiento continuo
+            const createCloudAnimation = () => {
+              const distance = width + 400 // Distancia total a recorrer
+              const duration = (distance / speed) * 1000 // Duración en milisegundos
+              
+              this.tweens.add({
+                targets: cloudGraphics,
+                x: width + 200, // Mover más allá del borde derecho
+                duration: duration,
+                ease: 'Linear',
+                onComplete: () => {
+                  // Cuando la nube sale por la derecha, reaparece por la izquierda
+                  cloudGraphics.setX(-200)
+                  // Reiniciar la animación
+                  createCloudAnimation()
+                }
+              })
+            }
+            
+            // Iniciar la animación
+            createCloudAnimation()
+            
+            clouds.push(cloudGraphics)
+          }
+          animatedElements.push(...clouds)
+          
+          // Estrellas animadas (parpadean)
+          const stars: Phaser.GameObjects.Arc[] = []
+          for (let i = 0; i < 30; i++) {
+            const starX = Math.random() * width
+            const starY = Math.random() * (horizonY - 50)
+            const starSize = 1 + Math.random() * 2
+            const twinkleDelay = Math.random() * 2000 // Delay aleatorio para cada estrella
+            
+            const star = this.add.circle(starX, starY, starSize, 0xd4af37, 0.6)
+            star.setDepth(1)
+            
+            // Animación de parpadeo
+            this.tweens.add({
+              targets: star,
+              alpha: { from: 0.3, to: 1 },
+              scale: { from: 0.8, to: 1.2 },
+              duration: 1000 + Math.random() * 1000,
+              delay: twinkleDelay,
+              yoyo: true,
+              repeat: -1,
+              ease: 'Sine.easeInOut'
+            })
+            
+            stars.push(star)
+          }
+          animatedElements.push(...stars)
+          
+          // Luna animada (pulsa suavemente)
+          const moonGlow = this.add.circle(width * 0.85, height * 0.15, 80, 0xd4af37, 0.15)
+          moonGlow.setDepth(1)
+          
+          const moon = this.add.circle(width * 0.85, height * 0.15, 50, 0xd4af37, 0.25)
+          moon.setDepth(1)
+          
+          // Animación de pulso para la luna
+          this.tweens.add({
+            targets: [moonGlow, moon],
+            alpha: { from: 0.15, to: 0.3 },
+            scale: { from: 0.95, to: 1.05 },
+            duration: 3000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+          })
+          
+          animatedElements.push(moonGlow, moon)
+          
+          // Guardar referencias de elementos animados
+          ;(scene as any).animatedBackgroundElements = animatedElements
 
           // Título estilizado medieval
           const titleBg = this.add.rectangle(centerX, 40, 450, 55, 0x1a0f08, 0.8)
           titleBg.setStrokeStyle(3, 0xd4af37, 0.6)
+          titleBg.setDepth(20) // Encima de todo
           
           const title = this.add.text(centerX, 40, `Aventura con ${characterData.name}`, {
             fontSize: '24px',
@@ -170,6 +241,7 @@ export class GameEngine {
             color: '#d4af37',
             fontStyle: 'bold'
           }).setOrigin(0.5)
+          title.setDepth(21) // Encima del fondo del título
           
           // Sombra del texto
           title.setStroke('#000000', 4)
@@ -195,6 +267,9 @@ export class GameEngine {
           
           // Establecer punto de anclaje en el centro (0.5, 0.5) para mejor control
           character.setOrigin(0.5, 0.5)
+          
+          // Asegurar que el personaje se dibuje encima de los elementos del fondo
+          character.setDepth(10)
           
           // Efecto sutil de brillo en el personaje (opcional)
           this.tweens.add({
