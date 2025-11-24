@@ -385,36 +385,51 @@ export class MountainRenderer {
         const cloudY = currentPeakY - 15 - Math.random() * 20
         const cloudBaseX = x + (Math.random() - 0.5) * 30
         
-        // Crear nube como objeto Phaser animable
+        // Crear nube mejorada como objeto Phaser animable
         const cloudGraphics = this.scene.add.graphics()
-        cloudGraphics.fillStyle(cloudColor, cloudAlpha)
-        
-        // Crear nube con múltiples círculos superpuestos para forma esponjosa
-        const numClouds = 3 + Math.floor(Math.random() * 3)
         const cloudSize = 20 + Math.random() * 25
+        
+        // Capa de sombra (base)
+        cloudGraphics.fillStyle(cloudColor, cloudAlpha * 0.4)
+        
+        // Crear nube con múltiples círculos superpuestos para forma esponjosa mejorada
+        const numClouds = 3 + Math.floor(Math.random() * 3)
+        const cloudParts: { x: number; y: number; radius: number }[] = []
         
         for (let j = 0; j < numClouds; j++) {
           const cloudX = (Math.random() - 0.5) * cloudSize * 1.2
           const cloudYOffset = (Math.random() - 0.5) * cloudSize * 0.6
           const cloudRadius = cloudSize * (0.6 + Math.random() * 0.4)
           
-          // Nube principal
-          cloudGraphics.fillCircle(cloudX, cloudYOffset, cloudRadius)
+          cloudParts.push({ x: cloudX, y: cloudYOffset, radius: cloudRadius })
           
-          // Círculos adicionales para dar forma más orgánica
-          if (j < numClouds - 1) {
-            const offsetX = cloudX + (Math.random() - 0.5) * cloudRadius * 0.8
-            const offsetY = cloudYOffset + (Math.random() - 0.5) * cloudRadius * 0.6
-            const smallRadius = cloudRadius * (0.5 + Math.random() * 0.3)
-            cloudGraphics.fillCircle(offsetX, offsetY, smallRadius)
+          // Sombra base
+          cloudGraphics.fillCircle(cloudX, cloudYOffset, cloudRadius)
+        }
+        
+        // Capa principal
+        cloudGraphics.fillStyle(cloudColor, cloudAlpha)
+        for (const part of cloudParts) {
+          cloudGraphics.fillCircle(part.x, part.y, part.radius * 0.95)
+          
+          // Círculos adicionales para volumen
+          const numExtra = 1 + Math.floor(Math.random() * 2)
+          for (let k = 0; k < numExtra; k++) {
+            const offsetX = part.x + (Math.random() - 0.5) * part.radius * 0.7
+            const offsetY = part.y + (Math.random() - 0.5) * part.radius * 0.5
+            const extraRadius = part.radius * (0.4 + Math.random() * 0.3)
+            cloudGraphics.fillCircle(offsetX, offsetY, extraRadius)
           }
         }
         
-        // Resaltes de luz en las nubes
-        cloudGraphics.fillStyle(0xFFFFFF, 0.7)
-        const highlightX = -cloudSize * 0.3
-        const highlightY = -cloudSize * 0.2
-        cloudGraphics.fillCircle(highlightX, highlightY, cloudSize * 0.4)
+        // Resaltes de luz mejorados en las nubes
+        cloudGraphics.fillStyle(0xFFFFFF, cloudAlpha * 0.8)
+        for (const part of cloudParts) {
+          const highlightX = part.x - part.radius * 0.3
+          const highlightY = part.y - part.radius * 0.3
+          const highlightRadius = part.radius * (0.3 + Math.random() * 0.2)
+          cloudGraphics.fillCircle(highlightX, highlightY, highlightRadius)
+        }
         
         // Posicionar la nube
         cloudGraphics.setPosition(cloudBaseX, cloudY)

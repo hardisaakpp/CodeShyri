@@ -1,6 +1,23 @@
 import type Phaser from 'phaser'
 
+interface WaveData {
+  graphics: Phaser.GameObjects.Graphics
+  offset: number
+  speed: number
+}
+
+interface ReflectionData {
+  graphics: Phaser.GameObjects.Graphics
+  x: number
+  y: number
+  size: number
+  speed: number
+}
+
 export class LakeRenderer {
+  private waveElements: WaveData[] = []
+  private reflectionElements: ReflectionData[] = []
+
   constructor(
     private scene: Phaser.Scene,
     private width: number,
@@ -111,31 +128,158 @@ export class LakeRenderer {
       lakeGraphics.fillCircle(stoneX, stoneY, stoneSize)
     }
     
-    // Olas pequeñas en la superficie
-    lakeGraphics.lineStyle(1.5, 0x4A9FB5, 0.4) // Azul claro
-    for (let i = 0; i < 5; i++) {
-      const waveY = (Math.random() - 0.5) * lakeHeight * 0.4
-      const waveWidth = lakeWidth * (0.3 + Math.random() * 0.4)
-      const waveX = (Math.random() - 0.5) * lakeWidth * 0.3
-      lakeGraphics.beginPath()
-      for (let j = 0; j < 20; j++) {
-        const x = waveX + (j / 20) * waveWidth - waveWidth / 2
-        const y = waveY + Math.sin(j * 0.5) * 2
-        if (j === 0) {
-          lakeGraphics.moveTo(x, y)
-        } else {
-          lakeGraphics.lineTo(x, y)
-        }
-      }
-      lakeGraphics.strokePath()
-    }
-    
     lakeGraphics.setPosition(lakeCenterX, lakeY)
     lakeGraphics.setDepth(3) // Por encima de todos los elementos decorativos
     
+    // Crear ondas animadas
+    this.createAnimatedWaves(lakeCenterX, lakeY, lakeWidth, lakeHeight)
+    
+    // Crear reflejos animados
+    this.createAnimatedReflections(lakeCenterX, lakeY, lakeWidth, lakeHeight)
+    
     return lakeGraphics
   }
-  
+
+  /**
+   * Crea ondas animadas en la superficie del agua
+   */
+  private createAnimatedWaves(
+    lakeCenterX: number,
+    lakeY: number,
+    lakeWidth: number,
+    lakeHeight: number
+  ): void {
+    const numWaves = 6
+    
+    for (let i = 0; i < numWaves; i++) {
+      const waveGraphics = this.scene.add.graphics()
+      const waveY = (Math.random() - 0.5) * lakeHeight * 0.4
+      const waveWidth = lakeWidth * (0.3 + Math.random() * 0.4)
+      const waveX = (Math.random() - 0.5) * lakeWidth * 0.3
+      const speed = 0.02 + Math.random() * 0.03 // Velocidad de la onda
+      const offset = Math.random() * Math.PI * 2 // Offset inicial aleatorio
+      
+      const waveData: WaveData = {
+        graphics: waveGraphics,
+        offset: offset,
+        speed: speed
+      }
+      this.waveElements.push(waveData)
+      
+      // Función para actualizar la onda
+      const updateWave = () => {
+        waveGraphics.clear()
+        waveGraphics.lineStyle(1.5, 0x4A9FB5, 0.4 + Math.sin(waveData.offset) * 0.1)
+        waveGraphics.beginPath()
+        
+        const numPoints = 30
+        for (let j = 0; j <= numPoints; j++) {
+          const t = j / numPoints
+          const x = waveX + t * waveWidth - waveWidth / 2
+          // Onda sinusoidal animada
+          const wavePhase = (t * Math.PI * 4) + (waveData.offset * 2)
+          const y = waveY + Math.sin(wavePhase) * (2 + Math.sin(waveData.offset * 3) * 1)
+          
+          if (j === 0) {
+            waveGraphics.moveTo(x, y)
+          } else {
+            waveGraphics.lineTo(x, y)
+          }
+        }
+        waveGraphics.strokePath()
+        
+        // Actualizar offset para animación
+        waveData.offset += waveData.speed
+      }
+      
+      waveGraphics.setPosition(lakeCenterX, lakeY)
+      waveGraphics.setDepth(3.1)
+      
+      // Actualizar onda continuamente
+      this.scene.time.addEvent({
+        delay: 16, // ~60 FPS
+        callback: updateWave,
+        repeat: -1
+      })
+      
+      // Inicializar primera renderización
+      updateWave()
+    }
+  }
+
+  /**
+   * Crea reflejos animados en el agua
+   */
+  private createAnimatedReflections(
+    lakeCenterX: number,
+    lakeY: number,
+    lakeWidth: number,
+    lakeHeight: number
+  ): void {
+    const numReflections = 8
+    
+    for (let i = 0; i < numReflections; i++) {
+      const reflectionGraphics = this.scene.add.graphics()
+      const reflectionX = (Math.random() - 0.5) * lakeWidth * 0.6
+      const reflectionY = (Math.random() - 0.5) * lakeHeight * 0.6
+      const reflectionSize = 15 + Math.random() * 20
+      const speed = 0.5 + Math.random() * 1.0 // Velocidad de movimiento
+      const direction = Math.random() * Math.PI * 2 // Dirección aleatoria
+      
+      const reflectionData: ReflectionData = {
+        graphics: reflectionGraphics,
+        x: reflectionX,
+        y: reflectionY,
+        size: reflectionSize,
+        speed: speed
+      }
+      this.reflectionElements.push(reflectionData)
+      
+      // Función para actualizar el reflejo
+      const updateReflection = () => {
+        reflectionGraphics.clear()
+        
+        // Movimiento suave del reflejo
+        reflectionData.x += Math.cos(direction) * reflectionData.speed * 0.1
+        reflectionData.y += Math.sin(direction) * reflectionData.speed * 0.1
+        
+        // Rebotar en los bordes
+        if (Math.abs(reflectionData.x) > lakeWidth * 0.3) {
+          reflectionData.x = (reflectionData.x > 0 ? 1 : -1) * lakeWidth * 0.3
+        }
+        if (Math.abs(reflectionData.y) > lakeHeight * 0.3) {
+          reflectionData.y = (reflectionData.y > 0 ? 1 : -1) * lakeHeight * 0.3
+        }
+        
+        // Variación de tamaño y opacidad
+        const time = this.scene.time.now / 1000
+        const sizeVariation = reflectionData.size + Math.sin(time * 2 + i) * 3
+        const alpha = 0.4 + Math.sin(time * 1.5 + i) * 0.2
+        
+        reflectionGraphics.fillStyle(0x5BA8C0, alpha)
+        reflectionGraphics.fillEllipse(
+          reflectionData.x,
+          reflectionData.y,
+          sizeVariation,
+          sizeVariation * 0.4
+        )
+      }
+      
+      reflectionGraphics.setPosition(lakeCenterX, lakeY)
+      reflectionGraphics.setDepth(3.2)
+      
+      // Actualizar reflejo continuamente
+      this.scene.time.addEvent({
+        delay: 50, // Actualizar cada 50ms
+        callback: updateReflection,
+        repeat: -1
+      })
+      
+      // Inicializar primera renderización
+      updateReflection()
+    }
+  }
+
   /**
    * Verifica si una posición está dentro del área del lago
    */

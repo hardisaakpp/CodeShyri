@@ -1,6 +1,18 @@
 import type Phaser from 'phaser'
 
+interface StructureData {
+  graphics: Phaser.GameObjects.Graphics
+  shadow: Phaser.GameObjects.Graphics
+  x: number
+  y: number
+  width: number
+  height: number
+  isCastle: boolean
+}
+
 export class IncaCastleRenderer {
+  private structuresData: StructureData[] = []
+
   constructor(
     private scene: Phaser.Scene,
     private width: number,
@@ -12,6 +24,7 @@ export class IncaCastleRenderer {
    */
   public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
     const structures: Phaser.GameObjects.Graphics[] = []
+    this.structuresData = []
     
     // Calcular posiciones de las bases de las montañas cercanas
     const mountainBaseY = this.horizonY
@@ -49,6 +62,10 @@ export class IncaCastleRenderer {
       
       const structureGraphics = this.scene.add.graphics()
       
+      // Calcular dimensiones para la sombra
+      const structureWidth = isCastle ? baseSize * 1.2 : baseSize * 1.0
+      const structureHeight = isCastle ? baseSize * 1.7 : baseSize * 1.5
+      
       if (isCastle) {
         // Renderizar castillo
         this.renderCastle(structureGraphics, baseSize)
@@ -60,9 +77,88 @@ export class IncaCastleRenderer {
       structureGraphics.setPosition(structureX, structureY)
       structureGraphics.setDepth(2)
       structures.push(structureGraphics)
+      
+      // Crear sombra dinámica de la estructura
+      const shadowGraphics = this.scene.add.graphics()
+      this.drawStructureShadow(shadowGraphics, structureX, structureY, structureWidth, structureHeight, isCastle)
+      shadowGraphics.setDepth(1.5) // Detrás de la estructura pero visible
+      
+      // Guardar datos de la estructura para animaciones
+      const structureData: StructureData = {
+        graphics: structureGraphics,
+        shadow: shadowGraphics,
+        x: structureX,
+        y: structureY,
+        width: structureWidth,
+        height: structureHeight,
+        isCastle: isCastle
+      }
+      this.structuresData.push(structureData)
     }
     
-    return structures
+    // Iniciar animación de sombras dinámicas
+    this.startDynamicShadows()
+    
+    return [...structures, ...this.structuresData.map(s => s.shadow)]
+  }
+
+  /**
+   * Dibuja la sombra de la estructura en el suelo
+   */
+  private drawStructureShadow(
+    shadowGraphics: Phaser.GameObjects.Graphics,
+    structureX: number,
+    structureY: number,
+    structureWidth: number,
+    structureHeight: number,
+    isCastle: boolean
+  ): void {
+    // Sombra elíptica en el suelo, más grande para castillos
+    const shadowWidth = structureWidth * (isCastle ? 1.3 : 1.2)
+    const shadowHeight = structureWidth * (isCastle ? 0.7 : 0.6)
+    const shadowY = structureY + structureHeight * 0.6 // Sombra en la base de la estructura
+    
+    shadowGraphics.fillStyle(0x000000, 0.3)
+    shadowGraphics.fillEllipse(0, 0, shadowWidth, shadowHeight)
+    
+    // Sombra más oscura en el centro
+    shadowGraphics.fillStyle(0x000000, 0.2)
+    shadowGraphics.fillEllipse(0, 0, shadowWidth * 0.6, shadowHeight * 0.6)
+    
+    shadowGraphics.setPosition(structureX, shadowY)
+  }
+
+  /**
+   * Inicia la animación de sombras dinámicas que cambian con el tiempo
+   */
+  private startDynamicShadows(): void {
+    // Simular cambio de iluminación durante el día
+    this.scene.time.addEvent({
+      delay: 100, // Actualizar cada 100ms
+      callback: () => {
+        const time = this.scene.time.now / 1000 // Tiempo en segundos
+        const shadowIntensity = 0.2 + Math.sin(time * 0.1) * 0.15 // Variación suave
+        
+        this.structuresData.forEach(structureData => {
+          // Actualizar opacidad de la sombra
+          structureData.shadow.clear()
+          const shadowWidth = structureData.width * (structureData.isCastle ? 1.3 : 1.2)
+          const shadowHeight = structureData.width * (structureData.isCastle ? 0.7 : 0.6)
+          const shadowY = structureData.y + structureData.height * 0.6
+          
+          // Sombra base
+          structureData.shadow.fillStyle(0x000000, shadowIntensity)
+          structureData.shadow.fillEllipse(0, 0, shadowWidth, shadowHeight)
+          
+          // Sombra más oscura en el centro
+          structureData.shadow.fillStyle(0x000000, shadowIntensity * 0.7)
+          structureData.shadow.fillEllipse(0, 0, shadowWidth * 0.6, shadowHeight * 0.6)
+          
+          structureData.shadow.setPosition(structureData.x, shadowY)
+        })
+      },
+      repeat: -1
+    })
   }
 
   /**
