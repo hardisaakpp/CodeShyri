@@ -111,6 +111,11 @@ export class TreeRenderer {
         const crownSize = 25 + Math.random() * 30
         const treeType = Math.random() // Variación en el tipo de árbol
         
+        // Seleccionar color único para este árbol
+        const treeIndex = totalTrees
+        const treeColor = this.getTreeColor(treeIndex, treeX)
+        const treeColorVariations = this.getTreeColorVariations(treeColor)
+        
         const treeGraphics = this.scene.add.graphics()
         
         // Tronco más orgánico con forma ligeramente cónica
@@ -160,11 +165,11 @@ export class TreeRenderer {
           treeGraphics.fillRect(trunkTopWidth / 2 - 5, branchY - 5, 8, 3)
         }
         
-        // Copa del árbol mejorada con más capas y variación
+        // Copa del árbol mejorada con más capas y variación usando colores únicos
         const crownBaseY = -treeHeight * 0.15
         
         // Capa base de la copa (más grande y oscura)
-        treeGraphics.fillStyle(0x1B3D1B, 0.95)
+        treeGraphics.fillStyle(treeColorVariations.baseDark, 0.95)
         treeGraphics.fillCircle(0, crownBaseY, crownSize)
         
         // Capas superiores de la copa (creando volumen)
@@ -175,7 +180,7 @@ export class TreeRenderer {
           treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.5, crownSize * 0.75)
           
           // Capa adicional para más densidad
-          treeGraphics.fillStyle(0x2A4A2A, 0.8)
+          treeGraphics.fillStyle(treeColorVariations.mediumDark, 0.8)
           treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.3, crownSize * 0.65)
           treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.3, crownSize * 0.65)
           treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.4, crownSize * 0.6)
@@ -185,23 +190,23 @@ export class TreeRenderer {
           treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.6, crownSize * 0.7)
           treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.85, crownSize * 0.5)
           
-          treeGraphics.fillStyle(0x2A4A2A, 0.8)
+          treeGraphics.fillStyle(treeColorVariations.mediumDark, 0.8)
           treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.35, crownSize * 0.7)
           treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.65, crownSize * 0.55)
         }
         
         // Detalles de sombra en la copa (lado izquierdo más oscuro)
-        treeGraphics.fillStyle(0x0F2A0F, 0.7)
+        treeGraphics.fillStyle(treeColorVariations.shadowDark, 0.7)
         treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.1, crownSize * 0.6)
         treeGraphics.fillCircle(-crownSize * 0.2, crownBaseY - crownSize * 0.4, crownSize * 0.5)
         
         // Puntos de luz en la copa (lado derecho más claro - efecto de iluminación)
-        treeGraphics.fillStyle(0x2D5A2D, 0.5)
+        treeGraphics.fillStyle(treeColorVariations.highlightLight, 0.5)
         treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.2, crownSize * 0.4)
         treeGraphics.fillCircle(crownSize * 0.25, crownBaseY - crownSize * 0.5, crownSize * 0.35)
         
         // Detalles de textura en la copa (pequeños círculos para simular hojas)
-        treeGraphics.fillStyle(0x1B3D1B, 0.6)
+        treeGraphics.fillStyle(treeColorVariations.baseDark, 0.6)
         for (let i = 0; i < 8; i++) {
           const angle = (i / 8) * Math.PI * 2
           const dist = crownSize * (0.4 + Math.random() * 0.3)
@@ -236,6 +241,9 @@ export class TreeRenderer {
           crownSize: crownSize,
           treeHeight: treeHeight
         }
+        
+        // Guardar el color del árbol para las hojas que caen
+        ;(treeData as any).treeColor = treeColor
         this.treesData.push(treeData)
         
         // Añadir animación de balanceo con viento
@@ -346,9 +354,10 @@ export class TreeRenderer {
     const startX = treeData.x + (Math.random() - 0.5) * treeData.crownSize * 0.8
     const startY = treeData.y - treeData.treeHeight * 0.15 + (Math.random() - 0.5) * treeData.crownSize * 0.6
     
-    // Color de hoja (verde otoñal)
-    const leafColors = [0x4A6B3A, 0x5A7B4A, 0x6A8B5A, 0x8B6B4A, 0x9B7B5A] // Verdes y marrones
-    const leafColor = leafColors[Math.floor(Math.random() * leafColors.length)]
+    // Color de hoja basado en el color del árbol (con variaciones)
+    const treeColor = (treeData as any).treeColor || 0x4A6B3A
+    const leafColorVariations = this.getLeafColorVariations(treeColor)
+    const leafColor = leafColorVariations[Math.floor(Math.random() * leafColorVariations.length)]
     
     // Dibujar hoja pequeña
     const leafSize = 2 + Math.random() * 2
@@ -390,6 +399,100 @@ export class TreeRenderer {
         })
       }
     })
+  }
+
+  /**
+   * Obtiene un color único para cada árbol basado en su índice y posición
+   */
+  private getTreeColor(treeIndex: number, treeX: number): number {
+    // Paleta de colores vibrantes y variados para los árboles
+    const colorPalette = [
+      // Verdes naturales
+      0x2D5A2D, 0x3D6B3D, 0x4D7B4D, 0x5D8B5D,
+      // Verdes esmeralda
+      0x2D8B5D, 0x3D9B6D, 0x4DAB7D, 0x5DBB8D,
+      // Azules verdes
+      0x2D7B8B, 0x3D8B9B, 0x4D9BAB,
+      // Púrpuras y magentas
+      0x6B4D8B, 0x7B5D9B, 0x8B6DAB,
+      // Naranjas y rojos otoñales
+      0xAB6B4D, 0xBB7B5D, 0xCB8B6D,
+      // Amarillos dorados
+      0xAB9B4D, 0xBBAB5D,
+      // Azules y turquesas
+      0x4D8BAB, 0x5D9BBB, 0x6DABCB,
+      // Rosas y magentas
+      0xAB6D8B, 0xBB7D9B,
+      // Verdes azulados
+      0x4D7B8B, 0x5D8B9B, 0x6D9BAB,
+    ]
+    
+    // Usar combinación de índice y posición para seleccionar color
+    const colorSeed = (treeIndex * 7 + treeX * 3.7) % colorPalette.length
+    return colorPalette[Math.floor(colorSeed)]
+  }
+
+  /**
+   * Genera variaciones de color para las diferentes capas del árbol
+   */
+  private getTreeColorVariations(baseColor: number): {
+    baseDark: number
+    mediumDark: number
+    shadowDark: number
+    highlightLight: number
+  } {
+    // Extraer componentes RGB
+    const r = (baseColor >> 16) & 0xFF
+    const g = (baseColor >> 8) & 0xFF
+    const b = baseColor & 0xFF
+    
+    // Crear variaciones más oscuras y más claras
+    const darken = (component: number, factor: number) => Math.max(0, Math.floor(component * factor))
+    const lighten = (component: number, factor: number) => Math.min(255, Math.floor(component + (255 - component) * factor))
+    
+    // Base oscura (80% del color original)
+    const baseDark = (darken(r, 0.8) << 16) | (darken(g, 0.8) << 8) | darken(b, 0.8)
+    
+    // Medio oscuro (85% del color original)
+    const mediumDark = (darken(r, 0.85) << 16) | (darken(g, 0.85) << 8) | darken(b, 0.85)
+    
+    // Sombra muy oscura (60% del color original)
+    const shadowDark = (darken(r, 0.6) << 16) | (darken(g, 0.6) << 8) | darken(b, 0.6)
+    
+    // Resalte claro (120% del color original con saturación)
+    const highlightR = lighten(r, 0.3)
+    const highlightG = lighten(g, 0.25)
+    const highlightB = lighten(b, 0.2)
+    const highlightLight = (highlightR << 16) | (highlightG << 8) | highlightB
+    
+    return {
+      baseDark,
+      mediumDark,
+      shadowDark,
+      highlightLight
+    }
+  }
+
+  /**
+   * Genera variaciones de color para las hojas que caen
+   */
+  private getLeafColorVariations(treeColor: number): number[] {
+    const r = (treeColor >> 16) & 0xFF
+    const g = (treeColor >> 8) & 0xFF
+    const b = treeColor & 0xFF
+    
+    const variations: number[] = []
+    
+    // Crear 3-4 variaciones del color base
+    for (let i = 0; i < 4; i++) {
+      const factor = 0.7 + (i * 0.1) // De 70% a 100%
+      const leafR = Math.floor(r * factor)
+      const leafG = Math.floor(g * factor)
+      const leafB = Math.floor(b * factor)
+      variations.push((leafR << 16) | (leafG << 8) | leafB)
+    }
+    
+    return variations
   }
 
   /**
