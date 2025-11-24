@@ -109,12 +109,12 @@ export class TreeRenderer {
         const treeHeight = 40 + Math.random() * 50
         const trunkWidth = 8 + Math.random() * 6
         const crownSize = 25 + Math.random() * 30
-        const treeType = Math.random() // Variación en el tipo de árbol
         
-        // Seleccionar color único para este árbol
+        // Seleccionar color y forma únicos para este árbol
         const treeIndex = totalTrees
         const treeColor = this.getTreeColor(treeIndex, treeX)
         const treeColorVariations = this.getTreeColorVariations(treeColor)
+        const treeShapeType = this.getTreeShapeType(treeIndex, treeX)
         
         const treeGraphics = this.scene.add.graphics()
         
@@ -165,55 +165,14 @@ export class TreeRenderer {
           treeGraphics.fillRect(trunkTopWidth / 2 - 5, branchY - 5, 8, 3)
         }
         
-        // Copa del árbol mejorada con más capas y variación usando colores únicos
-        const crownBaseY = -treeHeight * 0.15
-        
-        // Capa base de la copa (más grande y oscura)
-        treeGraphics.fillStyle(treeColorVariations.baseDark, 0.95)
-        treeGraphics.fillCircle(0, crownBaseY, crownSize)
-        
-        // Capas superiores de la copa (creando volumen)
-        if (treeType > 0.3) {
-          // Estilo más frondoso
-          treeGraphics.fillCircle(crownSize * 0.5, crownBaseY - crownSize * 0.2, crownSize * 0.85)
-          treeGraphics.fillCircle(-crownSize * 0.5, crownBaseY - crownSize * 0.2, crownSize * 0.85)
-          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.5, crownSize * 0.75)
-          
-          // Capa adicional para más densidad
-          treeGraphics.fillStyle(treeColorVariations.mediumDark, 0.8)
-          treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.3, crownSize * 0.65)
-          treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.3, crownSize * 0.65)
-          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.4, crownSize * 0.6)
-        } else {
-          // Estilo más cónico/piramidal
-          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.3, crownSize * 0.9)
-          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.6, crownSize * 0.7)
-          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.85, crownSize * 0.5)
-          
-          treeGraphics.fillStyle(treeColorVariations.mediumDark, 0.8)
-          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.35, crownSize * 0.7)
-          treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.65, crownSize * 0.55)
-        }
-        
-        // Detalles de sombra en la copa (lado izquierdo más oscuro)
-        treeGraphics.fillStyle(treeColorVariations.shadowDark, 0.7)
-        treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.1, crownSize * 0.6)
-        treeGraphics.fillCircle(-crownSize * 0.2, crownBaseY - crownSize * 0.4, crownSize * 0.5)
-        
-        // Puntos de luz en la copa (lado derecho más claro - efecto de iluminación)
-        treeGraphics.fillStyle(treeColorVariations.highlightLight, 0.5)
-        treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.2, crownSize * 0.4)
-        treeGraphics.fillCircle(crownSize * 0.25, crownBaseY - crownSize * 0.5, crownSize * 0.35)
-        
-        // Detalles de textura en la copa (pequeños círculos para simular hojas)
-        treeGraphics.fillStyle(treeColorVariations.baseDark, 0.6)
-        for (let i = 0; i < 8; i++) {
-          const angle = (i / 8) * Math.PI * 2
-          const dist = crownSize * (0.4 + Math.random() * 0.3)
-          const leafX = Math.cos(angle) * dist
-          const leafY = crownBaseY + Math.sin(angle) * dist * 0.6
-          treeGraphics.fillCircle(leafX, leafY, 3 + Math.random() * 2)
-        }
+        // Dibujar la copa del árbol según su forma única
+        this.drawTreeCrown(
+          treeGraphics,
+          treeShapeType,
+          crownSize,
+          treeHeight,
+          treeColorVariations
+        )
         
         // Crear contenedor para el árbol (permite rotación con origen personalizado)
         const treeContainer = this.scene.add.container(treeX, treeY + treeHeight * 0.7)
@@ -399,6 +358,292 @@ export class TreeRenderer {
         })
       }
     })
+  }
+
+  /**
+   * Obtiene el tipo de forma para cada árbol basado en su índice y posición
+   */
+  private getTreeShapeType(treeIndex: number, treeX: number): number {
+    // 8 tipos diferentes de formas
+    const shapeSeed = (treeIndex * 11 + treeX * 5.3) % 8
+    return Math.floor(shapeSeed)
+  }
+
+  /**
+   * Dibuja la copa del árbol según su tipo de forma
+   */
+  private drawTreeCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    shapeType: number,
+    crownSize: number,
+    treeHeight: number,
+    colorVariations: {
+      baseDark: number
+      mediumDark: number
+      shadowDark: number
+      highlightLight: number
+    }
+  ): void {
+    const crownBaseY = -treeHeight * 0.15
+    
+    switch (shapeType) {
+      case 0: // Redondo/frondoso
+        this.drawRoundCrown(treeGraphics, crownBaseY, crownSize, colorVariations)
+        break
+      case 1: // Cónico/piramidal
+        this.drawConicalCrown(treeGraphics, crownBaseY, crownSize, colorVariations)
+        break
+      case 2: // Extendido/ancho
+        this.drawWideCrown(treeGraphics, crownBaseY, crownSize, colorVariations)
+        break
+      case 3: // Delgado/alto
+        this.drawTallCrown(treeGraphics, crownBaseY, crownSize, colorVariations)
+        break
+      case 4: // Irregular/asimétrico
+        this.drawAsymmetricCrown(treeGraphics, crownBaseY, crownSize, colorVariations)
+        break
+      case 5: // Multi-copa
+        this.drawMultiCrown(treeGraphics, crownBaseY, crownSize, colorVariations)
+        break
+      case 6: // Compacto/globular
+        this.drawCompactCrown(treeGraphics, crownBaseY, crownSize, colorVariations)
+        break
+      case 7: // Forma de nube suave
+        this.drawCloudCrown(treeGraphics, crownBaseY, crownSize, colorVariations)
+        break
+    }
+  }
+
+  /**
+   * Forma redonda/frondosa
+   */
+  private drawRoundCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any
+  ): void {
+    treeGraphics.fillStyle(colors.baseDark, 0.95)
+    treeGraphics.fillCircle(0, crownBaseY, crownSize)
+    
+    treeGraphics.fillCircle(crownSize * 0.5, crownBaseY - crownSize * 0.2, crownSize * 0.85)
+    treeGraphics.fillCircle(-crownSize * 0.5, crownBaseY - crownSize * 0.2, crownSize * 0.85)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.5, crownSize * 0.75)
+    
+    treeGraphics.fillStyle(colors.mediumDark, 0.8)
+    treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.3, crownSize * 0.65)
+    treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.3, crownSize * 0.65)
+    
+    this.addHighlightsAndShadows(treeGraphics, crownBaseY, crownSize, colors)
+  }
+
+  /**
+   * Forma cónica/piramidal
+   */
+  private drawConicalCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any
+  ): void {
+    treeGraphics.fillStyle(colors.baseDark, 0.95)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.3, crownSize * 0.9)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.6, crownSize * 0.7)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.85, crownSize * 0.5)
+    
+    treeGraphics.fillStyle(colors.mediumDark, 0.8)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.35, crownSize * 0.7)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.65, crownSize * 0.55)
+    
+    this.addHighlightsAndShadows(treeGraphics, crownBaseY, crownSize, colors, true)
+  }
+
+  /**
+   * Forma extendida/ancha
+   */
+  private drawWideCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any
+  ): void {
+    const widthFactor = 1.4
+    treeGraphics.fillStyle(colors.baseDark, 0.95)
+    treeGraphics.fillEllipse(0, crownBaseY, crownSize * widthFactor, crownSize * 0.8)
+    
+    treeGraphics.fillCircle(crownSize * 0.6, crownBaseY - crownSize * 0.15, crownSize * 0.7)
+    treeGraphics.fillCircle(-crownSize * 0.6, crownBaseY - crownSize * 0.15, crownSize * 0.7)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.3, crownSize * 0.6)
+    
+    treeGraphics.fillStyle(colors.mediumDark, 0.8)
+    treeGraphics.fillCircle(crownSize * 0.4, crownBaseY - crownSize * 0.2, crownSize * 0.5)
+    treeGraphics.fillCircle(-crownSize * 0.4, crownBaseY - crownSize * 0.2, crownSize * 0.5)
+    
+    this.addHighlightsAndShadows(treeGraphics, crownBaseY, crownSize, colors)
+  }
+
+  /**
+   * Forma delgada/alta
+   */
+  private drawTallCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any
+  ): void {
+    const heightFactor = 1.3
+    treeGraphics.fillStyle(colors.baseDark, 0.95)
+    treeGraphics.fillEllipse(0, crownBaseY - crownSize * 0.3, crownSize * 0.7, crownSize * heightFactor)
+    
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.4, crownSize * 0.75)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.7, crownSize * 0.65)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 1.0, crownSize * 0.5)
+    
+    treeGraphics.fillStyle(colors.mediumDark, 0.8)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.5, crownSize * 0.6)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.8, crownSize * 0.5)
+    
+    this.addHighlightsAndShadows(treeGraphics, crownBaseY, crownSize, colors, true)
+  }
+
+  /**
+   * Forma irregular/asimétrica
+   */
+  private drawAsymmetricCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any
+  ): void {
+    treeGraphics.fillStyle(colors.baseDark, 0.95)
+    // Copa principal desplazada a la derecha
+    treeGraphics.fillCircle(crownSize * 0.2, crownBaseY - crownSize * 0.2, crownSize)
+    
+    // Copas secundarias asimétricas
+    treeGraphics.fillCircle(-crownSize * 0.4, crownBaseY - crownSize * 0.1, crownSize * 0.7)
+    treeGraphics.fillCircle(crownSize * 0.5, crownBaseY - crownSize * 0.5, crownSize * 0.6)
+    treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.4, crownSize * 0.5)
+    
+    treeGraphics.fillStyle(colors.mediumDark, 0.8)
+    treeGraphics.fillCircle(crownSize * 0.1, crownBaseY - crownSize * 0.3, crownSize * 0.65)
+    treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.2, crownSize * 0.5)
+    
+    this.addHighlightsAndShadows(treeGraphics, crownBaseY, crownSize, colors)
+  }
+
+  /**
+   * Forma multi-copa (múltiples copas)
+   */
+  private drawMultiCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any
+  ): void {
+    treeGraphics.fillStyle(colors.baseDark, 0.95)
+    // Copas múltiples en diferentes niveles
+    treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.1, crownSize * 0.65)
+    treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.2, crownSize * 0.7)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.5, crownSize * 0.6)
+    treeGraphics.fillCircle(crownSize * 0.25, crownBaseY - crownSize * 0.7, crownSize * 0.5)
+    treeGraphics.fillCircle(-crownSize * 0.2, crownBaseY - crownSize * 0.75, crownSize * 0.45)
+    
+    treeGraphics.fillStyle(colors.mediumDark, 0.8)
+    treeGraphics.fillCircle(-crownSize * 0.25, crownBaseY - crownSize * 0.15, crownSize * 0.5)
+    treeGraphics.fillCircle(crownSize * 0.25, crownBaseY - crownSize * 0.25, crownSize * 0.55)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.55, crownSize * 0.45)
+    
+    this.addHighlightsAndShadows(treeGraphics, crownBaseY, crownSize, colors)
+  }
+
+  /**
+   * Forma compacta/globular
+   */
+  private drawCompactCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any
+  ): void {
+    const compactSize = crownSize * 0.85
+    treeGraphics.fillStyle(colors.baseDark, 0.95)
+    treeGraphics.fillCircle(0, crownBaseY, compactSize)
+    
+    treeGraphics.fillCircle(0, crownBaseY - compactSize * 0.2, compactSize * 0.9)
+    treeGraphics.fillCircle(compactSize * 0.3, crownBaseY - compactSize * 0.1, compactSize * 0.7)
+    treeGraphics.fillCircle(-compactSize * 0.3, crownBaseY - compactSize * 0.1, compactSize * 0.7)
+    
+    treeGraphics.fillStyle(colors.mediumDark, 0.8)
+    treeGraphics.fillCircle(0, crownBaseY - compactSize * 0.15, compactSize * 0.75)
+    
+    this.addHighlightsAndShadows(treeGraphics, crownBaseY, compactSize, colors)
+  }
+
+  /**
+   * Forma de nube suave
+   */
+  private drawCloudCrown(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any
+  ): void {
+    treeGraphics.fillStyle(colors.baseDark, 0.95)
+    // Múltiples círculos suaves superpuestos
+    treeGraphics.fillCircle(0, crownBaseY, crownSize * 0.9)
+    treeGraphics.fillCircle(crownSize * 0.4, crownBaseY - crownSize * 0.15, crownSize * 0.75)
+    treeGraphics.fillCircle(-crownSize * 0.4, crownBaseY - crownSize * 0.15, crownSize * 0.75)
+    treeGraphics.fillCircle(0, crownBaseY - crownSize * 0.35, crownSize * 0.7)
+    treeGraphics.fillCircle(crownSize * 0.35, crownBaseY - crownSize * 0.4, crownSize * 0.6)
+    treeGraphics.fillCircle(-crownSize * 0.35, crownBaseY - crownSize * 0.4, crownSize * 0.6)
+    
+    treeGraphics.fillStyle(colors.mediumDark, 0.8)
+    treeGraphics.fillCircle(crownSize * 0.25, crownBaseY - crownSize * 0.25, crownSize * 0.5)
+    treeGraphics.fillCircle(-crownSize * 0.25, crownBaseY - crownSize * 0.25, crownSize * 0.5)
+    
+    this.addHighlightsAndShadows(treeGraphics, crownBaseY, crownSize, colors)
+  }
+
+  /**
+   * Añade resaltes y sombras comunes a todas las formas
+   */
+  private addHighlightsAndShadows(
+    treeGraphics: Phaser.GameObjects.Graphics,
+    crownBaseY: number,
+    crownSize: number,
+    colors: any,
+    isConical: boolean = false
+  ): void {
+    // Sombras
+    treeGraphics.fillStyle(colors.shadowDark, 0.7)
+    if (isConical) {
+      treeGraphics.fillCircle(-crownSize * 0.2, crownBaseY - crownSize * 0.2, crownSize * 0.5)
+      treeGraphics.fillCircle(-crownSize * 0.15, crownBaseY - crownSize * 0.5, crownSize * 0.4)
+    } else {
+      treeGraphics.fillCircle(-crownSize * 0.3, crownBaseY - crownSize * 0.1, crownSize * 0.6)
+      treeGraphics.fillCircle(-crownSize * 0.2, crownBaseY - crownSize * 0.4, crownSize * 0.5)
+    }
+    
+    // Resaltes
+    treeGraphics.fillStyle(colors.highlightLight, 0.5)
+    if (isConical) {
+      treeGraphics.fillCircle(crownSize * 0.2, crownBaseY - crownSize * 0.3, crownSize * 0.4)
+      treeGraphics.fillCircle(crownSize * 0.15, crownBaseY - crownSize * 0.6, crownSize * 0.3)
+    } else {
+      treeGraphics.fillCircle(crownSize * 0.3, crownBaseY - crownSize * 0.2, crownSize * 0.4)
+      treeGraphics.fillCircle(crownSize * 0.25, crownBaseY - crownSize * 0.5, crownSize * 0.35)
+    }
+    
+    // Detalles de textura (hojas)
+    treeGraphics.fillStyle(colors.baseDark, 0.6)
+    const numLeaves = isConical ? 6 : 8
+    for (let i = 0; i < numLeaves; i++) {
+      const angle = (i / numLeaves) * Math.PI * 2
+      const dist = crownSize * (0.4 + Math.random() * 0.3)
+      const leafX = Math.cos(angle) * dist
+      const leafY = crownBaseY + Math.sin(angle) * dist * 0.6
+      treeGraphics.fillCircle(leafX, leafY, 3 + Math.random() * 2)
+    }
   }
 
   /**
