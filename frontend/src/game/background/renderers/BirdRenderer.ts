@@ -47,7 +47,6 @@ export class BirdRenderer {
     const birdSize = 3 + Math.random() * 2 // Tamaño pequeño: 3-5 píxeles
     const startY = this.horizonY * (0.2 + Math.random() * 0.5) // En la parte superior del cielo
     const startX = immediate ? Math.random() * this.width : -50 // Aparecer desde fuera o dentro
-    const flightDistance = this.width * (1.2 + Math.random() * 0.5) // Vuelan más allá del ancho
     const flightSpeed = 15000 + Math.random() * 10000 // 15-25 segundos
     const verticalVariation = 20 + Math.random() * 30 // Variación vertical
     
@@ -100,7 +99,7 @@ export class BirdRenderer {
     const flightDistance = this.width * (1.2 + Math.random() * 0.5)
     
     // Animación principal (vuelo horizontal) - con bucle continuo
-    const horizontalTween = this.scene.tweens.add({
+    this.scene.tweens.add({
       targets: graphics,
       x: currentX + flightDistance,
       duration: flightSpeed,

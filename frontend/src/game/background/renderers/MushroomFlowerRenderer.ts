@@ -62,40 +62,25 @@ export class MushroomFlowerRenderer {
       
       const mushroomGraphics = this.scene.add.graphics()
       
+      // Aplicar Flat Shaded 3D a los hongos
       if (mushroomType > 0.4) {
-        // Hongo rojo con puntos blancos (Amanita)
-        // Tallo
-        mushroomGraphics.fillStyle(0xE8D4B0, 1) // Beige claro
-        mushroomGraphics.fillRect(-mushroomSize * 0.15, 0, mushroomSize * 0.3, mushroomSize * 0.6)
-        
-        // Sombrero rojo
-        mushroomGraphics.fillStyle(0xD32F2F, 1) // Rojo
-        mushroomGraphics.fillEllipse(0, -mushroomSize * 0.1, mushroomSize * 0.8, mushroomSize * 0.5)
-        mushroomGraphics.fillCircle(0, -mushroomSize * 0.15, mushroomSize * 0.4)
-        
-        // Puntos blancos
-        mushroomGraphics.fillStyle(0xFFFFFF, 1)
-        mushroomGraphics.fillCircle(-mushroomSize * 0.2, -mushroomSize * 0.2, mushroomSize * 0.15)
-        mushroomGraphics.fillCircle(mushroomSize * 0.2, -mushroomSize * 0.15, mushroomSize * 0.12)
-        mushroomGraphics.fillCircle(0, -mushroomSize * 0.05, mushroomSize * 0.1)
-        
-        // Detalles del sombrero
-        mushroomGraphics.fillStyle(0xB71C1C, 0.6) // Rojo más oscuro para sombra
-        mushroomGraphics.fillEllipse(-mushroomSize * 0.1, -mushroomSize * 0.05, mushroomSize * 0.4, mushroomSize * 0.3)
+        // Hongo rojo con puntos blancos (Amanita) - 3D
+        this.drawMushroom3D(
+          mushroomGraphics,
+          mushroomSize,
+          { light: 0xE42F2F, mid: 0xD32F2F, dark: 0xB71C1C }, // Rojo
+          { light: 0xF0E0C0, mid: 0xE8D4B0, dark: 0xD0C090 }, // Beige para tallo
+          true // Con puntos blancos
+        )
       } else {
-        // Hongo marrón pequeño
-        // Tallo
-        mushroomGraphics.fillStyle(0xD4A574, 1) // Marrón claro
-        mushroomGraphics.fillRect(-mushroomSize * 0.12, 0, mushroomSize * 0.24, mushroomSize * 0.5)
-        
-        // Sombrero marrón
-        mushroomGraphics.fillStyle(0x8B4513, 1) // Marrón
-        mushroomGraphics.fillEllipse(0, -mushroomSize * 0.08, mushroomSize * 0.7, mushroomSize * 0.4)
-        mushroomGraphics.fillCircle(0, -mushroomSize * 0.12, mushroomSize * 0.35)
-        
-        // Detalles
-        mushroomGraphics.fillStyle(0x654321, 0.5) // Marrón oscuro
-        mushroomGraphics.fillEllipse(-mushroomSize * 0.08, -mushroomSize * 0.06, mushroomSize * 0.3, mushroomSize * 0.25)
+        // Hongo marrón pequeño - 3D
+        this.drawMushroom3D(
+          mushroomGraphics,
+          mushroomSize,
+          { light: 0x9B5533, mid: 0x8B4513, dark: 0x6B3413 }, // Marrón
+          { light: 0xE4B584, mid: 0xD4A574, dark: 0xC49564 }, // Marrón claro para tallo
+          false // Sin puntos
+        )
       }
       
       mushroomGraphics.setPosition(mushroomX, mushroomY)
@@ -260,6 +245,82 @@ export class MushroomFlowerRenderer {
     }
     
     return elements
+  }
+
+  /**
+   * Dibuja un hongo con Flat Shaded 3D
+   */
+  private drawMushroom3D(
+    graphics: Phaser.GameObjects.Graphics,
+    size: number,
+    capColors: { light: number; mid: number; dark: number },
+    stemColors: { light: number; mid: number; dark: number },
+    hasDots: boolean
+  ): void {
+    const depth = size * 0.1 // Profundidad 3D
+    
+    // TALLO 3D
+    const stemWidth = size * 0.3
+    const stemHeight = size * 0.6
+    
+    // Tallo - cara frontal (iluminada)
+    graphics.fillStyle(stemColors.light, 1)
+    graphics.fillRect(-stemWidth / 2, 0, stemWidth, stemHeight)
+    
+    // Tallo - cara derecha (muy iluminada)
+    graphics.fillStyle(stemColors.light, 1)
+    graphics.beginPath()
+    graphics.moveTo(stemWidth / 2, 0)
+    graphics.lineTo(stemWidth / 2 + depth, -depth * 0.2)
+    graphics.lineTo(stemWidth / 2 + depth, stemHeight + depth * 0.2)
+    graphics.lineTo(stemWidth / 2, stemHeight)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Tallo - cara izquierda (en sombra)
+    graphics.fillStyle(stemColors.dark, 1)
+    graphics.beginPath()
+    graphics.moveTo(-stemWidth / 2, 0)
+    graphics.lineTo(-stemWidth / 2 - depth, -depth * 0.2)
+    graphics.lineTo(-stemWidth / 2 - depth, stemHeight + depth * 0.2)
+    graphics.lineTo(-stemWidth / 2, stemHeight)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // SOMBRERO 3D
+    const capWidth = size * 0.8
+    const capHeight = size * 0.5
+    const capY = -size * 0.1
+    
+    // Sombrero - cara frontal (iluminada)
+    graphics.fillStyle(capColors.light, 1)
+    graphics.fillEllipse(depth * 0.2, capY - depth * 0.1, capWidth, capHeight)
+    graphics.fillCircle(depth * 0.2, capY - size * 0.05 - depth * 0.1, size * 0.4)
+    
+    // Sombrero - cara superior (muy iluminada)
+    graphics.fillStyle(capColors.light, 1)
+    graphics.fillEllipse(depth * 0.3, capY - size * 0.1 - depth, capWidth * 0.85, capHeight * 0.9)
+    
+    // Sombrero - cara izquierda (en sombra)
+    graphics.fillStyle(capColors.dark, 1)
+    graphics.fillEllipse(-depth * 0.3, capY + depth * 0.1, capWidth * 0.8, capHeight * 0.85)
+    
+    // Sombrero - cara base (debajo del sombrero)
+    graphics.fillStyle(capColors.mid, 0.7)
+    graphics.fillEllipse(0, capY, capWidth * 0.95, capHeight * 0.4)
+    
+    // Puntos blancos (solo para Amanita) - con efecto 3D
+    if (hasDots) {
+      graphics.fillStyle(0xFFFFFF, 1)
+      // Punto frontal (iluminado)
+      graphics.fillCircle(-size * 0.15 + depth * 0.2, capY - size * 0.15, size * 0.15)
+      // Punto derecho (muy iluminado)
+      graphics.fillStyle(0xFFFFFF, 0.95)
+      graphics.fillCircle(size * 0.15 + depth * 0.3, capY - size * 0.12, size * 0.12)
+      // Punto izquierdo (en sombra)
+      graphics.fillStyle(0xEEEEEE, 0.85)
+      graphics.fillCircle(0, capY - size * 0.02 - depth * 0.1, size * 0.1)
+    }
   }
 }
 

@@ -162,18 +162,29 @@ export class IncaCastleRenderer {
   }
 
   /**
-   * Renderiza un castillo inca
+   * Renderiza un castillo inca con efecto Flat Shaded 3D
    */
   private renderCastle(
     graphics: Phaser.GameObjects.Graphics,
     castleSize: number
   ) {
-    // Base del castillo (forma trapezoidal inca)
-    graphics.fillStyle(0x6B5B4A, 1) // Piedra inca oscura
+    // Colores para Flat Shaded 3D (luz desde arriba-derecha)
+    const lightFace = 0x9B8B7A // Cara iluminada (más clara)
+    const midFace = 0x7B6B5A // Cara media
+    const darkFace = 0x4B3B2A // Cara en sombra (más oscura)
+    const topColor = 0x8B7B6A // Color superior
+    
     const baseWidth = castleSize * 1.2
     const baseHeight = castleSize * 0.8
+    const wallWidth = baseWidth * 0.6
+    const wallHeight = castleSize * 0.6
+    const towerSize = castleSize * 0.4
+    const towerHeight = castleSize * 0.7
+    const centerTowerSize = castleSize * 0.35
+    const centerTowerHeight = castleSize * 0.9
     
-    // Base trapezoidal (característica arquitectónica inca)
+    // Base trapezoidal (cara inferior visible) - más oscura
+    graphics.fillStyle(darkFace, 1)
     graphics.beginPath()
     graphics.moveTo(-baseWidth / 2, 0)
     graphics.lineTo(baseWidth / 2, 0)
@@ -182,52 +193,144 @@ export class IncaCastleRenderer {
     graphics.closePath()
     graphics.fillPath()
     
-    // Muro frontal
-    graphics.fillStyle(0x7B6B5A, 1)
-    const wallWidth = baseWidth * 0.6
-    const wallHeight = castleSize * 0.6
+    // Muro frontal - cara principal iluminada
+    graphics.fillStyle(lightFace, 1)
     graphics.fillRect(-wallWidth / 2, -wallHeight, wallWidth, wallHeight)
     
-    // Torres laterales (características de castillos incas)
-    const towerSize = castleSize * 0.4
-    const towerHeight = castleSize * 0.7
+    // Cara derecha del muro frontal (iluminada)
+    graphics.fillStyle(midFace, 1)
+    const rightWallDepth = castleSize * 0.15
+    graphics.beginPath()
+    graphics.moveTo(wallWidth / 2, -wallHeight)
+    graphics.lineTo(wallWidth / 2 + rightWallDepth, -wallHeight - rightWallDepth * 0.5)
+    graphics.lineTo(wallWidth / 2 + rightWallDepth, rightWallDepth * 0.5)
+    graphics.lineTo(wallWidth / 2, 0)
+    graphics.closePath()
+    graphics.fillPath()
     
-    // Torre izquierda
-    graphics.fillStyle(0x6B5B4A, 1)
+    // Cara izquierda del muro frontal (en sombra)
+    graphics.fillStyle(darkFace, 1)
+    const leftWallDepth = castleSize * 0.15
+    graphics.beginPath()
+    graphics.moveTo(-wallWidth / 2, -wallHeight)
+    graphics.lineTo(-wallWidth / 2 - leftWallDepth, -wallHeight - leftWallDepth * 0.5)
+    graphics.lineTo(-wallWidth / 2 - leftWallDepth, leftWallDepth * 0.5)
+    graphics.lineTo(-wallWidth / 2, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Torre izquierda - cara frontal (media)
+    graphics.fillStyle(midFace, 1)
     graphics.fillRect(-baseWidth / 2 * 0.8, -towerHeight, towerSize, towerHeight)
     
-    // Torre derecha
+    // Torre izquierda - cara derecha (iluminada)
+    graphics.fillStyle(lightFace, 1)
+    graphics.beginPath()
+    graphics.moveTo(-baseWidth / 2 * 0.8 + towerSize, -towerHeight)
+    graphics.lineTo(-baseWidth / 2 * 0.8 + towerSize + rightWallDepth, -towerHeight - rightWallDepth * 0.5)
+    graphics.lineTo(-baseWidth / 2 * 0.8 + towerSize + rightWallDepth, rightWallDepth * 0.5)
+    graphics.lineTo(-baseWidth / 2 * 0.8 + towerSize, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Torre izquierda - cara izquierda (en sombra)
+    graphics.fillStyle(darkFace, 1)
+    graphics.beginPath()
+    graphics.moveTo(-baseWidth / 2 * 0.8, -towerHeight)
+    graphics.lineTo(-baseWidth / 2 * 0.8 - leftWallDepth, -towerHeight - leftWallDepth * 0.5)
+    graphics.lineTo(-baseWidth / 2 * 0.8 - leftWallDepth, leftWallDepth * 0.5)
+    graphics.lineTo(-baseWidth / 2 * 0.8, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Torre derecha - cara frontal (media)
+    graphics.fillStyle(midFace, 1)
     graphics.fillRect(baseWidth / 2 * 0.8 - towerSize, -towerHeight, towerSize, towerHeight)
     
-    // Torre central (más alta)
-    const centerTowerSize = castleSize * 0.35
-    const centerTowerHeight = castleSize * 0.9
-    graphics.fillStyle(0x5B4B3A, 1)
+    // Torre derecha - cara derecha (iluminada)
+    graphics.fillStyle(lightFace, 1)
+    graphics.beginPath()
+    graphics.moveTo(baseWidth / 2 * 0.8, -towerHeight)
+    graphics.lineTo(baseWidth / 2 * 0.8 + rightWallDepth, -towerHeight - rightWallDepth * 0.5)
+    graphics.lineTo(baseWidth / 2 * 0.8 + rightWallDepth, rightWallDepth * 0.5)
+    graphics.lineTo(baseWidth / 2 * 0.8, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Torre derecha - cara izquierda (en sombra)
+    graphics.fillStyle(darkFace, 1)
+    graphics.beginPath()
+    graphics.moveTo(baseWidth / 2 * 0.8 - towerSize, -towerHeight)
+    graphics.lineTo(baseWidth / 2 * 0.8 - towerSize - leftWallDepth, -towerHeight - leftWallDepth * 0.5)
+    graphics.lineTo(baseWidth / 2 * 0.8 - towerSize - leftWallDepth, leftWallDepth * 0.5)
+    graphics.lineTo(baseWidth / 2 * 0.8 - towerSize, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Torre central - cara frontal (iluminada)
+    graphics.fillStyle(lightFace, 1)
     graphics.fillRect(-centerTowerSize / 2, -centerTowerHeight, centerTowerSize, centerTowerHeight)
     
-    // Detalles de piedra (textura inca)
-    graphics.fillStyle(0x8B7B6A, 0.6)
-    // Líneas horizontales características de la arquitectura inca
+    // Torre central - cara derecha (muy iluminada)
+    graphics.fillStyle(topColor, 1)
+    graphics.beginPath()
+    graphics.moveTo(centerTowerSize / 2, -centerTowerHeight)
+    graphics.lineTo(centerTowerSize / 2 + rightWallDepth, -centerTowerHeight - rightWallDepth * 0.5)
+    graphics.lineTo(centerTowerSize / 2 + rightWallDepth, rightWallDepth * 0.5)
+    graphics.lineTo(centerTowerSize / 2, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Torre central - cara izquierda (en sombra)
+    graphics.fillStyle(darkFace, 1)
+    graphics.beginPath()
+    graphics.moveTo(-centerTowerSize / 2, -centerTowerHeight)
+    graphics.lineTo(-centerTowerSize / 2 - leftWallDepth, -centerTowerHeight - leftWallDepth * 0.5)
+    graphics.lineTo(-centerTowerSize / 2 - leftWallDepth, leftWallDepth * 0.5)
+    graphics.lineTo(-centerTowerSize / 2, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Techos de las torres (cara superior) - color claro
+    graphics.fillStyle(topColor, 1)
+    // Techo torre izquierda
+    graphics.beginPath()
+    graphics.moveTo(-baseWidth / 2 * 0.8, -towerHeight)
+    graphics.lineTo(-baseWidth / 2 * 0.8 + towerSize, -towerHeight)
+    graphics.lineTo(-baseWidth / 2 * 0.8 + towerSize + rightWallDepth * 0.5, -towerHeight - rightWallDepth)
+    graphics.lineTo(-baseWidth / 2 * 0.8 - leftWallDepth * 0.5, -towerHeight - leftWallDepth)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Techo torre derecha
+    graphics.beginPath()
+    graphics.moveTo(baseWidth / 2 * 0.8 - towerSize, -towerHeight)
+    graphics.lineTo(baseWidth / 2 * 0.8, -towerHeight)
+    graphics.lineTo(baseWidth / 2 * 0.8 + rightWallDepth * 0.5, -towerHeight - rightWallDepth)
+    graphics.lineTo(baseWidth / 2 * 0.8 - towerSize - leftWallDepth * 0.5, -towerHeight - leftWallDepth)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Techo torre central
+    graphics.beginPath()
+    graphics.moveTo(-centerTowerSize / 2, -centerTowerHeight)
+    graphics.lineTo(centerTowerSize / 2, -centerTowerHeight)
+    graphics.lineTo(centerTowerSize / 2 + rightWallDepth * 0.5, -centerTowerHeight - rightWallDepth)
+    graphics.lineTo(-centerTowerSize / 2 - leftWallDepth * 0.5, -centerTowerHeight - leftWallDepth)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Detalles de piedra (textura inca) - en cara frontal
+    graphics.fillStyle(midFace, 0.8)
     for (let j = 1; j < 4; j++) {
       const lineY = -centerTowerHeight + (centerTowerHeight / 4) * j
-      graphics.fillRect(-centerTowerSize / 2, lineY, centerTowerSize, 1.5)
+      graphics.fillRect(-centerTowerSize / 2, lineY, centerTowerSize, 2)
     }
     
-    // Sombras en los muros
-    graphics.fillStyle(0x4B3B2A, 0.7)
-    graphics.fillRect(-wallWidth / 2, -wallHeight, wallWidth * 0.3, wallHeight)
-    graphics.fillRect(-baseWidth / 2 * 0.8, -towerHeight, towerSize * 0.3, towerHeight)
-    graphics.fillRect(baseWidth / 2 * 0.8 - towerSize, -towerHeight, towerSize * 0.3, towerHeight)
-    
-    // Resaltes de luz
-    graphics.fillStyle(0x9B8B7A, 0.4)
-    graphics.fillRect(wallWidth / 2 * 0.6, -wallHeight, wallWidth * 0.2, wallHeight * 0.6)
-    graphics.fillRect(centerTowerSize / 2 * 0.6, -centerTowerHeight, centerTowerSize * 0.2, centerTowerHeight * 0.6)
-    
-    // Entrada del castillo (puerta trapezoidal inca)
+    // Entrada del castillo (puerta trapezoidal inca) - interior oscuro
     const doorWidth = castleSize * 0.25
     const doorHeight = castleSize * 0.35
-    graphics.fillStyle(0x3B2B1A, 0.9)
+    graphics.fillStyle(0x2B1B0A, 1) // Interior muy oscuro
     graphics.beginPath()
     graphics.moveTo(-doorWidth / 2, 0)
     graphics.lineTo(doorWidth / 2, 0)
@@ -236,30 +339,47 @@ export class IncaCastleRenderer {
     graphics.closePath()
     graphics.fillPath()
     
+    // Marco de la puerta (lado iluminado)
+    graphics.fillStyle(lightFace, 1)
+    graphics.lineStyle(2, lightFace, 1)
+    graphics.strokePath()
+    
     // Bandera o estandarte en la torre central (opcional, 50% probabilidad)
     if (Math.random() > 0.5) {
-      const flagX = 0
+      const flagX = centerTowerSize / 2 + rightWallDepth
       const flagY = -centerTowerHeight - 3
-      graphics.fillStyle(0x8B4A3A, 0.8) // Color terracota
+      graphics.fillStyle(0x8B4A3A, 1) // Color terracota
       graphics.fillRect(flagX, flagY, castleSize * 0.15, castleSize * 0.2)
-      graphics.fillStyle(0x9B5A4A, 0.6)
+      graphics.fillStyle(0x9B5A4A, 1)
       graphics.fillRect(flagX, flagY, castleSize * 0.15, castleSize * 0.1)
     }
   }
 
   /**
-   * Renderiza una casita inca
+   * Renderiza una casita inca con efecto Flat Shaded 3D
    */
   private renderIncaHouse(
     graphics: Phaser.GameObjects.Graphics,
     houseSize: number
   ) {
-    // Base de la casita (forma trapezoidal inca)
-    graphics.fillStyle(0x6B5B4A, 1) // Piedra inca oscura
+    // Colores para Flat Shaded 3D (luz desde arriba-derecha)
+    const lightFace = 0x9B8B7A // Cara iluminada (más clara)
+    const midFace = 0x7B6B5A // Cara media
+    const darkFace = 0x4B3B2A // Cara en sombra (más oscura)
+    const roofLight = 0xAB8B6A // Techo iluminado
+    const roofMid = 0x8B6B4A // Techo medio
+    const roofDark = 0x6B4B2A // Techo en sombra
+    
     const baseWidth = houseSize * 1.0
     const baseHeight = houseSize * 0.6
+    const wallWidth = baseWidth * 0.7
+    const wallHeight = houseSize * 0.5
+    const roofHeight = houseSize * 0.4
+    const roofWidth = baseWidth * 0.9
+    const depth = houseSize * 0.12 // Profundidad 3D
     
-    // Base trapezoidal
+    // Base trapezoidal (cara inferior visible) - en sombra
+    graphics.fillStyle(darkFace, 1)
     graphics.beginPath()
     graphics.moveTo(-baseWidth / 2, 0)
     graphics.lineTo(baseWidth / 2, 0)
@@ -268,25 +388,39 @@ export class IncaCastleRenderer {
     graphics.closePath()
     graphics.fillPath()
     
-    // Muros de la casita
-    graphics.fillStyle(0x7B6B5A, 1)
-    const wallWidth = baseWidth * 0.7
-    const wallHeight = houseSize * 0.5
+    // Muro frontal - cara principal iluminada
+    graphics.fillStyle(lightFace, 1)
     graphics.fillRect(-wallWidth / 2, -wallHeight, wallWidth, wallHeight)
     
-    // Detalles de piedra en los muros (textura inca)
-    graphics.fillStyle(0x8B7B6A, 0.5)
+    // Muro - cara derecha (iluminada)
+    graphics.fillStyle(midFace, 1)
+    graphics.beginPath()
+    graphics.moveTo(wallWidth / 2, -wallHeight)
+    graphics.lineTo(wallWidth / 2 + depth, -wallHeight - depth * 0.5)
+    graphics.lineTo(wallWidth / 2 + depth, depth * 0.5)
+    graphics.lineTo(wallWidth / 2, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Muro - cara izquierda (en sombra)
+    graphics.fillStyle(darkFace, 1)
+    graphics.beginPath()
+    graphics.moveTo(-wallWidth / 2, -wallHeight)
+    graphics.lineTo(-wallWidth / 2 - depth, -wallHeight - depth * 0.5)
+    graphics.lineTo(-wallWidth / 2 - depth, depth * 0.5)
+    graphics.lineTo(-wallWidth / 2, 0)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Detalles de piedra en los muros (textura inca) - solo en cara frontal
+    graphics.fillStyle(midFace, 0.6)
     for (let j = 1; j < 3; j++) {
       const lineY = -wallHeight + (wallHeight / 3) * j
-      graphics.fillRect(-wallWidth / 2, lineY, wallWidth, 1)
+      graphics.fillRect(-wallWidth / 2, lineY, wallWidth, 2)
     }
     
-    // Techo de paja/tejas (característico de casitas incas)
-    const roofHeight = houseSize * 0.4
-    const roofWidth = baseWidth * 0.9
-    
-    // Techo principal
-    graphics.fillStyle(0x8B6B4A, 1) // Color paja/teja
+    // Techo - cara frontal (iluminada)
+    graphics.fillStyle(roofLight, 1)
     graphics.beginPath()
     graphics.moveTo(-roofWidth / 2, -wallHeight)
     graphics.lineTo(roofWidth / 2, -wallHeight)
@@ -295,32 +429,49 @@ export class IncaCastleRenderer {
     graphics.closePath()
     graphics.fillPath()
     
-    // Detalles del techo (tejas)
-    graphics.fillStyle(0x9B7B5A, 0.6)
+    // Techo - cara derecha (muy iluminada)
+    graphics.fillStyle(roofLight, 1)
+    graphics.beginPath()
+    graphics.moveTo(roofWidth / 2, -wallHeight)
+    graphics.lineTo(roofWidth / 2 * 0.5, -wallHeight - roofHeight)
+    graphics.lineTo(roofWidth / 2 * 0.5 + depth, -wallHeight - roofHeight - depth * 0.8)
+    graphics.lineTo(roofWidth / 2 + depth, -wallHeight - depth * 0.5)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Techo - cara izquierda (en sombra)
+    graphics.fillStyle(roofDark, 1)
+    graphics.beginPath()
+    graphics.moveTo(-roofWidth / 2, -wallHeight)
+    graphics.lineTo(-roofWidth / 2 * 0.5, -wallHeight - roofHeight)
+    graphics.lineTo(-roofWidth / 2 * 0.5 - depth, -wallHeight - roofHeight - depth * 0.8)
+    graphics.lineTo(-roofWidth / 2 - depth, -wallHeight - depth * 0.5)
+    graphics.closePath()
+    graphics.fillPath()
+    
+    // Detalles del techo (tejas) - solo en cara frontal
+    graphics.fillStyle(roofMid, 0.7)
     for (let k = 0; k < 4; k++) {
       const tileX = -roofWidth / 2 + (roofWidth / 4) * k
       const tileY = -wallHeight - roofHeight * 0.3
       graphics.fillRect(tileX, tileY, roofWidth / 4, roofHeight * 0.4)
     }
     
-    // Sombra del techo
-    graphics.fillStyle(0x6B4B2A, 0.7)
-    graphics.fillRect(-roofWidth / 2, -wallHeight, roofWidth * 0.3, roofHeight)
-    
     // Ventana pequeña (opcional, 70% probabilidad)
     if (Math.random() > 0.3) {
       const windowSize = houseSize * 0.15
-      graphics.fillStyle(0x2B1B0A, 0.8) // Interior oscuro
+      graphics.fillStyle(0x1B0B0A, 1) // Interior muy oscuro
       graphics.fillRect(-windowSize / 2, -wallHeight * 0.4, windowSize, windowSize * 0.8)
-      graphics.fillStyle(0x4B3B2A, 0.6) // Marco
-      graphics.lineStyle(1.5, 0x5B4B3A, 0.8)
+      // Marco de ventana - lado iluminado
+      graphics.fillStyle(lightFace, 1)
+      graphics.lineStyle(2, lightFace, 1)
       graphics.strokeRect(-windowSize / 2, -wallHeight * 0.4, windowSize, windowSize * 0.8)
     }
     
-    // Entrada de la casita (puerta trapezoidal inca)
+    // Entrada de la casita (puerta trapezoidal inca) - interior oscuro
     const doorWidth = houseSize * 0.2
     const doorHeight = houseSize * 0.3
-    graphics.fillStyle(0x3B2B1A, 0.9)
+    graphics.fillStyle(0x2B1B0A, 1) // Interior muy oscuro
     graphics.beginPath()
     graphics.moveTo(-doorWidth / 2, 0)
     graphics.lineTo(doorWidth / 2, 0)
@@ -329,12 +480,9 @@ export class IncaCastleRenderer {
     graphics.closePath()
     graphics.fillPath()
     
-    // Sombras en los muros
-    graphics.fillStyle(0x4B3B2A, 0.6)
-    graphics.fillRect(-wallWidth / 2, -wallHeight, wallWidth * 0.3, wallHeight)
-    
-    // Resaltes de luz
-    graphics.fillStyle(0x9B8B7A, 0.3)
-    graphics.fillRect(wallWidth / 2 * 0.6, -wallHeight, wallWidth * 0.2, wallHeight * 0.5)
+    // Marco de la puerta - lado iluminado
+    graphics.fillStyle(lightFace, 1)
+    graphics.lineStyle(2, lightFace, 1)
+    graphics.strokePath()
   }
 }
