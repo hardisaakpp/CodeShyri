@@ -6,6 +6,7 @@ export class GameEngine {
   private game: Phaser.Game | null = null
   private character: Character
   public onLog?: (message: string, type?: string) => void
+  public onExecutionComplete?: () => void
 
   constructor(canvasId: string, character: Character) {
     this.character = character
@@ -47,6 +48,11 @@ export class GameEngine {
       onLog: (message: string, type?: string) => {
         if (gameEngine.onLog) {
           gameEngine.onLog(message, type)
+        }
+      },
+      onExecutionComplete: () => {
+        if (gameEngine.onExecutionComplete) {
+          gameEngine.onExecutionComplete()
         }
       }
     })

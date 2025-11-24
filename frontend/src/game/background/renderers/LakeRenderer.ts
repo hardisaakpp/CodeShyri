@@ -6,17 +6,8 @@ interface WaveData {
   speed: number
 }
 
-interface ReflectionData {
-  graphics: Phaser.GameObjects.Graphics
-  x: number
-  y: number
-  size: number
-  speed: number
-}
-
 export class LakeRenderer {
   private waveElements: WaveData[] = []
-  private reflectionElements: ReflectionData[] = []
 
   constructor(
     private scene: Phaser.Scene,
@@ -141,7 +132,7 @@ export class LakeRenderer {
   }
 
   /**
-   * Crea ondas animadas en la superficie del agua
+   * Crea ondas animadas en la superficie del agua (optimizado: menos frecuente)
    */
   private createAnimatedWaves(
     lakeCenterX: number,
@@ -149,7 +140,8 @@ export class LakeRenderer {
     lakeWidth: number,
     lakeHeight: number
   ): void {
-    const numWaves = 6
+    // Reducir número de ondas para mejor rendimiento
+    const numWaves = 4 // Reducido de 6 a 4
     
     for (let i = 0; i < numWaves; i++) {
       const waveGraphics = this.scene.add.graphics()
@@ -166,13 +158,14 @@ export class LakeRenderer {
       }
       this.waveElements.push(waveData)
       
-      // Función para actualizar la onda
+      // Función para actualizar la onda (simplificada)
       const updateWave = () => {
         waveGraphics.clear()
         waveGraphics.lineStyle(1.5, 0x4A9FB5, 0.4 + Math.sin(waveData.offset) * 0.1)
         waveGraphics.beginPath()
         
-        const numPoints = 30
+        // Reducir puntos para mejor rendimiento (30 → 20)
+        const numPoints = 20
         for (let j = 0; j <= numPoints; j++) {
           const t = j / numPoints
           const x = waveX + t * waveWidth - waveWidth / 2
@@ -195,9 +188,9 @@ export class LakeRenderer {
       waveGraphics.setPosition(lakeCenterX, lakeY)
       waveGraphics.setDepth(3.1)
       
-      // Actualizar onda continuamente
+      // Actualizar onda con menor frecuencia (16ms → 100ms para mejor rendimiento)
       this.scene.time.addEvent({
-        delay: 16, // ~60 FPS
+        delay: 100, // Reducido de 16ms a 100ms (10 veces/seg en lugar de 60)
         callback: updateWave,
         repeat: -1
       })
@@ -208,7 +201,7 @@ export class LakeRenderer {
   }
 
   /**
-   * Crea reflejos animados en el agua
+   * Crea reflejos animados en el agua (optimizado: usar tweens en lugar de redibujar)
    */
   private createAnimatedReflections(
     lakeCenterX: number,
@@ -216,67 +209,68 @@ export class LakeRenderer {
     lakeWidth: number,
     lakeHeight: number
   ): void {
-    const numReflections = 8
+    // Reducir número de reflejos para mejor rendimiento
+    const numReflections = 5 // Reducido de 8 a 5
     
     for (let i = 0; i < numReflections; i++) {
       const reflectionGraphics = this.scene.add.graphics()
-      const reflectionX = (Math.random() - 0.5) * lakeWidth * 0.6
-      const reflectionY = (Math.random() - 0.5) * lakeHeight * 0.6
+      const startX = (Math.random() - 0.5) * lakeWidth * 0.6
+      const startY = (Math.random() - 0.5) * lakeHeight * 0.6
       const reflectionSize = 15 + Math.random() * 20
-      const speed = 0.5 + Math.random() * 1.0 // Velocidad de movimiento
-      const direction = Math.random() * Math.PI * 2 // Dirección aleatoria
       
-      const reflectionData: ReflectionData = {
-        graphics: reflectionGraphics,
-        x: reflectionX,
-        y: reflectionY,
-        size: reflectionSize,
-        speed: speed
-      }
-      this.reflectionElements.push(reflectionData)
+      // Dibujar reflejo estático una sola vez
+      reflectionGraphics.fillStyle(0x5BA8C0, 0.4)
+      reflectionGraphics.fillEllipse(0, 0, reflectionSize, reflectionSize * 0.4)
       
-      // Función para actualizar el reflejo
-      const updateReflection = () => {
-        reflectionGraphics.clear()
-        
-        // Movimiento suave del reflejo
-        reflectionData.x += Math.cos(direction) * reflectionData.speed * 0.1
-        reflectionData.y += Math.sin(direction) * reflectionData.speed * 0.1
-        
-        // Rebotar en los bordes
-        if (Math.abs(reflectionData.x) > lakeWidth * 0.3) {
-          reflectionData.x = (reflectionData.x > 0 ? 1 : -1) * lakeWidth * 0.3
-        }
-        if (Math.abs(reflectionData.y) > lakeHeight * 0.3) {
-          reflectionData.y = (reflectionData.y > 0 ? 1 : -1) * lakeHeight * 0.3
-        }
-        
-        // Variación de tamaño y opacidad
-        const time = this.scene.time.now / 1000
-        const sizeVariation = reflectionData.size + Math.sin(time * 2 + i) * 3
-        const alpha = 0.4 + Math.sin(time * 1.5 + i) * 0.2
-        
-        reflectionGraphics.fillStyle(0x5BA8C0, alpha)
-        reflectionGraphics.fillEllipse(
-          reflectionData.x,
-          reflectionData.y,
-          sizeVariation,
-          sizeVariation * 0.4
-        )
-      }
-      
-      reflectionGraphics.setPosition(lakeCenterX, lakeY)
+      reflectionGraphics.setPosition(lakeCenterX + startX, lakeY + startY)
       reflectionGraphics.setDepth(3.2)
       
-      // Actualizar reflejo continuamente
-      this.scene.time.addEvent({
-        delay: 50, // Actualizar cada 50ms
-        callback: updateReflection,
+      // Usar tweens para animación en lugar de redibujar constantemente
+      // Animación de movimiento horizontal
+      const endX = startX + (Math.random() - 0.5) * lakeWidth * 0.4
+      this.scene.tweens.add({
+        targets: reflectionGraphics,
+        x: lakeCenterX + endX,
+        duration: 3000 + Math.random() * 2000,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
         repeat: -1
       })
       
-      // Inicializar primera renderización
-      updateReflection()
+      // Animación de movimiento vertical
+      const endY = startY + (Math.random() - 0.5) * lakeHeight * 0.3
+      this.scene.tweens.add({
+        targets: reflectionGraphics,
+        y: lakeY + endY,
+        duration: 2500 + Math.random() * 1500,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+        delay: Math.random() * 1000
+      })
+      
+      // Animación de opacidad (parpadeo suave)
+      this.scene.tweens.add({
+        targets: reflectionGraphics,
+        alpha: { from: 0.3, to: 0.5 },
+        duration: 2000 + Math.random() * 1000,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+        delay: Math.random() * 500
+      })
+      
+      // Animación de escala (tamaño variado)
+      this.scene.tweens.add({
+        targets: reflectionGraphics,
+        scaleX: { from: 0.9, to: 1.1 },
+        scaleY: { from: 0.9, to: 1.1 },
+        duration: 1800 + Math.random() * 1200,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+        delay: Math.random() * 800
+      })
     }
   }
 

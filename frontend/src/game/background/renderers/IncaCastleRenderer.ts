@@ -129,35 +129,36 @@ export class IncaCastleRenderer {
   }
 
   /**
-   * Inicia la animación de sombras dinámicas que cambian con el tiempo
+   * Inicia la animación de sombras estáticas con variación suave de opacidad
+   * Optimizado: usa animación de alpha en lugar de redibujar constantemente
    */
   private startDynamicShadows(): void {
-    // Simular cambio de iluminación durante el día
-    this.scene.time.addEvent({
-      delay: 100, // Actualizar cada 100ms
-      callback: () => {
-        const time = this.scene.time.now / 1000 // Tiempo en segundos
-        const shadowIntensity = 0.2 + Math.sin(time * 0.1) * 0.15 // Variación suave
-        
-        this.structuresData.forEach(structureData => {
-          // Actualizar opacidad de la sombra
-          structureData.shadow.clear()
-          const shadowWidth = structureData.width * (structureData.isCastle ? 1.3 : 1.2)
-          const shadowHeight = structureData.width * (structureData.isCastle ? 0.7 : 0.6)
-          const shadowY = structureData.y + structureData.height * 0.6
-          
-          // Sombra base
-          structureData.shadow.fillStyle(0x000000, shadowIntensity)
-          structureData.shadow.fillEllipse(0, 0, shadowWidth, shadowHeight)
-          
-          // Sombra más oscura en el centro
-          structureData.shadow.fillStyle(0x000000, shadowIntensity * 0.7)
-          structureData.shadow.fillEllipse(0, 0, shadowWidth * 0.6, shadowHeight * 0.6)
-          
-          structureData.shadow.setPosition(structureData.x, shadowY)
-        })
-      },
-      repeat: -1
+    // Dibujar sombras estáticas una sola vez y animar opacidad
+    this.structuresData.forEach(structureData => {
+      const shadowWidth = structureData.width * (structureData.isCastle ? 1.3 : 1.2)
+      const shadowHeight = structureData.width * (structureData.isCastle ? 0.7 : 0.6)
+      const shadowY = structureData.y + structureData.height * 0.6
+      
+      // Sombra base estática
+      structureData.shadow.fillStyle(0x000000, 0.25)
+      structureData.shadow.fillEllipse(0, 0, shadowWidth, shadowHeight)
+      
+      // Sombra más oscura en el centro
+      structureData.shadow.fillStyle(0x000000, 0.18)
+      structureData.shadow.fillEllipse(0, 0, shadowWidth * 0.6, shadowHeight * 0.6)
+      
+      structureData.shadow.setPosition(structureData.x, shadowY)
+      
+      // Animación suave de opacidad (más eficiente que redibujar)
+      const baseAlpha = 0.25 + Math.random() * 0.1
+      this.scene.tweens.add({
+        targets: structureData.shadow,
+        alpha: { from: baseAlpha * 0.7, to: baseAlpha * 1.3 },
+        duration: 3000 + Math.random() * 2000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      })
     })
   }
 

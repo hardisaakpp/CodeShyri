@@ -12,6 +12,7 @@ export class GameScene extends Phaser.Scene {
   private height!: number
   private character!: Character
   private onLog?: (message: string, type?: string) => void
+  private onExecutionComplete?: () => void
   
   private commandQueue!: CommandQueue
   private movementCommands!: MovementCommands
@@ -24,11 +25,18 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' })
   }
 
-  init(data: { character: Character; width: number; height: number; onLog?: (message: string, type?: string) => void }) {
+  init(data: { 
+    character: Character
+    width: number
+    height: number
+    onLog?: (message: string, type?: string) => void
+    onExecutionComplete?: () => void
+  }) {
     this.character = data.character
     this.width = data.width
     this.height = data.height
     this.onLog = data.onLog
+    this.onExecutionComplete = data.onExecutionComplete
   }
 
   preload() {
@@ -47,7 +55,12 @@ export class GameScene extends Phaser.Scene {
     const player = this.playerManager.create()
 
     // Inicializar sistema de comandos
-    this.commandQueue = new CommandQueue(this)
+    this.commandQueue = new CommandQueue(this, () => {
+      // Cuando la cola de comandos termine, notificar
+      if (this.onExecutionComplete) {
+        this.onExecutionComplete()
+      }
+    })
     this.movementCommands = new MovementCommands(this.commandQueue, player, this.log.bind(this))
     this.rotationCommands = new RotationCommands(this.commandQueue, player, this.log.bind(this))
     this.actionCommands = new ActionCommands(this.commandQueue, player, this.log.bind(this))
@@ -67,11 +80,19 @@ export class GameScene extends Phaser.Scene {
   /**
    * Ejecuta código del usuario
    */
-  public executeCode(code: string) {
+  public executeCode(code: string): void {
+    if (!code || code.trim().length === 0) {
+      this.log('⚠️ No hay código para ejecutar', 'warning')
+      return
+    }
+
     this.commandQueue.clear()
 
     const player = this.playerManager.getPlayer()
-    if (!player) return
+    if (!player) {
+      this.log('❌ Error: El personaje no está disponible', 'error')
+      return
+    }
 
     try {
       // Crear funciones disponibles para el usuario (bind para mantener el contexto)
@@ -137,9 +158,31 @@ export class GameScene extends Phaser.Scene {
         moveTo, moveDistance, jump, attack, sprint, wait, teleport, spin,
         consoleObj
       )
+
+      // El mensaje de éxito se mostrará cuando termine la ejecución de comandos
+      // a través del callback onExecutionComplete
     } catch (execError) {
-      this.log(`Error de ejecución: ${execError}`, 'error')
-      throw execError
+      const errorMessage = execError instanceof Error 
+        ? execError.message 
+        : String(execError)
+      
+      // Mensajes de error más amigables
+      let friendlyMessage = 'Error de ejecución'
+      
+      if (errorMessage.includes('is not defined')) {
+        friendlyMessage = `Variable o función no definida: ${errorMessage.split('is not defined')[0].trim()}`
+      } else if (errorMessage.includes('Unexpected token')) {
+        friendlyMessage = `Error de sintaxis: ${errorMessage}`
+      } else if (errorMessage.includes('Cannot read')) {
+        friendlyMessage = `Error al acceder a una propiedad: ${errorMessage}`
+      } else {
+        friendlyMessage = errorMessage
+      }
+      
+      this.log(`❌ ${friendlyMessage}`, 'error')
+      
+      // No relanzar el error para evitar que rompa la aplicación
+      // El usuario ya recibió el feedback a través del log
     }
   }
 

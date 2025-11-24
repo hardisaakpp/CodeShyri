@@ -1,228 +1,82 @@
-from fastapi import FastAPI, HTTPException
+"""
+CodeShyri Backend - Punto de entrada principal
+"""
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import subprocess
-import tempfile
-import os
-from typing import Optional
+from fastapi.exceptions import RequestValidationError
+from app.config import CORS_ORIGINS, APP_TITLE, APP_VERSION
+from app.routers import execution, game_data, health
+from app.exceptions import CodeShyriException
+from app.logger import app_logger
 
-app = FastAPI(title="CodeShyri API", version="0.1.0")
+# Crear aplicación FastAPI
+app = FastAPI(title=APP_TITLE, version=APP_VERSION)
 
-# CORS middleware
+# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-class CodeExecutionRequest(BaseModel):
-    code: str
-    levelId: str
+# Exception handlers globales
+@app.exception_handler(CodeShyriException)
+async def codeshyri_exception_handler(request: Request, exc: CodeShyriException):
+    """Maneja excepciones personalizadas de CodeShyri"""
+    app_logger.warning(
+        f"CodeShyriException: {exc.detail}",
+        extra={"path": request.url.path, "method": request.method}
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.detail, "type": exc.__class__.__name__}
+    )
 
 
-class CodeExecutionResponse(BaseModel):
-    success: bool
-    output: Optional[str] = None
-    error: Optional[str] = None
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Maneja errores de validación de Pydantic"""
+    app_logger.warning(
+        f"Validation error: {exc.errors()}",
+        extra={"path": request.url.path, "method": request.method}
+    )
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"error": "Error de validación", "details": exc.errors()}
+    )
 
 
-@app.get("/")
-async def root():
-    return {
-        "message": "CodeShyri API",
-        "version": "0.1.0",
-        "status": "running"
-    }
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """Maneja excepciones no esperadas"""
+    app_logger.error(
+        f"Unhandled exception: {str(exc)}",
+        exc_info=True,
+        extra={"path": request.url.path, "method": request.method}
+    )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"error": "Error interno del servidor"}
+    )
 
 
-@app.get("/api/health")
-async def health():
-    return {"status": "healthy"}
+@app.on_event("startup")
+async def startup_event():
+    """Evento de inicio de la aplicación"""
+    app_logger.info(f"🚀 {APP_TITLE} v{APP_VERSION} iniciado")
 
 
-@app.post("/api/execute", response_model=CodeExecutionResponse)
-async def execute_code(request: CodeExecutionRequest):
-    """
-    Valida código JavaScript de forma segura.
-    El código se ejecuta en el frontend, aquí solo validamos sintaxis y seguridad.
-    """
-    try:
-        # Validar código básico (prevenir imports peligrosos)
-        dangerous_patterns = [
-            "require(",
-            "import(",
-            "eval(",
-            "Function(",
-            "process.",
-            "fs.",
-            "child_process",
-            "__dirname",
-            "__filename",
-            "XMLHttpRequest",
-            "fetch(",
-            "window.",
-            "document.",
-            "localStorage",
-            "sessionStorage"
-        ]
-        
-        code_lower = request.code.lower()
-        for pattern in dangerous_patterns:
-            if pattern.lower() in code_lower:
-                return CodeExecutionResponse(
-                    success=False,
-                    error=f"Patrón no permitido: {pattern}"
-                )
-        
-        # Validar sintaxis JavaScript usando Node.js en modo check-only
-        # Creamos un wrapper que define las funciones del juego como stubs
-        validation_code = f"""
-// Funciones stub para validación (no se ejecutan realmente)
-function moveForward(steps) {{}}
-function moveBackward(steps) {{}}
-function moveUp(steps) {{}}
-function moveDown(steps) {{}}
-function moveLeft(steps) {{}}
-function moveRight(steps) {{}}
-function turnRight(degrees) {{}}
-function turnLeft(degrees) {{}}
-function turn(degrees) {{}}
-function faceDirection(direction) {{}}
-function moveTo(x, y) {{}}
-function moveDistance(distance) {{}}
-function jump() {{}}
-function attack() {{}}
-function sprint(steps) {{}}
-function wait(milliseconds) {{}}
-function teleport(x, y) {{}}
-function spin() {{}}
-const console = {{ log: function() {{}} }};
-
-// Código del usuario
-{request.code}
-"""
-        
-        # Crear archivo temporal
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f:
-            f.write(validation_code)
-            temp_file = f.name
-        
-        try:
-            # Validar sintaxis con Node.js usando --check (solo valida, no ejecuta)
-            # Si --check no está disponible, usamos un enfoque diferente
-            result = subprocess.run(
-                ['node', '--check', temp_file],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            
-            if result.returncode == 0:
-                # Sintaxis válida
-                return CodeExecutionResponse(
-                    success=True,
-                    output="Código válido"
-                )
-            else:
-                # Error de sintaxis
-                error_msg = result.stderr or "Error de sintaxis desconocido"
-                # Limpiar rutas de archivos temporales del mensaje de error
-                error_msg = error_msg.replace(temp_file, "tu código")
-                return CodeExecutionResponse(
-                    success=False,
-                    error=error_msg
-                )
-        finally:
-            # Limpiar archivo temporal
-            if os.path.exists(temp_file):
-                os.unlink(temp_file)
-                
-    except subprocess.TimeoutExpired:
-        return CodeExecutionResponse(
-            success=False,
-            error="Tiempo de validación excedido"
-        )
-    except FileNotFoundError:
-        # Node.js no está instalado, solo validamos patrones peligrosos
-        return CodeExecutionResponse(
-            success=True,
-            output="Validación básica completada (Node.js no disponible para validación de sintaxis)"
-        )
-    except Exception as e:
-        return CodeExecutionResponse(
-            success=False,
-            error=f"Error del servidor: {str(e)}"
-        )
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Evento de cierre de la aplicación"""
+    app_logger.info(f"👋 {APP_TITLE} cerrado")
 
 
-@app.get("/api/levels/{level_id}")
-async def get_level(level_id: str):
-    """Obtiene información de un nivel específico"""
-    # Esto se puede expandir con una base de datos
-    levels = {
-        "1": {
-            "id": "1",
-            "title": "Primeros Pasos en Azeroth",
-            "description": "Aprende los comandos básicos de movimiento",
-            "character": "human-paladin",
-            "objectives": [
-                "Mueve el personaje 3 casillas hacia adelante",
-                "Gira a la derecha",
-                "Llega al objetivo"
-            ]
-        }
-    }
-    
-    if level_id not in levels:
-        raise HTTPException(status_code=404, detail="Nivel no encontrado")
-    
-    return levels[level_id]
-
-
-@app.get("/api/characters")
-async def get_characters():
-    """Obtiene la lista de personajes disponibles"""
-    return {
-        "characters": [
-            {
-                "id": "human-paladin",
-                "name": "Paladín Humano",
-                "icon": "⚔️",
-                "description": "Un noble paladín de la Alianza, maestro del honor y la justicia",
-                "color": "#4A90E2",
-                "race": "human",
-                "faction": "alliance"
-            },
-            {
-                "id": "orc-warrior",
-                "name": "Guerrero Orco",
-                "icon": "🪓",
-                "description": "Un feroz guerrero de la Horda, forjado en batalla",
-                "color": "#8B4513",
-                "race": "orc",
-                "faction": "horde"
-            },
-            {
-                "id": "elf-mage",
-                "name": "Mago Élfico",
-                "icon": "🔮",
-                "description": "Un sabio mago élfico, maestro de las artes arcanas",
-                "color": "#9370DB",
-                "race": "elf",
-                "faction": "alliance"
-            },
-            {
-                "id": "human-warrior",
-                "name": "Guerrero Humano",
-                "icon": "🛡️",
-                "description": "Un valiente guerrero humano de la Alianza",
-                "color": "#1E90FF",
-                "race": "human",
-                "faction": "alliance"
-            }
-        ]
-    }
-
+# Registrar routers
+app.include_router(health.router)
+app.include_router(execution.router)
+app.include_router(game_data.router)

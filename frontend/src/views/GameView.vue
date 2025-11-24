@@ -48,17 +48,18 @@
               <span>Editor de Código</span>
             </div>
             <div class="editor-actions">
-              <button @click="runCode" class="run-button" :disabled="isRunning">
-                <span class="button-icon">▶️</span>
-                <span class="button-text">{{ isRunning ? 'Ejecutando...' : 'Ejecutar' }}</span>
+              <button @click="runCode" class="run-button" :disabled="isRunning || isExecuting">
+                <span v-if="isRunning || isExecuting" class="spinner"></span>
+                <span v-else class="button-icon">▶️</span>
+                <span class="button-text">{{ getButtonText() }}</span>
               </button>
-              <button @click="resetCode" class="reset-button">
+              <button @click="resetCode" class="reset-button" :disabled="isRunning || isExecuting">
                 <span class="button-icon">🔄</span>
                 <span class="button-text">Reiniciar</span>
               </button>
             </div>
           </div>
-          <div id="monaco-editor" class="monaco-editor"></div>
+          <div id="monaco-editor" class="monaco-editor" :class="{ 'editor-disabled': isRunning || isExecuting }"></div>
         </div>
       </div>
 
@@ -96,6 +97,7 @@ const score = ref(0)
 const consoleLogs = ref<Array<{ type: string; message: string; timestamp?: string }>>([])
 const consoleOutput = ref<HTMLElement | null>(null)
 const isRunning = ref(false)
+const isExecuting = ref(false)
 
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
 let gameEngine: GameEngine | null = null
@@ -163,6 +165,17 @@ onMounted(async () => {
       consoleOutput.value.scrollTop = consoleOutput.value.scrollHeight
     }
   }
+  gameEngine.onExecutionComplete = () => {
+    isExecuting.value = false
+    consoleLogs.value.push({ 
+      type: 'success', 
+      message: '✅ Ejecución completada', 
+      timestamp: getTimestamp() 
+    })
+    if (consoleOutput.value) {
+      consoleOutput.value.scrollTop = consoleOutput.value.scrollHeight
+    }
+  }
 })
 
 onUnmounted(() => {
@@ -213,6 +226,11 @@ const runCode = async () => {
   if (!editor || !gameEngine || isRunning.value) return
 
   const code = editor.getValue()
+  if (!code || code.trim().length === 0) {
+    consoleLogs.value.push({ type: 'warning', message: '⚠️ No hay código para ejecutar', timestamp: getTimestamp() })
+    return
+  }
+
   isRunning.value = true
   consoleLogs.value.push({ type: 'info', message: '⚡ Ejecutando código...', timestamp: getTimestamp() })
 
@@ -224,17 +242,42 @@ const runCode = async () => {
       body: JSON.stringify({ code, levelId: levelId.value })
     })
 
+    // Verificar si la respuesta es exitosa
+    if (!response.ok) {
+      // Intentar parsear el error del backend
+      let errorMessage = 'Error desconocido'
+      try {
+        const errorResult = await response.json()
+        errorMessage = errorResult.error || errorResult.detail || `Error ${response.status}`
+      } catch {
+        errorMessage = `Error ${response.status}: ${response.statusText}`
+      }
+      consoleLogs.value.push({ type: 'error', message: `✗ ${errorMessage}`, timestamp: getTimestamp() })
+      isRunning.value = false
+      return
+    }
+
     const result = await response.json()
     
     if (result.success) {
-      consoleLogs.value.push({ type: 'success', message: '✓ Código ejecutado correctamente', timestamp: getTimestamp() })
-      gameEngine.executeCode(code)
-      score.value += 10
+      consoleLogs.value.push({ type: 'success', message: '✓ Código validado correctamente', timestamp: getTimestamp() })
+      // Ejecutar código en el juego
+      try {
+        isExecuting.value = true
+        gameEngine.executeCode(code)
+        score.value += 10
+      } catch (execError) {
+        isExecuting.value = false
+        consoleLogs.value.push({ type: 'error', message: `✗ Error al ejecutar código: ${execError}`, timestamp: getTimestamp() })
+      }
     } else {
-      consoleLogs.value.push({ type: 'error', message: `✗ Error: ${result.error}`, timestamp: getTimestamp() })
+      // Código inválido según el backend
+      const errorMsg = result.error || 'Código inválido'
+      consoleLogs.value.push({ type: 'error', message: `✗ ${errorMsg}`, timestamp: getTimestamp() })
     }
   } catch (error) {
-    consoleLogs.value.push({ type: 'error', message: `✗ Error de conexión: ${error}`, timestamp: getTimestamp() })
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    consoleLogs.value.push({ type: 'error', message: `✗ Error de conexión: ${errorMessage}`, timestamp: getTimestamp() })
   } finally {
     isRunning.value = false
   }
@@ -261,6 +304,12 @@ const getTimestamp = () => {
 
 const goHome = () => {
   router.push({ name: 'Home' })
+}
+
+const getButtonText = (): string => {
+  if (isRunning.value) return 'Validando...'
+  if (isExecuting.value) return 'Ejecutando...'
+  return 'Ejecutar'
 }
 </script>
 
@@ -586,8 +635,36 @@ const goHome = () => {
 }
 
 .run-button:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
+  position: relative;
+}
+
+.run-button:disabled::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .reset-button {
@@ -603,12 +680,17 @@ const goHome = () => {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-.reset-button:hover {
+.reset-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 
     0 6px 20px rgba(139, 69, 19, 0.6),
     inset 0 0 15px rgba(212, 175, 55, 0.2);
   border-color: rgba(212, 175, 55, 0.6);
+}
+
+.reset-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .button-icon {
@@ -622,6 +704,25 @@ const goHome = () => {
 .monaco-editor {
   flex: 1;
   min-height: 0;
+  transition: opacity 0.3s;
+}
+
+.monaco-editor.editor-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  position: relative;
+}
+
+.monaco-editor.editor-disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  cursor: not-allowed;
 }
 
 .game-console {

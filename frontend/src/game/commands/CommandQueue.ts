@@ -7,9 +7,11 @@ export class CommandQueue {
   private isExecuting: boolean = false
   private currentTween: Phaser.Tweens.Tween | null = null
   private scene: Phaser.Scene
+  private onQueueComplete?: () => void
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, onQueueComplete?: () => void) {
     this.scene = scene
+    this.onQueueComplete = onQueueComplete
   }
 
   /**
@@ -28,6 +30,10 @@ export class CommandQueue {
   private processQueue() {
     if (this.queue.length === 0) {
       this.isExecuting = false
+      // Notificar que la cola está completa
+      if (this.onQueueComplete) {
+        this.onQueueComplete()
+      }
       return
     }
 
