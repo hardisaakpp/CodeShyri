@@ -50,8 +50,8 @@ export class TreeRenderer {
     for (const groupCenterX of forestGroups) {
       if (totalTrees >= maxTrees) break
       
-      // Cada grupo tiene un número variable de árboles (5-8)
-      const treesPerGroup = 5 + Math.floor(Math.random() * 4)
+      // Cada grupo tiene un número variable de árboles (4-6) - reducido para más separación
+      const treesPerGroup = 4 + Math.floor(Math.random() * 3)
       const treesInThisGroup = Math.min(treesPerGroup, maxTrees - totalTrees)
       
       for (let i = 0; i < treesInThisGroup; i++) {
@@ -170,8 +170,8 @@ export class TreeRenderer {
     seed: number,
     isTooCloseToVillage: (x: number) => boolean
   ): { treeX: number; treeY: number } | null {
-    // Agrupar árboles alrededor del centro del grupo
-    const groupSpread = 45 + Math.random() * 25 // Radio del grupo: 45-70 píxeles
+    // Agrupar árboles alrededor del centro del grupo con mayor separación
+    const groupSpread = 60 + Math.random() * 40 // Radio del grupo: 60-100 píxeles (aumentado)
     const angle = Math.random() * Math.PI * 2 // Ángulo aleatorio
     const distance = Math.random() * groupSpread // Distancia del centro
     const treeX = groupCenterX + Math.cos(angle) * distance
