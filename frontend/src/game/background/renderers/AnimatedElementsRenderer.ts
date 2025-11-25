@@ -273,32 +273,31 @@ export class AnimatedElementsRenderer {
 
   /**
    * Renderiza el sol animado con diseño inca andino inspirado en Inti
+   * Diseño mejorado con elementos auténticos incas (Chakana, patrones escalonados)
+   * Optimizado para mejor rendimiento: menos operaciones de dibujo y animaciones más eficientes
    */
   private renderSun() {
     const sunX = this.width * 0.85
     const sunY = this.height * 0.15
     const sunRadius = 65
     
-    // Colores inca andinos (dorados y terrosos)
+    // Colores inca andinos auténticos (dorados y terrosos)
     const intiGold = 0xFFD700      // Dorado brillante
     const intiDarkGold = 0xDAA520  // Dorado oscuro
     const intiBronze = 0xCD7F32    // Bronce
     const intiOcre = 0xB8860B      // Ocre dorado
     const intiYellow = 0xFFE135    // Amarillo dorado
-    const intiOrange = 0xFF8C00    // Naranja terroso
+    const intiRed = 0xCC5500       // Rojo terroso inca
     
     // Crear gráficos para el sol de Inti
     const sunGraphics = this.scene.add.graphics()
     
-    // Glow exterior con aura dorada
-    sunGraphics.fillStyle(intiGold, 0.15)
-    sunGraphics.fillCircle(0, 0, 130)
+    // Glow exterior con aura dorada (estilo inca)
+    sunGraphics.fillStyle(intiGold, 0.2)
+    sunGraphics.fillCircle(0, 0, 125)
     
-    sunGraphics.fillStyle(intiDarkGold, 0.25)
-    sunGraphics.fillCircle(0, 0, 110)
-    
-    // Rayos decorativos en estilo inca (simplificado para mejor rendimiento)
-    const numRays = 10 // Reducido de 16 a 10 para mejor FPS
+    // Rayos en estilo inca con patrones escalonados auténticos (8 rayos - número sagrado)
+    const numRays = 8 // 8 rayos para simetría perfecta (número sagrado en cultura andina)
     const rayLength = sunRadius * 1.4
     const rayWidth = 8
     
@@ -307,48 +306,47 @@ export class AnimatedElementsRenderer {
       const cos = Math.cos(angle)
       const sin = Math.sin(angle)
       
-      // Rayo simplificado (sin zigzag complejo para mejor rendimiento)
-      sunGraphics.fillStyle(intiGold, 0.9)
-      sunGraphics.beginPath()
-      
-      // Base del rayo en el borde del círculo
+      // Rayo con patrón escalonado auténtico (como muros de Machu Picchu)
       const baseRadius = sunRadius * 1.05
       const startX = cos * baseRadius
       const startY = sin * baseRadius
-      
-      // Rayo recto simplificado (más eficiente)
       const endX = cos * rayLength
       const endY = sin * rayLength
       const perpCos = -sin
       const perpSin = cos
       
+      // Rayo con escalones (patrón típico de arquitectura inca)
+      const midX = cos * (baseRadius + (rayLength - baseRadius) * 0.5)
+      const midY = sin * (baseRadius + (rayLength - baseRadius) * 0.5)
+      
+      // Segmento base con escalón
+      sunGraphics.fillStyle(intiGold, 0.95)
+      sunGraphics.beginPath()
       sunGraphics.moveTo(startX, startY)
+      sunGraphics.lineTo(midX, midY)
+      sunGraphics.lineTo(
+        midX + perpCos * rayWidth * 0.8,
+        midY + perpSin * rayWidth * 0.8
+      )
+      sunGraphics.lineTo(
+        startX + perpCos * rayWidth * 0.5,
+        startY + perpSin * rayWidth * 0.5
+      )
+      sunGraphics.closePath()
+      sunGraphics.fillPath()
+      
+      // Segmento punta con escalón
+      sunGraphics.fillStyle(intiYellow, 0.9)
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(midX, midY)
       sunGraphics.lineTo(endX, endY)
       sunGraphics.lineTo(
         endX + perpCos * rayWidth,
         endY + perpSin * rayWidth
       )
       sunGraphics.lineTo(
-        startX + perpCos * rayWidth * 0.6,
-        startY + perpSin * rayWidth * 0.6
-      )
-      sunGraphics.closePath()
-      sunGraphics.fillPath()
-      
-      // Resalte simplificado en el rayo
-      sunGraphics.fillStyle(intiYellow, 0.7)
-      sunGraphics.beginPath()
-      sunGraphics.moveTo(startX, startY)
-      const midX = cos * (baseRadius + (rayLength - baseRadius) * 0.5)
-      const midY = sin * (baseRadius + (rayLength - baseRadius) * 0.5)
-      sunGraphics.lineTo(midX, midY)
-      sunGraphics.lineTo(
-        midX + perpCos * rayWidth * 0.3,
-        midY + perpSin * rayWidth * 0.3
-      )
-      sunGraphics.lineTo(
-        startX + perpCos * rayWidth * 0.3,
-        startY + perpSin * rayWidth * 0.3
+        midX + perpCos * rayWidth * 0.7,
+        midY + perpSin * rayWidth * 0.7
       )
       sunGraphics.closePath()
       sunGraphics.fillPath()
@@ -358,86 +356,326 @@ export class AnimatedElementsRenderer {
     sunGraphics.fillStyle(intiDarkGold, 1)
     sunGraphics.fillCircle(0, 0, sunRadius)
     
-    // Anillo decorativo interno
-    sunGraphics.fillStyle(intiBronze, 0.8)
-    sunGraphics.fillCircle(0, 0, sunRadius * 0.85)
+    // Anillo exterior con patrón escalonado (estilo muros de Machu Picchu)
+    sunGraphics.lineStyle(3, intiBronze, 0.9)
+    sunGraphics.strokeCircle(0, 0, sunRadius * 0.95)
+    
+    // Segundo anillo decorativo
+    sunGraphics.lineStyle(2, intiOcre, 0.75)
+    sunGraphics.strokeCircle(0, 0, sunRadius * 0.90)
+    
+    // Círculo intermedio
+    sunGraphics.fillStyle(intiBronze, 0.85)
+    sunGraphics.fillCircle(0, 0, sunRadius * 0.88)
     
     // Círculo central brillante
     sunGraphics.fillStyle(intiGold, 1)
-    sunGraphics.fillCircle(0, 0, sunRadius * 0.7)
+    sunGraphics.fillCircle(0, 0, sunRadius * 0.78)
     
-    // Núcleo dorado intenso
+    // Patrón decorativo: Chakana detallada (cruz andina) - símbolo sagrado inca
+    const chakanaSize = sunRadius * 0.52
+    const stepSize = chakanaSize * 0.12
+    
+    // Chakana con escalones más detallados y auténticos (diseño mejorado)
+    sunGraphics.fillStyle(intiOcre, 0.8)
+    // Brazo vertical superior con escalones (3 escalones)
+    sunGraphics.fillRect(-stepSize * 0.6, -chakanaSize, stepSize * 1.2, stepSize * 0.6)
+    sunGraphics.fillRect(-stepSize * 0.4, -chakanaSize + stepSize * 0.6, stepSize * 0.8, stepSize * 0.4)
+    sunGraphics.fillRect(-stepSize * 0.3, -chakanaSize + stepSize * 1.0, stepSize * 0.6, stepSize * 0.3)
+    // Brazo vertical inferior con escalones (3 escalones)
+    sunGraphics.fillRect(-stepSize * 0.6, chakanaSize * 0.3, stepSize * 1.2, stepSize * 0.6)
+    sunGraphics.fillRect(-stepSize * 0.4, chakanaSize * 0.3 + stepSize * 0.6, stepSize * 0.8, stepSize * 0.4)
+    sunGraphics.fillRect(-stepSize * 0.3, chakanaSize * 0.3 + stepSize * 1.0, stepSize * 0.6, stepSize * 0.3)
+    // Brazo horizontal izquierdo con escalones (3 escalones)
+    sunGraphics.fillRect(-chakanaSize, -stepSize * 0.6, stepSize * 0.6, stepSize * 1.2)
+    sunGraphics.fillRect(-chakanaSize + stepSize * 0.6, -stepSize * 0.4, stepSize * 0.4, stepSize * 0.8)
+    sunGraphics.fillRect(-chakanaSize + stepSize * 1.0, -stepSize * 0.3, stepSize * 0.3, stepSize * 0.6)
+    // Brazo horizontal derecho con escalones (3 escalones)
+    sunGraphics.fillRect(chakanaSize * 0.3, -stepSize * 0.6, stepSize * 0.6, stepSize * 1.2)
+    sunGraphics.fillRect(chakanaSize * 0.3 + stepSize * 0.6, -stepSize * 0.4, stepSize * 0.4, stepSize * 0.8)
+    sunGraphics.fillRect(chakanaSize * 0.3 + stepSize * 1.0, -stepSize * 0.3, stepSize * 0.3, stepSize * 0.6)
+    
+    // Decoración adicional en la chakana (líneas internas)
+    sunGraphics.lineStyle(1.5, intiBronze, 0.7)
+    // Líneas verticales
+    sunGraphics.beginPath()
+    sunGraphics.moveTo(0, -chakanaSize * 0.5)
+    sunGraphics.lineTo(0, chakanaSize * 0.5)
+    sunGraphics.strokePath()
+    // Líneas horizontales
+    sunGraphics.beginPath()
+    sunGraphics.moveTo(-chakanaSize * 0.5, 0)
+    sunGraphics.lineTo(chakanaSize * 0.5, 0)
+    sunGraphics.strokePath()
+    
+    // Círculo central sobre la chakana con anillo decorativo
     sunGraphics.fillStyle(intiYellow, 1)
-    sunGraphics.fillCircle(0, 0, sunRadius * 0.5)
+    sunGraphics.fillCircle(0, 0, sunRadius * 0.42)
     
-    // Detalles decorativos geométricos (patrones incas)
-    const decorativeRings = 2
-    for (let ring = 1; ring <= decorativeRings; ring++) {
-      const ringRadius = sunRadius * (0.6 - ring * 0.1)
-      const numDots = 8
-      for (let i = 0; i < numDots; i++) {
-        const angle = (i / numDots) * Math.PI * 2
-        const x = Math.cos(angle) * ringRadius
-        const y = Math.sin(angle) * ringRadius
-        sunGraphics.fillStyle(intiOcre, 0.9)
-        sunGraphics.fillCircle(x, y, 3)
+    // Anillo decorativo alrededor del círculo central
+    sunGraphics.lineStyle(2, intiBronze, 0.8)
+    sunGraphics.strokeCircle(0, 0, sunRadius * 0.38)
+    
+    // Patrón decorativo interno: pequeños puntos alrededor del círculo central
+    const dotRadius = sunRadius * 0.40
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2
+      const x = Math.cos(angle) * dotRadius
+      const y = Math.sin(angle) * dotRadius
+      sunGraphics.fillStyle(i % 2 === 0 ? intiOcre : intiBronze, 0.7)
+      sunGraphics.fillCircle(x, y, 1.5)
+    }
+    
+    // Anillo decorativo con patrones de zigzag mejorados (típico de textiles incas)
+    const zigzagRadius = sunRadius * 0.58
+    sunGraphics.lineStyle(2, intiBronze, 0.75)
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2
+      const x1 = Math.cos(angle) * zigzagRadius
+      const y1 = Math.sin(angle) * zigzagRadius
+      const x2 = Math.cos(angle + Math.PI / 8) * zigzagRadius
+      const y2 = Math.sin(angle + Math.PI / 8) * zigzagRadius
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(x1, y1)
+      sunGraphics.lineTo(x2, y2)
+      sunGraphics.strokePath()
+    }
+    
+    // Patrones de Tocapu (cuadrados decorativos incas) - arte textil auténtico
+    const tocapuRadius = sunRadius * 0.56
+    const numTocapu = 8 // 8 tocapus para simetría perfecta
+    for (let i = 0; i < numTocapu; i++) {
+      const angle = (i / numTocapu) * Math.PI * 2
+      const x = Math.cos(angle) * tocapuRadius
+      const y = Math.sin(angle) * tocapuRadius
+      
+      // Tocapu con diseño escalonado complejo (patrón auténtico de textiles incas)
+      const tocapuSize = 8
+        sunGraphics.fillStyle(i % 2 === 0 ? intiOcre : intiBronze, 0.9)
+        sunGraphics.fillRect(
+        x - tocapuSize / 2,
+        y - tocapuSize / 2,
+        tocapuSize,
+        tocapuSize
+      )
+      
+      // Patrón interno escalonado (diseño típico de tocapu)
+      sunGraphics.fillStyle(i % 2 === 0 ? intiBronze : intiOcre, 0.8)
+      // Escalones internos
+      sunGraphics.fillRect(x - tocapuSize / 3, y - tocapuSize / 3, tocapuSize / 3, tocapuSize / 3)
+      sunGraphics.fillRect(x, y - tocapuSize / 3, tocapuSize / 3, tocapuSize / 3)
+      sunGraphics.fillRect(x - tocapuSize / 3, y, tocapuSize / 3, tocapuSize / 3)
+      sunGraphics.fillRect(x, y, tocapuSize / 3, tocapuSize / 3)
+    }
+    
+    // Patrón de rombos escalonados en diagonal (diseño textil inca mejorado)
+    const diamondRadius = sunRadius * 0.48
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2 + Math.PI / 4
+      const x = Math.cos(angle) * diamondRadius
+      const y = Math.sin(angle) * diamondRadius
+      const diamondSize = 5
+      
+      // Rombo principal
+      sunGraphics.fillStyle(intiBronze, 0.7)
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(x, y - diamondSize)
+      sunGraphics.lineTo(x + diamondSize, y)
+      sunGraphics.lineTo(x, y + diamondSize)
+      sunGraphics.lineTo(x - diamondSize, y)
+      sunGraphics.closePath()
+      sunGraphics.fillPath()
+      
+      // Rombo interno (patrón escalonado)
+      sunGraphics.fillStyle(intiOcre, 0.6)
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(x, y - diamondSize * 0.5)
+      sunGraphics.lineTo(x + diamondSize * 0.5, y)
+      sunGraphics.lineTo(x, y + diamondSize * 0.5)
+      sunGraphics.lineTo(x - diamondSize * 0.5, y)
+      sunGraphics.closePath()
+      sunGraphics.fillPath()
+    }
+    
+    // Patrón de escaleras decorativas (típico de arte inca)
+    const stairRadius = sunRadius * 0.50
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2
+      const x = Math.cos(angle) * stairRadius
+      const y = Math.sin(angle) * stairRadius
+      const stairSize = 6
+      
+      // Escalera decorativa (patrón típico de textiles y cerámica inca)
+      sunGraphics.fillStyle(intiBronze, 0.65)
+      // Escalón 1
+      sunGraphics.fillRect(x - stairSize / 2, y - stairSize, stairSize, 2)
+      // Escalón 2
+      sunGraphics.fillRect(x - stairSize / 2 + 1, y - stairSize + 2, stairSize - 2, 2)
+      // Escalón 3
+      sunGraphics.fillRect(x - stairSize / 2 + 2, y - stairSize + 4, stairSize - 4, 2)
+    }
+    
+    // Patrón de líneas decorativas radiales (arte textil inca)
+    sunGraphics.lineStyle(1, intiOcre, 0.5)
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI * 2
+      const innerRadius = sunRadius * 0.45
+      const outerRadius = sunRadius * 0.52
+      const x1 = Math.cos(angle) * innerRadius
+      const y1 = Math.sin(angle) * innerRadius
+      const x2 = Math.cos(angle) * outerRadius
+      const y2 = Math.sin(angle) * outerRadius
+      
+      if (i % 2 === 0) {
+        sunGraphics.beginPath()
+        sunGraphics.moveTo(x1, y1)
+        sunGraphics.lineTo(x2, y2)
+        sunGraphics.strokePath()
       }
     }
     
-    // Cara estilizada de Inti (opcional, muy sutil)
-    // Ojos
-    sunGraphics.fillStyle(intiBronze, 0.8)
-    sunGraphics.fillEllipse(-sunRadius * 0.15, -sunRadius * 0.1, 8, 10)
-    sunGraphics.fillEllipse(sunRadius * 0.15, -sunRadius * 0.1, 8, 10)
+    // Cara estilizada de Inti con diseño más auténtico y geométrico (arte inca)
+    // Ojos con forma más geométrica y decorativa (estilo cerámica y textiles incas)
+    sunGraphics.fillStyle(intiBronze, 0.95)
+    sunGraphics.fillRect(-sunRadius * 0.22, -sunRadius * 0.16, 9, 11)
+    sunGraphics.fillRect(sunRadius * 0.13, -sunRadius * 0.16, 9, 11)
     
-    // Boca (línea decorativa)
-    sunGraphics.lineStyle(3, intiBronze, 0.7)
+    // Decoración de ojos con patrones escalonados (arte inca auténtico)
+    sunGraphics.fillStyle(intiOcre, 0.7)
+    // Líneas decorativas escalonadas en los ojos
+    sunGraphics.fillRect(-sunRadius * 0.20, -sunRadius * 0.18, 2, 3)
+    sunGraphics.fillRect(-sunRadius * 0.18, -sunRadius * 0.17, 2, 3)
+    sunGraphics.fillRect(-sunRadius * 0.16, -sunRadius * 0.16, 2, 3)
+    
+    sunGraphics.fillRect(sunRadius * 0.15, -sunRadius * 0.18, 2, 3)
+    sunGraphics.fillRect(sunRadius * 0.17, -sunRadius * 0.17, 2, 3)
+    sunGraphics.fillRect(sunRadius * 0.19, -sunRadius * 0.16, 2, 3)
+    
+    // Detalle decorativo en los ojos (líneas verticales incas)
+    sunGraphics.lineStyle(1.5, intiOcre, 0.85)
     sunGraphics.beginPath()
-    sunGraphics.arc(0, sunRadius * 0.15, sunRadius * 0.2, 0, Math.PI)
+    sunGraphics.moveTo(-sunRadius * 0.18, -sunRadius * 0.20)
+    sunGraphics.lineTo(-sunRadius * 0.18, -sunRadius * 0.11)
     sunGraphics.strokePath()
+    sunGraphics.beginPath()
+    sunGraphics.moveTo(sunRadius * 0.18, -sunRadius * 0.20)
+    sunGraphics.lineTo(sunRadius * 0.18, -sunRadius * 0.11)
+    sunGraphics.strokePath()
+    
+    // Líneas horizontales decorativas en los ojos
+    sunGraphics.lineStyle(1, intiGold, 0.7)
+    for (let i = 0; i < 3; i++) {
+      const yOffset = -sunRadius * 0.19 + i * 3
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(-sunRadius * 0.22, yOffset)
+      sunGraphics.lineTo(-sunRadius * 0.13, yOffset)
+      sunGraphics.strokePath()
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(sunRadius * 0.13, yOffset)
+      sunGraphics.lineTo(sunRadius * 0.22, yOffset)
+      sunGraphics.strokePath()
+    }
+    
+    // Pupilas con diseño más complejo
+    sunGraphics.fillStyle(intiRed, 0.9)
+    sunGraphics.fillCircle(-sunRadius * 0.17, -sunRadius * 0.11, 3.5)
+    sunGraphics.fillCircle(sunRadius * 0.17, -sunRadius * 0.11, 3.5)
+    
+    // Resaltes en los ojos (brillo dorado)
+    sunGraphics.fillStyle(intiGold, 0.95)
+    sunGraphics.fillCircle(-sunRadius * 0.15, -sunRadius * 0.13, 2)
+    sunGraphics.fillCircle(sunRadius * 0.19, -sunRadius * 0.13, 2)
+    
+    // Boca con diseño escalonado mejorado (patrón típico de arte inca)
+    sunGraphics.fillStyle(intiBronze, 0.9)
+    // Escalones de la boca con variación de tamaño (más auténtico)
+    const mouthSteps = [
+      { x: -sunRadius * 0.22, w: 5, h: 4 },
+      { x: -sunRadius * 0.17, w: 5, h: 4.5 },
+      { x: -sunRadius * 0.12, w: 5, h: 4 },
+      { x: -sunRadius * 0.07, w: 5, h: 4.5 },
+      { x: -sunRadius * 0.02, w: 5, h: 4 },
+      { x: sunRadius * 0.03, w: 5, h: 4.5 },
+      { x: sunRadius * 0.08, w: 5, h: 4 },
+      { x: sunRadius * 0.13, w: 5, h: 4.5 }
+    ]
+    for (const step of mouthSteps) {
+      sunGraphics.fillRect(step.x, sunRadius * 0.14, step.w, step.h)
+    }
+    
+    // Decoración adicional en la boca (líneas horizontales)
+    sunGraphics.lineStyle(1, intiOcre, 0.6)
+    for (let i = 0; i < 2; i++) {
+      const yPos = sunRadius * 0.15 + i * 2
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(-sunRadius * 0.22, yPos)
+      sunGraphics.lineTo(sunRadius * 0.18, yPos)
+      sunGraphics.strokePath()
+    }
+    
+    // Líneas decorativas en forma de "V" invertida mejorada (patrón inca)
+    sunGraphics.lineStyle(2.5, intiOcre, 0.75)
+    sunGraphics.beginPath()
+    sunGraphics.moveTo(-sunRadius * 0.18, sunRadius * 0.06)
+    sunGraphics.lineTo(0, sunRadius * 0.13)
+    sunGraphics.lineTo(sunRadius * 0.18, sunRadius * 0.06)
+    sunGraphics.strokePath()
+    
+    // Patrón decorativo adicional: líneas en zigzag (arte textil inca)
+    sunGraphics.lineStyle(1.5, intiBronze, 0.65)
+    const zigzagY = sunRadius * 0.08
+    sunGraphics.beginPath()
+    sunGraphics.moveTo(-sunRadius * 0.15, zigzagY)
+    sunGraphics.lineTo(-sunRadius * 0.10, zigzagY + 2)
+    sunGraphics.lineTo(-sunRadius * 0.05, zigzagY)
+    sunGraphics.lineTo(0, zigzagY + 2)
+    sunGraphics.lineTo(sunRadius * 0.05, zigzagY)
+    sunGraphics.lineTo(sunRadius * 0.10, zigzagY + 2)
+    sunGraphics.lineTo(sunRadius * 0.15, zigzagY)
+    sunGraphics.strokePath()
+    
+    // Líneas decorativas diagonales (patrón geométrico inca)
+    sunGraphics.lineStyle(1.5, intiBronze, 0.6)
+    for (let i = -1; i <= 1; i += 2) {
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(i * sunRadius * 0.12, -sunRadius * 0.08)
+      sunGraphics.lineTo(i * sunRadius * 0.25, sunRadius * 0.08)
+      sunGraphics.strokePath()
+    }
+    
+    // Patrón decorativo: pequeños cuadrados alrededor de la cara (arte inca)
+    const faceDecorRadius = sunRadius * 0.35
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2
+      const x = Math.cos(angle) * faceDecorRadius
+      const y = Math.sin(angle) * faceDecorRadius
+      const smallSize = 2
+      
+      sunGraphics.fillStyle(i % 2 === 0 ? intiOcre : intiBronze, 0.6)
+      sunGraphics.fillRect(x - smallSize / 2, y - smallSize / 2, smallSize, smallSize)
+    }
     
     sunGraphics.setPosition(sunX, sunY)
     sunGraphics.setDepth(1)
     
-    // Animación de pulso sutil (como el latido de Inti)
+    // Animación optimizada: solo pulso suave (sin rotación para mejor rendimiento)
     const sunContainer = this.scene.add.container(sunX, sunY)
     sunContainer.add(sunGraphics)
     sunGraphics.setPosition(0, 0)
     
-    // Animación de pulso suave (rotación eliminada para mejor rendimiento)
+    // Animación de pulso más suave y eficiente
     this.scene.tweens.add({
       targets: sunContainer,
-      scaleX: { from: 0.97, to: 1.03 },
-      scaleY: { from: 0.97, to: 1.03 },
-      alpha: { from: 0.96, to: 1 },
-      duration: 5000 + Math.random() * 2000,
+      scaleX: { from: 0.98, to: 1.02 },
+      scaleY: { from: 0.98, to: 1.02 },
+      duration: 8000, // Más lento = menos cálculos por segundo
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut'
     })
     
-    // Rotación eliminada para mejorar FPS (era muy lenta pero consumía recursos)
-    
     this.animatedElements.push(sunContainer)
   }
 
-  /**
-   * Interpola entre dos colores
-   */
-  private interpolateColor(color1: number, color2: number, factor: number): number {
-    const r1 = (color1 >> 16) & 0xFF
-    const g1 = (color1 >> 8) & 0xFF
-    const b1 = color1 & 0xFF
-    
-    const r2 = (color2 >> 16) & 0xFF
-    const g2 = (color2 >> 8) & 0xFF
-    const b2 = color2 & 0xFF
-    
-    const r = Math.floor(r1 + (r2 - r1) * factor)
-    const g = Math.floor(g1 + (g2 - g1) * factor)
-    const b = Math.floor(b1 + (b2 - b1) * factor)
-    
-    return (r << 16) | (g << 8) | b
-  }
 }
 
