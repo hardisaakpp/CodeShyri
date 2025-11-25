@@ -318,11 +318,11 @@ const getButtonText = (): string => {
   width: 100%;
   height: 100vh;
   background: 
-    linear-gradient(135deg, #1a3d2e 0%, #2d5a3d 50%, #1a3d2e 100%),
+    linear-gradient(135deg, #1a2e3d 0%, #2d1a3d 50%, #1a2e3d 100%),
     radial-gradient(circle at 20% 30%, rgba(139, 195, 74, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
-    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a7c5a' fill-opacity='0.05'%3E%3Cpath d='M50 50 L60 40 L70 50 L60 60 Z M30 50 L40 40 L50 50 L40 60 Z M50 30 L60 20 L70 30 L60 40 Z M50 70 L60 60 L70 70 L60 80 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  color: #c8e6c9;
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a3a5a' fill-opacity='0.05'%3E%3Cpath d='M50 50 L60 40 L70 50 L60 60 Z M30 50 L40 40 L50 50 L40 60 Z M50 30 L60 20 L70 30 L60 40 Z M50 70 L60 60 L70 70 L60 80 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  color: #c8b8e6;
   overflow: hidden;
   position: relative;
 }
@@ -339,7 +339,7 @@ const getButtonText = (): string => {
   align-items: center;
   padding: 1rem 2rem;
   background: 
-    linear-gradient(135deg, rgba(29, 90, 61, 0.95) 0%, rgba(26, 61, 46, 0.95) 100%),
+    linear-gradient(135deg, rgba(29, 26, 61, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%),
     repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(76, 175, 80, 0.1) 10px, rgba(76, 175, 80, 0.1) 20px);
   border-bottom: none;
   backdrop-filter: blur(10px);
@@ -375,11 +375,11 @@ const getButtonText = (): string => {
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
   background: 
-    linear-gradient(135deg, rgba(29, 90, 61, 0.8) 0%, rgba(26, 61, 46, 0.8) 100%),
+    linear-gradient(135deg, rgba(29, 26, 61, 0.8) 0%, rgba(26, 26, 46, 0.8) 100%),
     repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
   border: none;
   border-radius: 8px;
-  color: #c8e6c9;
+  color: #c8b8e6;
   font-family: 'Cinzel', serif;
   font-weight: 600;
   font-size: 0.95rem;
@@ -446,7 +446,7 @@ const getButtonText = (): string => {
   gap: 1rem;
   padding: 0.5rem 1.5rem;
   background: 
-    linear-gradient(135deg, rgba(29, 90, 61, 0.8) 0%, rgba(26, 61, 46, 0.8) 100%),
+    linear-gradient(135deg, rgba(29, 26, 61, 0.8) 0%, rgba(26, 26, 46, 0.8) 100%),
     repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
   border-radius: 8px;
   border: none;
@@ -520,7 +520,7 @@ const getButtonText = (): string => {
   align-items: center;
   padding: 0.5rem 1rem;
   background: 
-    linear-gradient(135deg, rgba(29, 90, 61, 0.6) 0%, rgba(26, 61, 46, 0.6) 100%),
+    linear-gradient(135deg, rgba(29, 26, 61, 0.6) 0%, rgba(26, 26, 46, 0.6) 100%),
     repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
   border-radius: 8px;
   border: none;
@@ -599,10 +599,10 @@ const getButtonText = (): string => {
 .game-canvas-container {
   flex: 1;
   background: 
-    linear-gradient(135deg, #1a3d2e 0%, #2d5a3d 50%, #1a3d2e 100%),
+    linear-gradient(135deg, #1a2e3d 0%, #2d1a3d 50%, #1a2e3d 100%),
     radial-gradient(circle at 20% 30%, rgba(139, 195, 74, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
-    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a7c5a' fill-opacity='0.05'%3E%3Cpath d='M50 50 L60 40 L70 50 L60 60 Z M30 50 L40 40 L50 50 L40 60 Z M50 30 L60 20 L70 30 L60 40 Z M50 70 L60 60 L70 70 L60 80 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a3a5a' fill-opacity='0.05'%3E%3Cpath d='M50 50 L60 40 L70 50 L60 60 Z M30 50 L40 40 L50 50 L40 60 Z M50 30 L60 20 L70 30 L60 40 Z M50 70 L60 60 L70 70 L60 80 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   display: flex;
   align-items: center;
   justify-content: center;
@@ -649,7 +649,7 @@ const getButtonText = (): string => {
   display: flex;
   flex-direction: column;
   background: 
-    linear-gradient(180deg, #1a3d2e 0%, #0f2418 100%),
+    linear-gradient(180deg, #1a2e3d 0%, #0f1a24 100%),
     repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(76, 175, 80, 0.1) 10px, rgba(76, 175, 80, 0.1) 20px);
   border-left: none;
   box-shadow: -5px 0 20px rgba(0, 0, 0, 0.8);
@@ -676,7 +676,7 @@ const getButtonText = (): string => {
   align-items: center;
   padding: 1rem 1.5rem;
   background: 
-    linear-gradient(135deg, rgba(29, 90, 61, 0.95) 0%, rgba(26, 61, 46, 0.95) 100%),
+    linear-gradient(135deg, rgba(29, 26, 61, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%),
     repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
   border-bottom: none;
   position: relative;
@@ -738,7 +738,7 @@ const getButtonText = (): string => {
 
 .run-button {
   background: 
-    linear-gradient(135deg, #558b2f 0%, #689f38 50%, #7cb342 100%),
+    linear-gradient(135deg, #5a1a7a 0%, #6a2a8f 50%, #7b3c9f 100%),
     repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(76, 175, 80, 0.1) 3px, rgba(76, 175, 80, 0.1) 6px);
   color: #fff;
   border: none;
@@ -895,7 +895,7 @@ const getButtonText = (): string => {
 .game-console {
   height: 180px;
   background: 
-    linear-gradient(180deg, #1a3d2e 0%, #0f2418 100%),
+    linear-gradient(180deg, #1a2e3d 0%, #0f1a24 100%),
     repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(76, 175, 80, 0.1) 10px, rgba(76, 175, 80, 0.1) 20px);
   border-top: none;
   display: flex;
@@ -924,7 +924,7 @@ const getButtonText = (): string => {
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
   background: 
-    linear-gradient(135deg, rgba(29, 90, 61, 0.95) 0%, rgba(26, 61, 46, 0.95) 100%),
+    linear-gradient(135deg, rgba(29, 26, 61, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%),
     repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
   border-bottom: none;
   font-family: 'Cinzel', serif;
@@ -957,10 +957,10 @@ const getButtonText = (): string => {
 .clear-console-btn {
   margin-left: auto;
   background: 
-    linear-gradient(135deg, rgba(29, 90, 61, 0.6) 0%, rgba(26, 61, 46, 0.6) 100%),
+    linear-gradient(135deg, rgba(29, 26, 61, 0.6) 0%, rgba(26, 26, 46, 0.6) 100%),
     repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(76, 175, 80, 0.1) 3px, rgba(76, 175, 80, 0.1) 6px);
   border: none;
-  color: rgba(200, 230, 201, 0.9);
+  color: rgba(200, 184, 230, 0.9);
   padding: 0.3rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
@@ -999,7 +999,7 @@ const getButtonText = (): string => {
     linear-gradient(135deg, rgba(139, 195, 74, 0.25) 0%, rgba(76, 175, 80, 0.2) 100%),
     repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(76, 175, 80, 0.1) 3px, rgba(76, 175, 80, 0.1) 6px);
   border-color: rgba(139, 195, 74, 0.6);
-  color: #c8e6c9;
+  color: #c8b8e6;
   box-shadow: 0 4px 8px rgba(139, 195, 74, 0.4);
 }
 
