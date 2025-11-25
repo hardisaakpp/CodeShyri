@@ -39,8 +39,8 @@
           
           <div class="character-header">
             <div class="faction-label">
-              <span class="faction-icon">🛡️</span>
-              <span class="faction-text">Alianza</span>
+              <span class="faction-icon">🌿</span>
+              <span class="faction-text">Pachamama</span>
             </div>
           </div>
 
@@ -61,13 +61,13 @@
             <p class="character-description">{{ characters[0].description }}</p>
             <div class="character-stats">
               <div class="stat-item">
-                <span class="stat-icon">⚔️</span>
-                <span class="stat-label">Guerrero</span>
+                <span class="stat-icon">🌾</span>
+                <span class="stat-label">Cultivador</span>
               </div>
               <span class="stat-separator">•</span>
               <div class="stat-item">
-                <span class="stat-icon">🛡️</span>
-                <span class="stat-label">Defensor</span>
+                <span class="stat-icon">⛰️</span>
+                <span class="stat-label">Andino</span>
               </div>
             </div>
           </div>
@@ -144,8 +144,9 @@ const getParticleDotStyle = (index: number) => {
   position: relative;
   overflow: hidden;
   background: 
-    linear-gradient(180deg, #1a0f08 0%, #2c1810 30%, #1a0f08 70%, #0d0603 100%),
-    radial-gradient(circle at 50% 50%, rgba(74, 144, 226, 0.1) 0%, transparent 70%);
+    linear-gradient(180deg, #1a3d2e 0%, #2d5a3d 30%, #1a3d2e 70%, #0f2418 100%),
+    radial-gradient(circle at 50% 50%, rgba(139, 195, 74, 0.15) 0%, transparent 70%),
+    radial-gradient(circle at 20% 30%, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
 }
 
 .background-pattern {
@@ -155,9 +156,10 @@ const getParticleDotStyle = (index: number) => {
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.12) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(74, 144, 226, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(139, 69, 19, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 20% 30%, rgba(139, 195, 74, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(129, 199, 132, 0.1) 0%, transparent 50%),
+    repeating-linear-gradient(45deg, transparent, transparent 50px, rgba(76, 175, 80, 0.03) 50px, rgba(76, 175, 80, 0.03) 100px);
   animation: pulse 10s ease-in-out infinite;
   pointer-events: none;
 }
@@ -174,10 +176,10 @@ const getParticleDotStyle = (index: number) => {
 
 .particle {
   position: absolute;
-  background: rgba(212, 175, 55, 0.6);
+  background: rgba(139, 195, 74, 0.6);
   border-radius: 50%;
   animation: floatParticle 8s ease-in-out infinite;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
 }
 
 @keyframes floatParticle {
@@ -203,10 +205,10 @@ const getParticleDotStyle = (index: number) => {
   left: 0;
   right: 0;
   height: 300px;
-  background: linear-gradient(to top, #1a0f08 0%, transparent 100%);
+  background: linear-gradient(to top, #2d4a2d 0%, #3d6b4f 30%, transparent 100%);
   clip-path: polygon(0 100%, 0 75%, 12% 80%, 25% 65%, 38% 75%, 50% 60%, 62% 70%, 75% 55%, 88% 65%, 100% 70%, 100% 100%);
-  opacity: 0.7;
-  box-shadow: inset 0 -80px 150px rgba(0, 0, 0, 0.6);
+  opacity: 0.8;
+  box-shadow: inset 0 -80px 150px rgba(45, 74, 45, 0.6);
 }
 
 .hero {
@@ -238,7 +240,7 @@ const getParticleDotStyle = (index: number) => {
   transform: translate(-50%, -50%);
   width: 120%;
   height: 120%;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 195, 74, 0.25) 0%, rgba(76, 175, 80, 0.15) 50%, transparent 70%);
   animation: pulseGlow 3s ease-in-out infinite;
   pointer-events: none;
 }
@@ -253,7 +255,7 @@ const getParticleDotStyle = (index: number) => {
   font-family: 'Cinzel', 'Uncial Antiqua', serif;
   font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 900;
-  background: linear-gradient(135deg, #d4af37 0%, #ffd700 25%, #c9a961 50%, #8b6914 75%, #b22222 100%);
+  background: linear-gradient(135deg, #8bc34a 0%, #9ccc65 25%, #7cb342 50%, #689f38 75%, #558b2f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -314,13 +316,13 @@ const getParticleDotStyle = (index: number) => {
   font-family: 'Cinzel', serif;
   font-size: clamp(0.85rem, 1.5vw, 1.1rem);
   font-weight: 600;
-  color: #c9a961;
+  color: #a5d6a7;
   letter-spacing: 8px;
   text-transform: uppercase;
   margin-top: 0.5rem;
   text-shadow: 
-    0 0 20px rgba(212, 175, 55, 0.6),
-    0 0 40px rgba(212, 175, 55, 0.3),
+    0 0 20px rgba(139, 195, 74, 0.6),
+    0 0 40px rgba(76, 175, 80, 0.3),
     2px 2px 4px rgba(0, 0, 0, 0.8);
   cursor: default;
   user-select: none;
@@ -329,7 +331,7 @@ const getParticleDotStyle = (index: number) => {
 
 .subtitle {
   font-size: clamp(0.85rem, 1.2vw, 1rem);
-  color: rgba(212, 175, 55, 0.9);
+  color: rgba(200, 230, 201, 0.95);
   margin-top: 0.8rem;
   font-weight: 400;
   letter-spacing: 2px;
@@ -351,32 +353,63 @@ const getParticleDotStyle = (index: number) => {
 .character-card {
   position: relative;
   background: 
-    linear-gradient(135deg, rgba(44, 24, 16, 0.98) 0%, rgba(26, 15, 8, 0.98) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
+    linear-gradient(135deg, rgba(29, 90, 61, 0.98) 0%, rgba(26, 61, 46, 0.98) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(76, 175, 80, 0.1) 10px, rgba(76, 175, 80, 0.1) 20px);
   border-radius: 24px;
   padding: 2.5rem 2rem;
   cursor: pointer;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 4px solid rgba(74, 144, 226, 0.4);
-  border-style: double;
+  border: none;
   overflow: hidden;
   backdrop-filter: blur(15px);
   width: 100%;
   max-width: 450px;
   box-shadow: 
     0 15px 50px rgba(0, 0, 0, 0.7),
-    inset 0 0 40px rgba(74, 144, 226, 0.15),
-    0 0 30px rgba(30, 144, 255, 0.4);
+    inset 0 0 40px rgba(139, 195, 74, 0.15),
+    0 0 30px rgba(76, 175, 80, 0.4);
+}
+
+.character-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 4px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='2' opacity='0.8'%3E%3Cpath d='M15 2 Q18 8 15 12 Q12 8 15 2'/%3E%3Cpath d='M2 15 Q8 18 12 15 Q8 12 2 15'/%3E%3Cpath d='M15 12 Q18 18 15 28 Q12 18 15 12'/%3E%3Cpath d='M28 15 Q22 18 18 15 Q22 12 28 15'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 30px 30px;
+  background-repeat: repeat;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.3s;
+}
+
+.character-card:hover::before {
+  opacity: 1;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='2.5' opacity='1'%3E%3Cpath d='M15 2 Q18 8 15 12 Q12 8 15 2'/%3E%3Cpath d='M2 15 Q8 18 12 15 Q8 12 2 15'/%3E%3Cpath d='M15 12 Q18 18 15 28 Q12 18 15 12'/%3E%3Cpath d='M28 15 Q22 18 18 15 Q22 12 28 15'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 .card-corner-decoration {
   position: absolute;
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(74, 144, 226, 0.3);
-  border-style: double;
+  border: none;
   opacity: 0.6;
   transition: all 0.4s;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='1.5' opacity='0.7'%3E%3Cpath d='M10 1 Q12 6 10 9 Q8 6 10 1'/%3E%3Cpath d='M1 10 Q6 12 9 10 Q6 8 1 10'/%3E%3Cpath d='M10 9 Q12 15 10 19 Q8 15 10 9'/%3E%3Cpath d='M19 10 Q14 12 11 10 Q14 8 19 10'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
 }
 
 .card-corner-decoration.top-left {
@@ -413,7 +446,7 @@ const getParticleDotStyle = (index: number) => {
 
 .character-card:hover .card-corner-decoration {
   opacity: 1;
-  border-color: rgba(74, 144, 226, 0.8);
+  border-color: rgba(139, 195, 74, 0.9);
   transform: scale(1.1);
 }
 
@@ -433,7 +466,7 @@ const getParticleDotStyle = (index: number) => {
   font-weight: 500;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: rgba(74, 144, 226, 0.6);
+  color: rgba(139, 195, 74, 0.7);
   transition: all 0.3s;
   font-family: 'Cinzel', serif;
   position: relative;
@@ -448,31 +481,31 @@ const getParticleDotStyle = (index: number) => {
   transform: translateY(-50%);
   width: 2px;
   height: 12px;
-  background: rgba(74, 144, 226, 0.3);
+  background: rgba(139, 195, 74, 0.4);
   transition: all 0.3s;
 }
 
 .character-card:hover .faction-label {
-  color: rgba(74, 144, 226, 0.9);
-  text-shadow: 0 0 8px rgba(74, 144, 226, 0.4);
+  color: rgba(139, 195, 74, 1);
+  text-shadow: 0 0 8px rgba(139, 195, 74, 0.5);
 }
 
 .character-card:hover .faction-label::after {
   height: 16px;
-  background: rgba(74, 144, 226, 0.6);
-  box-shadow: 0 0 8px rgba(74, 144, 226, 0.4);
+  background: rgba(139, 195, 74, 0.7);
+  box-shadow: 0 0 8px rgba(139, 195, 74, 0.5);
 }
 
 .faction-icon {
   font-size: 0.85rem;
   opacity: 0.7;
   transition: all 0.3s;
-  filter: drop-shadow(0 0 3px rgba(74, 144, 226, 0.4));
+  filter: drop-shadow(0 0 3px rgba(139, 195, 74, 0.4));
 }
 
 .character-card:hover .faction-icon {
   opacity: 1;
-  filter: drop-shadow(0 0 6px rgba(74, 144, 226, 0.6));
+  filter: drop-shadow(0 0 6px rgba(139, 195, 74, 0.6));
 }
 
 .faction-text {
@@ -496,11 +529,11 @@ const getParticleDotStyle = (index: number) => {
 
 .character-card:hover {
   transform: translateY(-15px) scale(1.03);
-  border-color: rgba(74, 144, 226, 0.8);
+  border-color: rgba(139, 195, 74, 0.9);
   box-shadow: 
-    0 25px 80px rgba(74, 144, 226, 0.5),
-    inset 0 0 60px rgba(74, 144, 226, 0.25),
-    0 0 60px rgba(30, 144, 255, 0.7);
+    0 25px 80px rgba(139, 195, 74, 0.5),
+    inset 0 0 60px rgba(139, 195, 74, 0.25),
+    0 0 60px rgba(76, 175, 80, 0.7);
 }
 
 .card-glow {
@@ -509,7 +542,7 @@ const getParticleDotStyle = (index: number) => {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(74, 144, 226, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 195, 74, 0.3) 0%, rgba(76, 175, 80, 0.2) 50%, transparent 70%);
   opacity: 0;
   transition: opacity 0.5s;
   pointer-events: none;
@@ -569,7 +602,7 @@ const getParticleDotStyle = (index: number) => {
   transform: translate(-50%, -50%);
   width: 140px;
   height: 140px;
-  background: radial-gradient(circle, rgba(74, 144, 226, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 195, 74, 0.15) 0%, transparent 70%);
   border-radius: 50%;
   opacity: 0.6;
   transition: all 0.4s;
@@ -579,12 +612,12 @@ const getParticleDotStyle = (index: number) => {
 .character-card:hover .icon-background {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1.2);
-  background: radial-gradient(circle, rgba(74, 144, 226, 0.25) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 195, 74, 0.25) 0%, rgba(76, 175, 80, 0.15) 50%, transparent 70%);
 }
 
 .character-icon {
   font-size: 4.5rem;
-  filter: drop-shadow(0 0 25px rgba(74, 144, 226, 0.7)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 0 25px rgba(139, 195, 74, 0.7)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   z-index: 2;
@@ -593,7 +626,7 @@ const getParticleDotStyle = (index: number) => {
 
 .character-card:hover .character-icon {
   transform: scale(1.15) rotate(10deg);
-  filter: drop-shadow(0 0 40px rgba(74, 144, 226, 1)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 0 40px rgba(139, 195, 74, 1)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
   animation: iconFloat 2s ease-in-out infinite, iconPulse 1.5s ease-in-out infinite;
 }
 
@@ -608,10 +641,10 @@ const getParticleDotStyle = (index: number) => {
 
 @keyframes iconPulse {
   0%, 100% {
-    filter: drop-shadow(0 0 40px rgba(74, 144, 226, 1)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+    filter: drop-shadow(0 0 40px rgba(139, 195, 74, 1)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
   }
   50% {
-    filter: drop-shadow(0 0 60px rgba(74, 144, 226, 1.2)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+    filter: drop-shadow(0 0 60px rgba(139, 195, 74, 1.2)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
   }
 }
 
@@ -622,17 +655,17 @@ const getParticleDotStyle = (index: number) => {
   transform: translate(-50%, -50%);
   width: 90px;
   height: 90px;
-  border: 3px solid rgba(74, 144, 226, 0.5);
+  border: 3px solid rgba(139, 195, 74, 0.6);
   border-style: double;
   border-radius: 50%;
   animation: ringPulse 2s ease-in-out infinite;
-  box-shadow: 0 0 30px rgba(74, 144, 226, 0.5);
+  box-shadow: 0 0 30px rgba(139, 195, 74, 0.5);
 }
 
 .character-card:hover .icon-ring {
   animation: ringPulse 1s ease-in-out infinite, ringRotate 3s linear infinite;
-  border-color: rgba(74, 144, 226, 0.8);
-  box-shadow: 0 0 50px rgba(74, 144, 226, 0.8);
+  border-color: rgba(139, 195, 74, 0.9);
+  box-shadow: 0 0 50px rgba(139, 195, 74, 0.8);
 }
 
 @keyframes ringPulse {
@@ -667,10 +700,10 @@ const getParticleDotStyle = (index: number) => {
   position: absolute;
   width: 6px;
   height: 6px;
-  background: rgba(74, 144, 226, 0.8);
+  background: rgba(139, 195, 74, 0.8);
   border-radius: 50%;
   opacity: 0;
-  box-shadow: 0 0 10px rgba(74, 144, 226, 0.8);
+  box-shadow: 0 0 10px rgba(139, 195, 74, 0.8);
   top: 50%;
   left: 50%;
   margin-top: -3px;
@@ -778,14 +811,14 @@ const getParticleDotStyle = (index: number) => {
 .character-card h3 {
   font-family: 'Cinzel', serif;
   font-size: clamp(1.4rem, 2.5vw, 1.9rem);
-  color: #4A90E2;
+  color: #8bc34a;
   margin-bottom: 0.5rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 4px;
   text-shadow: 
-    0 0 15px rgba(74, 144, 226, 0.7),
-    0 0 30px rgba(74, 144, 226, 0.4),
+    0 0 15px rgba(139, 195, 74, 0.7),
+    0 0 30px rgba(76, 175, 80, 0.4),
     2px 2px 4px rgba(0, 0, 0, 0.8);
   transition: all 0.3s;
   position: relative;
@@ -794,10 +827,10 @@ const getParticleDotStyle = (index: number) => {
 .name-underline {
   width: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent, #4A90E2, transparent);
+  background: linear-gradient(90deg, transparent, #8bc34a, transparent);
   margin: 0 auto;
   transition: width 0.4s ease;
-  box-shadow: 0 0 10px rgba(74, 144, 226, 0.6);
+  box-shadow: 0 0 10px rgba(139, 195, 74, 0.6);
 }
 
 .character-card:hover .name-underline {
@@ -807,13 +840,13 @@ const getParticleDotStyle = (index: number) => {
 .character-card:hover h3 {
   transform: scale(1.05);
   text-shadow: 
-    0 0 20px rgba(74, 144, 226, 1),
-    0 0 40px rgba(74, 144, 226, 0.6),
+    0 0 20px rgba(139, 195, 74, 1),
+    0 0 40px rgba(76, 175, 80, 0.6),
     2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .character-description {
-  color: rgba(212, 175, 55, 0.95);
+  color: rgba(200, 230, 201, 0.95);
   font-size: clamp(0.85rem, 1vw, 0.95rem);
   line-height: 1.7;
   font-weight: 400;
@@ -824,8 +857,8 @@ const getParticleDotStyle = (index: number) => {
 }
 
 .character-card:hover .character-description {
-  color: #d4af37;
-  text-shadow: 0 2px 6px rgba(212, 175, 55, 0.8);
+  color: #c8e6c9;
+  text-shadow: 0 2px 6px rgba(139, 195, 74, 0.8);
 }
 
 .character-stats {
@@ -843,35 +876,35 @@ const getParticleDotStyle = (index: number) => {
   gap: 0.4rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: rgba(212, 175, 55, 0.7);
+  color: rgba(200, 230, 201, 0.8);
   transition: all 0.3s;
 }
 
 .character-card:hover .stat-item {
-  color: rgba(212, 175, 55, 0.95);
-  text-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+  color: rgba(200, 230, 201, 1);
+  text-shadow: 0 0 6px rgba(139, 195, 74, 0.5);
 }
 
 .stat-separator {
-  color: rgba(212, 175, 55, 0.4);
+  color: rgba(139, 195, 74, 0.5);
   font-size: 0.9rem;
   transition: all 0.3s;
 }
 
 .character-card:hover .stat-separator {
-  color: rgba(212, 175, 55, 0.6);
+  color: rgba(139, 195, 74, 0.7);
 }
 
 .stat-icon {
   font-size: 0.9rem;
   opacity: 0.8;
   transition: all 0.3s;
-  filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.4));
+  filter: drop-shadow(0 0 3px rgba(139, 195, 74, 0.4));
 }
 
 .character-card:hover .stat-icon {
   opacity: 1;
-  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.6));
+  filter: drop-shadow(0 0 6px rgba(139, 195, 74, 0.6));
 }
 
 .stat-label {
@@ -893,7 +926,7 @@ const getParticleDotStyle = (index: number) => {
 .footer-divider {
   width: 60%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 195, 74, 0.4), transparent);
   transition: all 0.4s ease;
   position: relative;
 }
@@ -906,22 +939,22 @@ const getParticleDotStyle = (index: number) => {
   transform: translate(-50%, -50%);
   width: 8px;
   height: 8px;
-  background: rgba(74, 144, 226, 0.3);
+  background: rgba(139, 195, 74, 0.4);
   border-radius: 50%;
   transition: all 0.4s ease;
 }
 
 .character-card:hover .footer-divider {
   width: 80%;
-  background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.6), transparent);
-  box-shadow: 0 0 10px rgba(74, 144, 226, 0.4);
+  background: linear-gradient(90deg, transparent, rgba(139, 195, 74, 0.7), transparent);
+  box-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
 }
 
 .character-card:hover .footer-divider::before {
   width: 12px;
   height: 12px;
-  background: rgba(74, 144, 226, 0.8);
-  box-shadow: 0 0 15px rgba(74, 144, 226, 0.6);
+  background: rgba(139, 195, 74, 0.9);
+  box-shadow: 0 0 15px rgba(139, 195, 74, 0.7);
 }
 
 .select-hint {
@@ -929,7 +962,7 @@ const getParticleDotStyle = (index: number) => {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  color: rgba(212, 175, 55, 0.7);
+  color: rgba(200, 230, 201, 0.8);
   font-size: clamp(0.85rem, 1vw, 0.95rem);
   font-weight: 500;
   letter-spacing: 4px;
@@ -945,7 +978,7 @@ const getParticleDotStyle = (index: number) => {
   left: -10px;
   width: 4px;
   height: 4px;
-  background: rgba(212, 175, 55, 0.5);
+  background: rgba(139, 195, 74, 0.6);
   border-radius: 50%;
   transition: all 0.4s ease;
   opacity: 0;
@@ -957,7 +990,7 @@ const getParticleDotStyle = (index: number) => {
   right: -10px;
   width: 4px;
   height: 4px;
-  background: rgba(212, 175, 55, 0.5);
+  background: rgba(139, 195, 74, 0.6);
   border-radius: 50%;
   transition: all 0.4s ease;
   opacity: 0;
@@ -968,8 +1001,8 @@ const getParticleDotStyle = (index: number) => {
   opacity: 1;
   width: 6px;
   height: 6px;
-  background: rgba(212, 175, 55, 0.8);
-  box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+  background: rgba(139, 195, 74, 0.9);
+  box-shadow: 0 0 8px rgba(139, 195, 74, 0.7);
 }
 
 .hint-arrow {
@@ -980,8 +1013,8 @@ const getParticleDotStyle = (index: number) => {
 }
 
 .character-card:hover .select-hint {
-  color: rgba(212, 175, 55, 1);
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  color: rgba(200, 230, 201, 1);
+  text-shadow: 0 0 10px rgba(139, 195, 74, 0.6);
   letter-spacing: 5px;
 }
 

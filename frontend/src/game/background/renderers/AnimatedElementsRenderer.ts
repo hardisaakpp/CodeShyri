@@ -35,7 +35,7 @@ export class AnimatedElementsRenderer {
     ]
     
     // Crear menos nubes para mejor rendimiento
-    const numClouds = 4 + Math.floor(Math.random() * 2) // 4-5 nubes
+    const numClouds = 2 + Math.floor(Math.random() * 2) // 2-3 nubes (reducido de 4-5)
     
     for (let i = 0; i < numClouds; i++) {
       const startX = -200 - Math.random() * 200
@@ -204,7 +204,7 @@ export class AnimatedElementsRenderer {
     const starColors = [0xFFD700, 0xFF69B4, 0x00FFFF, 0xFFA500, 0xFF1493, 0x87CEEB]
     
     // Reducir número de estrellas para mejor rendimiento
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 15; i++) { // Reducido de 25 a 15 para mejor FPS
       const starX = Math.random() * this.width
       const starY = Math.random() * (this.horizonY - 50)
       const starSize = 1.5 + Math.random() * 3
@@ -297,18 +297,17 @@ export class AnimatedElementsRenderer {
     sunGraphics.fillStyle(intiDarkGold, 0.25)
     sunGraphics.fillCircle(0, 0, 110)
     
-    // Rayos decorativos en estilo inca (zigzag escalonado)
-    const numRays = 16 // Número de rayos principales
+    // Rayos decorativos en estilo inca (simplificado para mejor rendimiento)
+    const numRays = 10 // Reducido de 16 a 10 para mejor FPS
     const rayLength = sunRadius * 1.4
     const rayWidth = 8
-    const rayStep = 4 // Escalonado para efecto zigzag
     
     for (let i = 0; i < numRays; i++) {
       const angle = (i / numRays) * Math.PI * 2 - Math.PI / 2
       const cos = Math.cos(angle)
       const sin = Math.sin(angle)
       
-      // Rayo principal (zigzag escalonado)
+      // Rayo simplificado (sin zigzag complejo para mejor rendimiento)
       sunGraphics.fillStyle(intiGold, 0.9)
       sunGraphics.beginPath()
       
@@ -317,31 +316,14 @@ export class AnimatedElementsRenderer {
       const startX = cos * baseRadius
       const startY = sin * baseRadius
       
-      // Crear efecto escalonado (zigzag)
-      const steps = 3
-      for (let step = 0; step <= steps; step++) {
-        const t = step / steps
-        const currentLength = baseRadius + (rayLength - baseRadius) * t
-        const zigzagOffset = (step % 2 === 0 ? 1 : -1) * rayStep * (1 - t * 0.5)
-        const perpCos = -sin
-        const perpSin = cos
-        
-        const x = cos * currentLength + perpCos * zigzagOffset
-        const y = sin * currentLength + perpSin * zigzagOffset
-        
-        if (step === 0) {
-          sunGraphics.moveTo(x, y)
-        } else {
-          sunGraphics.lineTo(x, y)
-        }
-      }
-      
-      // Completar el rayo con forma trapezoidal
+      // Rayo recto simplificado (más eficiente)
       const endX = cos * rayLength
       const endY = sin * rayLength
       const perpCos = -sin
       const perpSin = cos
       
+      sunGraphics.moveTo(startX, startY)
+      sunGraphics.lineTo(endX, endY)
       sunGraphics.lineTo(
         endX + perpCos * rayWidth,
         endY + perpSin * rayWidth
@@ -353,7 +335,7 @@ export class AnimatedElementsRenderer {
       sunGraphics.closePath()
       sunGraphics.fillPath()
       
-      // Resalte en el rayo
+      // Resalte simplificado en el rayo
       sunGraphics.fillStyle(intiYellow, 0.7)
       sunGraphics.beginPath()
       sunGraphics.moveTo(startX, startY)
@@ -422,7 +404,7 @@ export class AnimatedElementsRenderer {
     sunContainer.add(sunGraphics)
     sunGraphics.setPosition(0, 0)
     
-    // Animación de pulso suave y rotación muy lenta
+    // Animación de pulso suave (rotación eliminada para mejor rendimiento)
     this.scene.tweens.add({
       targets: sunContainer,
       scaleX: { from: 0.97, to: 1.03 },
@@ -434,14 +416,7 @@ export class AnimatedElementsRenderer {
       ease: 'Sine.easeInOut'
     })
     
-    // Rotación muy lenta de los rayos (opcional, efecto sutil)
-    this.scene.tweens.add({
-      targets: sunContainer,
-      angle: { from: 0, to: 360 },
-      duration: 120000, // 2 minutos para una rotación completa
-      repeat: -1,
-      ease: 'Linear'
-    })
+    // Rotación eliminada para mejorar FPS (era muy lenta pero consumía recursos)
     
     this.animatedElements.push(sunContainer)
   }

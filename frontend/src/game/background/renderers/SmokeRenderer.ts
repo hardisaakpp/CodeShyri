@@ -23,7 +23,7 @@ export class SmokeRenderer {
     const villageCenterX = this.width / 2
     
     // Crear humo para algunas casitas del poblado (no todas)
-    const numSmokeSources = 3 + Math.floor(Math.random() * 3) // 3-5 chimeneas con humo
+    const numSmokeSources = 2 + Math.floor(Math.random() * 2) // 2-3 chimeneas con humo (reducido de 3-5)
     
     for (let i = 0; i < numSmokeSources; i++) {
       // Seleccionar una posición aleatoria cerca del centro del poblado
@@ -42,8 +42,8 @@ export class SmokeRenderer {
       
       const smokeGraphics = this.scene.add.graphics()
       
-      // Crear múltiples partículas de humo que ascienden
-      const numParticles = 8 + Math.floor(Math.random() * 4) // 8-11 partículas
+      // Crear múltiples partículas de humo que ascienden (reducido para mejor rendimiento)
+      const numParticles = 4 + Math.floor(Math.random() * 3) // 4-6 partículas (reducido de 8-11)
       
       for (let j = 0; j < numParticles; j++) {
         const particleSize = 4 + Math.random() * 3 // Tamaño de partícula: 4-7 píxeles

@@ -5,7 +5,7 @@ import { TreeColorGenerator } from './TreeColorGenerator'
 export class TreeAnimations {
   // Pool de hojas reutilizables para optimizar rendimiento
   private static leafPool: Phaser.GameObjects.Graphics[] = []
-  private static readonly MAX_LEAVES_ON_SCREEN = 15 // Límite máximo de hojas en pantalla
+  private static readonly MAX_LEAVES_ON_SCREEN = 8 // Reducido de 15 a 8 para mejor FPS
   private static activeLeavesCount = 0
 
   /**
@@ -79,9 +79,9 @@ export class TreeAnimations {
     treeData: TreeData,
     leafParticles: Phaser.GameObjects.Graphics[]
   ): void {
-    // Crear hojas que caen periódicamente
-    const leafInterval = 2000 + Math.random() * 3000 // Cada 2-5 segundos
-    const numLeavesPerFall = 2 + Math.floor(Math.random() * 3) // 2-4 hojas por caída
+    // Crear hojas que caen periódicamente (intervalos aumentados para mejor rendimiento)
+    const leafInterval = 4000 + Math.random() * 4000 // Cada 4-8 segundos (aumentado de 2-5)
+    const numLeavesPerFall = 1 + Math.floor(Math.random() * 2) // 1-2 hojas por caída (reducido de 2-4)
     
     const createLeaves = () => {
       for (let i = 0; i < numLeavesPerFall; i++) {

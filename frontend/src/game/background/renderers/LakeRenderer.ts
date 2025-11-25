@@ -1,13 +1,6 @@
 import type Phaser from 'phaser'
 
-interface WaveData {
-  graphics: Phaser.GameObjects.Graphics
-  offset: number
-  speed: number
-}
-
 export class LakeRenderer {
-  private waveElements: WaveData[] = []
 
   constructor(
     private scene: Phaser.Scene,
@@ -132,7 +125,7 @@ export class LakeRenderer {
   }
 
   /**
-   * Crea ondas animadas en la superficie del agua (optimizado: menos frecuente)
+   * Crea ondas animadas en la superficie del agua (optimizado: usar tweens en lugar de redibujar)
    */
   private createAnimatedWaves(
     lakeCenterX: number,
@@ -141,62 +134,70 @@ export class LakeRenderer {
     lakeHeight: number
   ): void {
     // Reducir número de ondas para mejor rendimiento
-    const numWaves = 4 // Reducido de 6 a 4
+    const numWaves = 3 // Reducido de 4 a 3 para mejor FPS
     
     for (let i = 0; i < numWaves; i++) {
       const waveGraphics = this.scene.add.graphics()
       const waveY = (Math.random() - 0.5) * lakeHeight * 0.4
       const waveWidth = lakeWidth * (0.3 + Math.random() * 0.4)
       const waveX = (Math.random() - 0.5) * lakeWidth * 0.3
-      const speed = 0.02 + Math.random() * 0.03 // Velocidad de la onda
-      const offset = Math.random() * Math.PI * 2 // Offset inicial aleatorio
       
-      const waveData: WaveData = {
-        graphics: waveGraphics,
-        offset: offset,
-        speed: speed
-      }
-      this.waveElements.push(waveData)
+      // Dibujar onda estática una sola vez (sin redibujar)
+      waveGraphics.lineStyle(1.5, 0x4A9FB5, 0.4)
+      waveGraphics.beginPath()
       
-      // Función para actualizar la onda (simplificada)
-      const updateWave = () => {
-        waveGraphics.clear()
-        waveGraphics.lineStyle(1.5, 0x4A9FB5, 0.4 + Math.sin(waveData.offset) * 0.1)
-        waveGraphics.beginPath()
+      // Crear forma de onda estática simplificada
+      const numPoints = 15 // Reducido de 20 a 15 para menos complejidad
+      for (let j = 0; j <= numPoints; j++) {
+        const t = j / numPoints
+        const x = waveX + t * waveWidth - waveWidth / 2
+        // Onda sinusoidal estática (sin animación de fase)
+        const wavePhase = t * Math.PI * 4
+        const y = waveY + Math.sin(wavePhase) * 2
         
-        // Reducir puntos para mejor rendimiento (30 → 20)
-        const numPoints = 20
-        for (let j = 0; j <= numPoints; j++) {
-          const t = j / numPoints
-          const x = waveX + t * waveWidth - waveWidth / 2
-          // Onda sinusoidal animada
-          const wavePhase = (t * Math.PI * 4) + (waveData.offset * 2)
-          const y = waveY + Math.sin(wavePhase) * (2 + Math.sin(waveData.offset * 3) * 1)
-          
-          if (j === 0) {
-            waveGraphics.moveTo(x, y)
-          } else {
-            waveGraphics.lineTo(x, y)
-          }
+        if (j === 0) {
+          waveGraphics.moveTo(x, y)
+        } else {
+          waveGraphics.lineTo(x, y)
         }
-        waveGraphics.strokePath()
-        
-        // Actualizar offset para animación
-        waveData.offset += waveData.speed
       }
+      waveGraphics.strokePath()
       
       waveGraphics.setPosition(lakeCenterX, lakeY)
       waveGraphics.setDepth(3.1)
       
-      // Actualizar onda con menor frecuencia (16ms → 100ms para mejor rendimiento)
-      this.scene.time.addEvent({
-        delay: 100, // Reducido de 16ms a 100ms (10 veces/seg en lugar de 60)
-        callback: updateWave,
+      // Usar tweens para animación en lugar de redibujar constantemente
+      // Animación de movimiento horizontal suave
+      const moveDistance = waveWidth * 0.3
+      this.scene.tweens.add({
+        targets: waveGraphics,
+        x: lakeCenterX + waveX + moveDistance,
+        duration: 4000 + Math.random() * 2000,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
         repeat: -1
       })
       
-      // Inicializar primera renderización
-      updateWave()
+      // Animación de opacidad sutil (efecto de brillo)
+      this.scene.tweens.add({
+        targets: waveGraphics,
+        alpha: { from: 0.3, to: 0.5 },
+        duration: 2000 + Math.random() * 1000,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+        delay: Math.random() * 1000
+      })
+      
+      // Animación vertical muy sutil
+      this.scene.tweens.add({
+        targets: waveGraphics,
+        y: lakeY + waveY + (Math.random() - 0.5) * 3,
+        duration: 3000 + Math.random() * 2000,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1
+      })
     }
   }
 

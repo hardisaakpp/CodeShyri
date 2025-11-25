@@ -18,19 +18,19 @@
         <div class="header-right">
           <div class="game-stats">
             <div class="stat-item">
-              <span class="stat-icon">💎</span>
+              <span class="stat-icon">🌽</span>
               <span class="stat-value">{{ score }}</span>
-              <span class="stat-label">Puntos</span>
+              <span class="stat-label">Maíz</span>
             </div>
             <div class="stat-item">
-              <span class="stat-icon">⭐</span>
+              <span class="stat-icon">⛰️</span>
               <span class="stat-value">{{ levelId }}</span>
               <span class="stat-label">Nivel</span>
             </div>
             <div class="stat-item">
-              <span class="stat-icon">⚡</span>
+              <span class="stat-icon">🌿</span>
               <span class="stat-value">100%</span>
-              <span class="stat-label">Energía</span>
+              <span class="stat-label">Vitalidad</span>
             </div>
           </div>
         </div>
@@ -44,8 +44,8 @@
         <div class="code-editor-container">
           <div class="editor-header">
             <div class="editor-title">
-              <span class="editor-icon">💻</span>
-              <span>Editor de Código</span>
+              <span class="editor-icon">📜</span>
+              <span>Quipu de Código</span>
             </div>
             <div class="editor-actions">
               <button @click="runCode" class="run-button" :disabled="isRunning || isExecuting">
@@ -65,8 +65,8 @@
 
       <div class="game-console">
         <div class="console-header">
-          <span class="console-icon">📟</span>
-          <span>Consola de Ejecución</span>
+          <span class="console-icon">🌾</span>
+          <span>Mensajes de Pachamama</span>
           <button @click="clearConsole" class="clear-console-btn">🗑️ Limpiar</button>
         </div>
         <div class="console-output" ref="consoleOutput">
@@ -184,7 +184,7 @@ onUnmounted(() => {
 })
 
 const getInitialCode = (): string => {
-  return `// Bienvenido a CodeShyri - Azeroth del Código!
+  return `// Bienvenido a CodeShyri - El Reino Andino del Código!
 // Controla a ${currentCharacter.value?.name || 'tu personaje'} con estas funciones:
 
 // === MOVIMIENTO BÁSICO ===
@@ -318,9 +318,11 @@ const getButtonText = (): string => {
   width: 100%;
   height: 100vh;
   background: 
-    linear-gradient(135deg, #2c1810 0%, #1a0f08 50%, #0d0603 100%),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  color: #d4af37;
+    linear-gradient(135deg, #1a3d2e 0%, #2d5a3d 50%, #1a3d2e 100%),
+    radial-gradient(circle at 20% 30%, rgba(139, 195, 74, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a7c5a' fill-opacity='0.05'%3E%3Cpath d='M50 50 L60 40 L70 50 L60 60 Z M30 50 L40 40 L50 50 L40 60 Z M50 30 L60 20 L70 30 L60 40 Z M50 70 L60 60 L70 70 L60 80 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  color: #c8e6c9;
   overflow: hidden;
   position: relative;
 }
@@ -337,15 +339,28 @@ const getButtonText = (): string => {
   align-items: center;
   padding: 1rem 2rem;
   background: 
-    linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 15, 8, 0.95) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
-  border-bottom: 4px solid rgba(212, 175, 55, 0.4);
-  border-style: double;
+    linear-gradient(135deg, rgba(29, 90, 61, 0.95) 0%, rgba(26, 61, 46, 0.95) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(76, 175, 80, 0.1) 10px, rgba(76, 175, 80, 0.1) 20px);
+  border-bottom: none;
   backdrop-filter: blur(10px);
   box-shadow: 
     0 4px 20px rgba(0, 0, 0, 0.6),
-    inset 0 -2px 10px rgba(212, 175, 55, 0.1);
+    inset 0 -2px 10px rgba(139, 195, 74, 0.15);
   z-index: 10;
+  position: relative;
+}
+
+.game-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='30' height='4' viewBox='0 0 30 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='2' opacity='0.8'%3E%3Cpath d='M0 2 Q7 0 15 2 Q23 4 30 2'/%3E%3Cpath d='M15 0 Q18 2 15 4 Q12 2 15 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 30px 4px;
+  background-repeat: repeat-x;
 }
 
 .header-left {
@@ -360,12 +375,11 @@ const getButtonText = (): string => {
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
   background: 
-    linear-gradient(135deg, rgba(44, 24, 16, 0.8) 0%, rgba(26, 15, 8, 0.8) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
-  border: 3px solid rgba(212, 175, 55, 0.4);
-  border-style: double;
+    linear-gradient(135deg, rgba(29, 90, 61, 0.8) 0%, rgba(26, 61, 46, 0.8) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
+  border: none;
   border-radius: 8px;
-  color: #d4af37;
+  color: #c8e6c9;
   font-family: 'Cinzel', serif;
   font-weight: 600;
   font-size: 0.95rem;
@@ -376,18 +390,41 @@ const getButtonText = (): string => {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.4),
-    inset 0 0 10px rgba(212, 175, 55, 0.1);
+    inset 0 0 10px rgba(139, 195, 74, 0.15);
+  position: relative;
+}
+
+.home-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='25' height='25' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='1.8' opacity='0.75'%3E%3Cpath d='M12.5 1 Q15 7 12.5 11 Q10 7 12.5 1'/%3E%3Cpath d='M1 12.5 Q7 15 11 12.5 Q7 10 1 12.5'/%3E%3Cpath d='M12.5 11 Q15 17 12.5 24 Q10 17 12.5 11'/%3E%3Cpath d='M24 12.5 Q18 15 14 12.5 Q18 10 24 12.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 25px 25px;
+  background-repeat: repeat;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .home-button:hover {
   background: 
-    linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(139, 69, 19, 0.2) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
-  border-color: rgba(212, 175, 55, 0.6);
+    linear-gradient(135deg, rgba(139, 195, 74, 0.25) 0%, rgba(76, 175, 80, 0.2) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
+  border-color: rgba(139, 195, 74, 0.7);
   transform: translateY(-2px);
   box-shadow: 
-    0 4px 12px rgba(212, 175, 55, 0.4),
-    inset 0 0 15px rgba(212, 175, 55, 0.2);
+    0 4px 12px rgba(139, 195, 74, 0.5),
+    inset 0 0 15px rgba(139, 195, 74, 0.25);
 }
 
 .home-button:active {
@@ -396,7 +433,7 @@ const getButtonText = (): string => {
 
 .home-icon {
   font-size: 1.2rem;
-  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+  filter: drop-shadow(0 0 5px rgba(139, 195, 74, 0.6));
 }
 
 .home-text {
@@ -409,19 +446,41 @@ const getButtonText = (): string => {
   gap: 1rem;
   padding: 0.5rem 1.5rem;
   background: 
-    linear-gradient(135deg, rgba(44, 24, 16, 0.8) 0%, rgba(26, 15, 8, 0.8) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+    linear-gradient(135deg, rgba(29, 90, 61, 0.8) 0%, rgba(26, 61, 46, 0.8) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
   border-radius: 8px;
-  border: 3px solid rgba(212, 175, 55, 0.4);
-  border-style: double;
+  border: none;
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.4),
-    inset 0 0 15px rgba(212, 175, 55, 0.1);
+    inset 0 0 15px rgba(139, 195, 74, 0.15);
+  position: relative;
+}
+
+.character-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='25' height='25' viewBox='0 0 25 25' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='1.8' opacity='0.75'%3E%3Cpath d='M12.5 1 Q15 7 12.5 11 Q10 7 12.5 1'/%3E%3Cpath d='M1 12.5 Q7 15 11 12.5 Q7 10 1 12.5'/%3E%3Cpath d='M12.5 11 Q15 17 12.5 24 Q10 17 12.5 11'/%3E%3Cpath d='M24 12.5 Q18 15 14 12.5 Q18 10 24 12.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 25px 25px;
+  background-repeat: repeat;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .character-icon-small {
   font-size: 2.5rem;
-  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 0 10px rgba(139, 195, 74, 0.7)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
 }
 
 .character-info-header h2 {
@@ -429,11 +488,11 @@ const getButtonText = (): string => {
   font-family: 'Cinzel', serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #d4af37;
+  color: #8bc34a;
   text-transform: uppercase;
   letter-spacing: 3px;
   text-shadow: 
-    0 0 10px rgba(212, 175, 55, 0.5),
+    0 0 10px rgba(139, 195, 74, 0.6),
     2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
@@ -461,27 +520,49 @@ const getButtonText = (): string => {
   align-items: center;
   padding: 0.5rem 1rem;
   background: 
-    linear-gradient(135deg, rgba(44, 24, 16, 0.6) 0%, rgba(26, 15, 8, 0.6) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
+    linear-gradient(135deg, rgba(29, 90, 61, 0.6) 0%, rgba(26, 61, 46, 0.6) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
   border-radius: 8px;
-  border: 2px solid rgba(212, 175, 55, 0.3);
-  border-style: double;
+  border: none;
   min-width: 80px;
   transition: all 0.3s;
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.4),
-    inset 0 0 10px rgba(212, 175, 55, 0.05);
+    inset 0 0 10px rgba(139, 195, 74, 0.1);
+  position: relative;
+}
+
+.stat-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='1.5' opacity='0.7'%3E%3Cpath d='M10 1 Q12 6 10 9 Q8 6 10 1'/%3E%3Cpath d='M1 10 Q6 12 9 10 Q6 8 1 10'/%3E%3Cpath d='M10 9 Q12 15 10 19 Q8 15 10 9'/%3E%3Cpath d='M19 10 Q14 12 11 10 Q14 8 19 10'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 20px 20px;
+  background-repeat: repeat;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .stat-item:hover {
   background: 
-    linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(139, 69, 19, 0.15) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
-  border-color: rgba(212, 175, 55, 0.5);
+    linear-gradient(135deg, rgba(139, 195, 74, 0.2) 0%, rgba(76, 175, 80, 0.2) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
+  border-color: rgba(139, 195, 74, 0.6);
   transform: translateY(-2px);
   box-shadow: 
-    0 4px 12px rgba(212, 175, 55, 0.3),
-    inset 0 0 15px rgba(212, 175, 55, 0.1);
+    0 4px 12px rgba(139, 195, 74, 0.4),
+    inset 0 0 15px rgba(139, 195, 74, 0.15);
 }
 
 .stat-icon {
@@ -494,10 +575,10 @@ const getButtonText = (): string => {
   font-family: 'Cinzel', serif;
   font-size: 1.3rem;
   font-weight: 700;
-  color: #d4af37;
+  color: #8bc34a;
   margin-bottom: 0.2rem;
   text-shadow: 
-    0 0 10px rgba(212, 175, 55, 0.5),
+    0 0 10px rgba(139, 195, 74, 0.6),
     2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
@@ -518,14 +599,29 @@ const getButtonText = (): string => {
 .game-canvas-container {
   flex: 1;
   background: 
-    linear-gradient(135deg, #2c1810 0%, #1a0f08 50%, #0d0603 100%),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    linear-gradient(135deg, #1a3d2e 0%, #2d5a3d 50%, #1a3d2e 100%),
+    radial-gradient(circle at 20% 30%, rgba(139, 195, 74, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a7c5a' fill-opacity='0.05'%3E%3Cpath d='M50 50 L60 40 L70 50 L60 60 Z M30 50 L40 40 L50 50 L40 60 Z M50 30 L60 20 L70 30 L60 40 Z M50 70 L60 60 L70 70 L60 80 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  border-right: 4px solid rgba(212, 175, 55, 0.3);
-  border-style: double;
+  border-right: none;
+}
+
+.game-canvas-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='4' height='30' viewBox='0 0 4 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='2' opacity='0.8'%3E%3Cpath d='M2 0 Q0 7 2 15 Q4 23 2 30'/%3E%3Cpath d='M2 15 Q1 18 2 20 Q3 18 2 15'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 4px 30px;
+  background-repeat: repeat-y;
+  z-index: 1;
 }
 
 .game-canvas-container::before {
@@ -536,8 +632,8 @@ const getButtonText = (): string => {
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(139, 69, 19, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 20% 30%, rgba(139, 195, 74, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.08) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -553,11 +649,25 @@ const getButtonText = (): string => {
   display: flex;
   flex-direction: column;
   background: 
-    linear-gradient(180deg, #1a0f08 0%, #0d0603 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
-  border-left: 4px solid rgba(212, 175, 55, 0.3);
-  border-style: double;
+    linear-gradient(180deg, #1a3d2e 0%, #0f2418 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(76, 175, 80, 0.1) 10px, rgba(76, 175, 80, 0.1) 20px);
+  border-left: none;
   box-shadow: -5px 0 20px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.code-editor-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='4' height='30' viewBox='0 0 4 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='2' opacity='0.8'%3E%3Cpath d='M2 0 Q0 7 2 15 Q4 23 2 30'/%3E%3Cpath d='M2 15 Q1 18 2 20 Q3 18 2 15'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 4px 30px;
+  background-repeat: repeat-y;
+  z-index: 1;
 }
 
 .editor-header {
@@ -566,10 +676,23 @@ const getButtonText = (): string => {
   align-items: center;
   padding: 1rem 1.5rem;
   background: 
-    linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 15, 8, 0.95) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
-  border-bottom: 3px solid rgba(212, 175, 55, 0.3);
-  border-style: double;
+    linear-gradient(135deg, rgba(29, 90, 61, 0.95) 0%, rgba(26, 61, 46, 0.95) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
+  border-bottom: none;
+  position: relative;
+}
+
+.editor-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='30' height='3' viewBox='0 0 30 3' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='2' opacity='0.75'%3E%3Cpath d='M0 1.5 Q7 0 15 1.5 Q23 3 30 1.5'/%3E%3Cpath d='M15 0 Q18 1.5 15 3 Q12 1.5 15 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 30px 3px;
+  background-repeat: repeat-x;
 }
 
 .editor-title {
@@ -579,7 +702,7 @@ const getButtonText = (): string => {
   font-family: 'Cinzel', serif;
   font-weight: 600;
   font-size: 1rem;
-  color: #d4af37;
+  color: #8bc34a;
   text-transform: uppercase;
   letter-spacing: 2px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
@@ -615,23 +738,45 @@ const getButtonText = (): string => {
 
 .run-button {
   background: 
-    linear-gradient(135deg, #556b2f 0%, #6b8e23 50%, #8b6914 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+    linear-gradient(135deg, #558b2f 0%, #689f38 50%, #7cb342 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(76, 175, 80, 0.1) 3px, rgba(76, 175, 80, 0.1) 6px);
   color: #fff;
-  border: 2px solid rgba(212, 175, 55, 0.4);
-  border-style: double;
+  border: none;
   box-shadow: 
     0 4px 15px rgba(0, 0, 0, 0.6),
-    inset 0 0 10px rgba(212, 175, 55, 0.1);
+    inset 0 0 10px rgba(139, 195, 74, 0.15);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.run-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.5' opacity='0.6'%3E%3Cpath d='M10 1 Q12 6 10 9 Q8 6 10 1'/%3E%3Cpath d='M1 10 Q6 12 9 10 Q6 8 1 10'/%3E%3Cpath d='M10 9 Q12 15 10 19 Q8 15 10 9'/%3E%3Cpath d='M19 10 Q14 12 11 10 Q14 8 19 10'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 20px 20px;
+  background-repeat: repeat;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .run-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 
-    0 6px 20px rgba(107, 142, 35, 0.6),
-    inset 0 0 15px rgba(212, 175, 55, 0.2);
-  border-color: rgba(212, 175, 55, 0.6);
+    0 6px 20px rgba(139, 195, 74, 0.6),
+    inset 0 0 15px rgba(139, 195, 74, 0.25);
+  border-color: rgba(139, 195, 74, 0.7);
 }
 
 .run-button:disabled {
@@ -669,23 +814,45 @@ const getButtonText = (): string => {
 
 .reset-button {
   background: 
-    linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+    linear-gradient(135deg, #5d4037 0%, #6d4c41 50%, #8d6e63 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(76, 175, 80, 0.1) 3px, rgba(76, 175, 80, 0.1) 6px);
   color: #fff;
-  border: 2px solid rgba(212, 175, 55, 0.4);
-  border-style: double;
+  border: none;
   box-shadow: 
     0 4px 15px rgba(0, 0, 0, 0.6),
-    inset 0 0 10px rgba(212, 175, 55, 0.1);
+    inset 0 0 10px rgba(139, 195, 74, 0.15);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.reset-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.5' opacity='0.6'%3E%3Cpath d='M10 1 Q12 6 10 9 Q8 6 10 1'/%3E%3Cpath d='M1 10 Q6 12 9 10 Q6 8 1 10'/%3E%3Cpath d='M10 9 Q12 15 10 19 Q8 15 10 9'/%3E%3Cpath d='M19 10 Q14 12 11 10 Q14 8 19 10'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 20px 20px;
+  background-repeat: repeat;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .reset-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 
-    0 6px 20px rgba(139, 69, 19, 0.6),
-    inset 0 0 15px rgba(212, 175, 55, 0.2);
-  border-color: rgba(212, 175, 55, 0.6);
+    0 6px 20px rgba(93, 64, 55, 0.6),
+    inset 0 0 15px rgba(139, 195, 74, 0.25);
+  border-color: rgba(139, 195, 74, 0.7);
 }
 
 .reset-button:disabled {
@@ -728,13 +895,27 @@ const getButtonText = (): string => {
 .game-console {
   height: 180px;
   background: 
-    linear-gradient(180deg, #1a0f08 0%, #0d0603 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px);
-  border-top: 4px solid rgba(212, 175, 55, 0.3);
-  border-style: double;
+    linear-gradient(180deg, #1a3d2e 0%, #0f2418 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(76, 175, 80, 0.1) 10px, rgba(76, 175, 80, 0.1) 20px);
+  border-top: none;
   display: flex;
   flex-direction: column;
   box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.game-console::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='30' height='4' viewBox='0 0 30 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='2' opacity='0.8'%3E%3Cpath d='M0 2 Q7 0 15 2 Q23 4 30 2'/%3E%3Cpath d='M15 0 Q18 2 15 4 Q12 2 15 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 30px 4px;
+  background-repeat: repeat-x;
+  z-index: 1;
 }
 
 .console-header {
@@ -743,17 +924,30 @@ const getButtonText = (): string => {
   gap: 0.75rem;
   padding: 0.75rem 1.5rem;
   background: 
-    linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 15, 8, 0.95) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px);
-  border-bottom: 3px solid rgba(212, 175, 55, 0.3);
-  border-style: double;
+    linear-gradient(135deg, rgba(29, 90, 61, 0.95) 0%, rgba(26, 61, 46, 0.95) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
+  border-bottom: none;
   font-family: 'Cinzel', serif;
   font-weight: 600;
   font-size: 0.9rem;
-  color: #d4af37;
+  color: #8bc34a;
   text-transform: uppercase;
   letter-spacing: 2px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.console-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='30' height='3' viewBox='0 0 30 3' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='2' opacity='0.75'%3E%3Cpath d='M0 1.5 Q7 0 15 1.5 Q23 3 30 1.5'/%3E%3Cpath d='M15 0 Q18 1.5 15 3 Q12 1.5 15 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 30px 3px;
+  background-repeat: repeat-x;
 }
 
 .console-icon {
@@ -763,11 +957,10 @@ const getButtonText = (): string => {
 .clear-console-btn {
   margin-left: auto;
   background: 
-    linear-gradient(135deg, rgba(44, 24, 16, 0.6) 0%, rgba(26, 15, 8, 0.6) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
-  border: 2px solid rgba(212, 175, 55, 0.3);
-  border-style: double;
-  color: rgba(212, 175, 55, 0.8);
+    linear-gradient(135deg, rgba(29, 90, 61, 0.6) 0%, rgba(26, 61, 46, 0.6) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(76, 175, 80, 0.1) 3px, rgba(76, 175, 80, 0.1) 6px);
+  border: none;
+  color: rgba(200, 230, 201, 0.9);
   padding: 0.3rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
@@ -776,15 +969,38 @@ const getButtonText = (): string => {
   transition: all 0.3s;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.clear-console-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='1.5' opacity='0.7'%3E%3Cpath d='M10 1 Q12 6 10 9 Q8 6 10 1'/%3E%3Cpath d='M1 10 Q6 12 9 10 Q6 8 1 10'/%3E%3Cpath d='M10 9 Q12 15 10 19 Q8 15 10 9'/%3E%3Cpath d='M19 10 Q14 12 11 10 Q14 8 19 10'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 20px 20px;
+  background-repeat: repeat;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .clear-console-btn:hover {
   background: 
-    linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(139, 69, 19, 0.2) 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
-  border-color: rgba(212, 175, 55, 0.5);
-  color: #d4af37;
-  box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3);
+    linear-gradient(135deg, rgba(139, 195, 74, 0.25) 0%, rgba(76, 175, 80, 0.2) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(76, 175, 80, 0.1) 3px, rgba(76, 175, 80, 0.1) 6px);
+  border-color: rgba(139, 195, 74, 0.6);
+  color: #c8e6c9;
+  box-shadow: 0 4px 8px rgba(139, 195, 74, 0.4);
 }
 
 .console-output {
@@ -858,12 +1074,12 @@ const getButtonText = (): string => {
 }
 
 .console-output::-webkit-scrollbar-thumb {
-  background: rgba(255, 215, 0, 0.3);
+  background: rgba(139, 195, 74, 0.4);
   border-radius: 4px;
 }
 
 .console-output::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 215, 0, 0.5);
+  background: rgba(139, 195, 74, 0.6);
 }
 </style>
 
