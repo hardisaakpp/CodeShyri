@@ -658,17 +658,27 @@ export class AnimatedElementsRenderer {
     sunGraphics.setPosition(sunX, sunY)
     sunGraphics.setDepth(1)
     
-    // Animación optimizada: solo pulso suave (sin rotación para mejor rendimiento)
+    // Animación optimizada: pulso suave + brillo mínimo (sin rotación para mejor rendimiento)
     const sunContainer = this.scene.add.container(sunX, sunY)
     sunContainer.add(sunGraphics)
     sunGraphics.setPosition(0, 0)
     
-    // Animación de pulso más suave y eficiente
+    // Animación de pulso suave y eficiente
     this.scene.tweens.add({
       targets: sunContainer,
       scaleX: { from: 0.98, to: 1.02 },
       scaleY: { from: 0.98, to: 1.02 },
       duration: 8000, // Más lento = menos cálculos por segundo
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    })
+    
+    // Animación de brillo muy sutil (alpha ligero) - mínimo impacto en FPS
+    this.scene.tweens.add({
+      targets: sunGraphics,
+      alpha: { from: 0.95, to: 1.0 },
+      duration: 12000, // Muy lento para mínimo impacto
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut'
