@@ -272,87 +272,175 @@ export class AnimatedElementsRenderer {
   }
 
   /**
-   * Renderiza el sol animado con diseño realista y Flat Shaded 3D
+   * Renderiza el sol animado con diseño inca andino inspirado en Inti
    */
   private renderSun() {
     const sunX = this.width * 0.85
     const sunY = this.height * 0.15
     const sunRadius = 65
     
-    // Colores realistas del sol (del centro hacia afuera)
-    const sunCoreHot = 0xFFFFFF // Núcleo blanco (más caliente)
-    const sunCore = 0xFFFF00 // Amarillo puro del centro
-    const sunMid = 0xFFA500 // Naranja medio
-    const sunEdge = 0xFF8C00 // Naranja oscuro en los bordes
+    // Colores inca andinos (dorados y terrosos)
+    const intiGold = 0xFFD700      // Dorado brillante
+    const intiDarkGold = 0xDAA520  // Dorado oscuro
+    const intiBronze = 0xCD7F32    // Bronce
+    const intiOcre = 0xB8860B      // Ocre dorado
+    const intiYellow = 0xFFE135    // Amarillo dorado
+    const intiOrange = 0xFF8C00    // Naranja terroso
     
-    // Crear gráficos para las diferentes partes del sol
+    // Crear gráficos para el sol de Inti
     const sunGraphics = this.scene.add.graphics()
     
-    // Glow exterior simplificado (solo 2 capas en lugar de 3)
-    sunGraphics.fillStyle(0xFFD700, 0.2)
-    sunGraphics.fillCircle(0, 0, 120)
+    // Glow exterior con aura dorada
+    sunGraphics.fillStyle(intiGold, 0.15)
+    sunGraphics.fillCircle(0, 0, 130)
     
-    sunGraphics.fillStyle(0xFFA500, 0.3)
-    sunGraphics.fillCircle(0, 0, 95)
+    sunGraphics.fillStyle(intiDarkGold, 0.25)
+    sunGraphics.fillCircle(0, 0, 110)
     
-    // Borde exterior del sol (simplificado: 10 segmentos en lugar de 16)
-    const segments = 10
-    for (let i = 0; i < segments; i++) {
-      const angle = (i / segments) * Math.PI * 2
-      const segmentAngle = angle - Math.PI / 2
-      const lightFactor = (Math.cos(segmentAngle) + Math.sin(segmentAngle)) / 2 + 0.5
-      const segmentColor = this.interpolateColor(sunEdge, sunMid, lightFactor)
+    // Rayos decorativos en estilo inca (zigzag escalonado)
+    const numRays = 16 // Número de rayos principales
+    const rayLength = sunRadius * 1.4
+    const rayWidth = 8
+    const rayStep = 4 // Escalonado para efecto zigzag
+    
+    for (let i = 0; i < numRays; i++) {
+      const angle = (i / numRays) * Math.PI * 2 - Math.PI / 2
+      const cos = Math.cos(angle)
+      const sin = Math.sin(angle)
       
-      sunGraphics.fillStyle(segmentColor, 0.9)
-      const startAngle = (i / segments) * Math.PI * 2 - Math.PI / 2
-      const endAngle = ((i + 1) / segments) * Math.PI * 2 - Math.PI / 2
-      
+      // Rayo principal (zigzag escalonado)
+      sunGraphics.fillStyle(intiGold, 0.9)
       sunGraphics.beginPath()
-      sunGraphics.arc(0, 0, sunRadius * 0.98, startAngle, endAngle)
-      sunGraphics.lineTo(0, 0)
+      
+      // Base del rayo en el borde del círculo
+      const baseRadius = sunRadius * 1.05
+      const startX = cos * baseRadius
+      const startY = sin * baseRadius
+      
+      // Crear efecto escalonado (zigzag)
+      const steps = 3
+      for (let step = 0; step <= steps; step++) {
+        const t = step / steps
+        const currentLength = baseRadius + (rayLength - baseRadius) * t
+        const zigzagOffset = (step % 2 === 0 ? 1 : -1) * rayStep * (1 - t * 0.5)
+        const perpCos = -sin
+        const perpSin = cos
+        
+        const x = cos * currentLength + perpCos * zigzagOffset
+        const y = sin * currentLength + perpSin * zigzagOffset
+        
+        if (step === 0) {
+          sunGraphics.moveTo(x, y)
+        } else {
+          sunGraphics.lineTo(x, y)
+        }
+      }
+      
+      // Completar el rayo con forma trapezoidal
+      const endX = cos * rayLength
+      const endY = sin * rayLength
+      const perpCos = -sin
+      const perpSin = cos
+      
+      sunGraphics.lineTo(
+        endX + perpCos * rayWidth,
+        endY + perpSin * rayWidth
+      )
+      sunGraphics.lineTo(
+        startX + perpCos * rayWidth * 0.6,
+        startY + perpSin * rayWidth * 0.6
+      )
+      sunGraphics.closePath()
+      sunGraphics.fillPath()
+      
+      // Resalte en el rayo
+      sunGraphics.fillStyle(intiYellow, 0.7)
+      sunGraphics.beginPath()
+      sunGraphics.moveTo(startX, startY)
+      const midX = cos * (baseRadius + (rayLength - baseRadius) * 0.5)
+      const midY = sin * (baseRadius + (rayLength - baseRadius) * 0.5)
+      sunGraphics.lineTo(midX, midY)
+      sunGraphics.lineTo(
+        midX + perpCos * rayWidth * 0.3,
+        midY + perpSin * rayWidth * 0.3
+      )
+      sunGraphics.lineTo(
+        startX + perpCos * rayWidth * 0.3,
+        startY + perpSin * rayWidth * 0.3
+      )
       sunGraphics.closePath()
       sunGraphics.fillPath()
     }
     
-    // Cuerpo principal del sol (simplificado: menos capas)
-    sunGraphics.fillStyle(sunMid, 1)
-    sunGraphics.fillCircle(0, 0, sunRadius * 0.92)
+    // Círculo central principal (cara de Inti)
+    sunGraphics.fillStyle(intiDarkGold, 1)
+    sunGraphics.fillCircle(0, 0, sunRadius)
     
-    // Zona intermedia
-    sunGraphics.fillStyle(0xFFB500, 0.95)
-    sunGraphics.fillCircle(0, 0, sunRadius * 0.75)
+    // Anillo decorativo interno
+    sunGraphics.fillStyle(intiBronze, 0.8)
+    sunGraphics.fillCircle(0, 0, sunRadius * 0.85)
     
-    // Núcleo (amarillo brillante)
-    sunGraphics.fillStyle(sunCore, 1)
+    // Círculo central brillante
+    sunGraphics.fillStyle(intiGold, 1)
+    sunGraphics.fillCircle(0, 0, sunRadius * 0.7)
+    
+    // Núcleo dorado intenso
+    sunGraphics.fillStyle(intiYellow, 1)
     sunGraphics.fillCircle(0, 0, sunRadius * 0.5)
     
-    // Núcleo interno (blanco caliente)
-    sunGraphics.fillStyle(sunCoreHot, 0.9)
-    sunGraphics.fillCircle(0, 0, sunRadius * 0.3)
+    // Detalles decorativos geométricos (patrones incas)
+    const decorativeRings = 2
+    for (let ring = 1; ring <= decorativeRings; ring++) {
+      const ringRadius = sunRadius * (0.6 - ring * 0.1)
+      const numDots = 8
+      for (let i = 0; i < numDots; i++) {
+        const angle = (i / numDots) * Math.PI * 2
+        const x = Math.cos(angle) * ringRadius
+        const y = Math.sin(angle) * ringRadius
+        sunGraphics.fillStyle(intiOcre, 0.9)
+        sunGraphics.fillCircle(x, y, 3)
+      }
+    }
     
-    // Resaltes simplificados (solo 1-2 en lugar de 3)
-    sunGraphics.fillStyle(0xFFFFFF, 0.6)
-    sunGraphics.fillCircle(sunRadius * 0.25, -sunRadius * 0.3, sunRadius * 0.15)
-    sunGraphics.fillCircle(sunRadius * 0.15, -sunRadius * 0.25, sunRadius * 0.12)
+    // Cara estilizada de Inti (opcional, muy sutil)
+    // Ojos
+    sunGraphics.fillStyle(intiBronze, 0.8)
+    sunGraphics.fillEllipse(-sunRadius * 0.15, -sunRadius * 0.1, 8, 10)
+    sunGraphics.fillEllipse(sunRadius * 0.15, -sunRadius * 0.1, 8, 10)
+    
+    // Boca (línea decorativa)
+    sunGraphics.lineStyle(3, intiBronze, 0.7)
+    sunGraphics.beginPath()
+    sunGraphics.arc(0, sunRadius * 0.15, sunRadius * 0.2, 0, Math.PI)
+    sunGraphics.strokePath()
     
     sunGraphics.setPosition(sunX, sunY)
     sunGraphics.setDepth(1)
     
-    // Animación de pulso sutil
+    // Animación de pulso sutil (como el latido de Inti)
     const sunContainer = this.scene.add.container(sunX, sunY)
     sunContainer.add(sunGraphics)
     sunGraphics.setPosition(0, 0)
     
-    // Animación de pulso suave (simulando actividad solar)
+    // Animación de pulso suave y rotación muy lenta
     this.scene.tweens.add({
       targets: sunContainer,
-      scaleX: { from: 0.96, to: 1.04 },
-      scaleY: { from: 0.96, to: 1.04 },
-      alpha: { from: 0.95, to: 1 },
-      duration: 4000 + Math.random() * 2000,
+      scaleX: { from: 0.97, to: 1.03 },
+      scaleY: { from: 0.97, to: 1.03 },
+      alpha: { from: 0.96, to: 1 },
+      duration: 5000 + Math.random() * 2000,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut'
+    })
+    
+    // Rotación muy lenta de los rayos (opcional, efecto sutil)
+    this.scene.tweens.add({
+      targets: sunContainer,
+      angle: { from: 0, to: 360 },
+      duration: 120000, // 2 minutos para una rotación completa
+      repeat: -1,
+      ease: 'Linear'
     })
     
     this.animatedElements.push(sunContainer)
