@@ -1,7 +1,6 @@
 """
 Tests unitarios para el servicio DataProvider
 """
-import pytest
 from app.services.data_provider import DataProvider
 
 
@@ -46,8 +45,4 @@ class TestDataProvider:
         
         assert isinstance(result, dict)
         assert "functions" in result
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
 

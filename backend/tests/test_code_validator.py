@@ -1,7 +1,6 @@
 """
 Tests unitarios para el servicio CodeValidator
 """
-import pytest
 from app.services.code_validator import CodeValidator
 
 
@@ -68,8 +67,4 @@ class TestCodeValidator:
         result = CodeValidator.validate_dangerous_patterns(dangerous_code)
         assert result is not None
         assert "eval" in result.lower()
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
 
