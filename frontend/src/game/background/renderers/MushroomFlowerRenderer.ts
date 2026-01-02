@@ -10,8 +10,9 @@ export class MushroomFlowerRenderer {
 
   /**
    * Renderiza hongos grandes, flores mágicas y arbustos en el terreno
+   * @param treePositions Posiciones de los árboles para colocar arbustos cerca de ellos
    */
-  public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
+  public render(isOverLake?: (x: number, y: number) => boolean, treePositions?: Array<{ x: number, y: number }>): Phaser.GameObjects.Graphics[] {
     const elements: Phaser.GameObjects.Graphics[] = []
     
     // Calcular posiciones de las bases de las montañas cercanas
@@ -88,19 +89,47 @@ export class MushroomFlowerRenderer {
       elements.push(mushroomGraphics)
     }
     
-    // Crear arbustos pequeños
-    const numBushes = 18
+    // Crear arbustos pequeños (colocados junto a los árboles si hay árboles)
+    const numBushes = 10
     for (let i = 0; i < numBushes; i++) {
       let bushX: number
-      let attempts = 0
-      do {
-        bushX = Math.random() * this.width
-        attempts++
-      } while (attempts < 20 && isTooCloseToVillage(bushX))
+      let bushY: number
+      
+      // Si hay posiciones de árboles, colocar arbustos cerca de ellos
+      if (treePositions && treePositions.length > 0 && Math.random() > 0.3) {
+        // 70% de los arbustos se colocan cerca de árboles
+        const randomTree = treePositions[Math.floor(Math.random() * treePositions.length)]
+        // Colocar arbusto a una distancia aleatoria entre 20-60 píxeles del árbol
+        const angle = Math.random() * Math.PI * 2
+        const distance = 20 + Math.random() * 40
+        bushX = randomTree.x + Math.cos(angle) * distance
+        bushY = randomTree.y + Math.sin(angle) * distance + 10 // Ligeramente más abajo
+        
+        // Asegurar que el arbusto esté en los límites
+        if (bushX < 0 || bushX > this.width) {
+          bushX = Math.random() * this.width
+        }
+        if (bushY < this.horizonY || bushY > this.height) {
+          bushY = this.horizonY + 25 + Math.random() * (this.height - this.horizonY - 40)
+        }
+        
+        let attempts = 0
+        while (attempts < 20 && isTooCloseToVillage(bushX)) {
+          bushX = Math.random() * this.width
+          attempts++
+        }
+      } else {
+        // 30% de los arbustos se colocan aleatoriamente
+        let attempts = 0
+        do {
+          bushX = Math.random() * this.width
+          attempts++
+        } while (attempts < 20 && isTooCloseToVillage(bushX))
+        
+        bushY = this.horizonY + 25 + Math.random() * (this.height - this.horizonY - 40)
+      }
       
       if (isTooCloseToVillage(bushX)) continue
-      
-      const bushY = this.horizonY + 25 + Math.random() * (this.height - this.horizonY - 40)
       
       if (isOverLake && isOverLake(bushX, bushY)) continue
       const bushSize = 12 + Math.random() * 8 // Arbustos: 12-20 píxeles

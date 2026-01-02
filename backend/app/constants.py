@@ -65,40 +65,13 @@ const console = {{
 # Personajes disponibles
 CHARACTERS: List[Dict[str, Any]] = [
     {
-        "id": "human-paladin",
-        "name": "Paladín Humano",
-        "icon": "⚔️",
-        "description": "Un noble paladín de la Alianza, maestro del honor y la justicia",
-        "color": "#4A90E2",
-        "race": "human",
-        "faction": "alliance"
-    },
-    {
-        "id": "orc-warrior",
-        "name": "Guerrero Orco",
-        "icon": "🪓",
-        "description": "Un feroz guerrero de la Horda, forjado en batalla",
-        "color": "#8B4513",
-        "race": "orc",
-        "faction": "horde"
-    },
-    {
-        "id": "elf-mage",
-        "name": "Mago Élfico",
-        "icon": "🔮",
-        "description": "Un sabio mago élfico, maestro de las artes arcanas",
-        "color": "#9370DB",
-        "race": "elf",
-        "faction": "alliance"
-    },
-    {
-        "id": "human-warrior",
-        "name": "Guerrero Humano",
-        "icon": "🛡️",
-        "description": "Un valiente guerrero humano de la Alianza",
-        "color": "#1E90FF",
-        "race": "human",
-        "faction": "alliance"
+        "id": "kitu",
+        "name": "Kitu",
+        "icon": "🏔️",
+        "description": "Un valiente aventurero andino, explorador de los misterios de los Andes",
+        "color": "#8BC34A",
+        "race": "andino",
+        "faction": "pachamama"
     }
 ]
 
@@ -106,40 +79,87 @@ CHARACTERS: List[Dict[str, Any]] = [
 LEVELS: Dict[str, Dict[str, Any]] = {
     "1": {
         "id": "1",
-        "title": "Primeros Pasos en Azeroth",
+        "title": "Primeros Pasos con Kitu",
         "description": "Aprende los comandos básicos de movimiento",
-        "character": "human-paladin",
+        "character": "kitu",
         "objectives": [
-            "Mueve el personaje 3 casillas hacia adelante",
-            "Gira a la derecha",
+            "Mueve el personaje 3 pasos hacia adelante",
+            "Gira a la derecha 90 grados",
             "Llega al objetivo"
         ],
+        "initialCode": "// Nivel 1: Primeros Pasos\n// Mueve a Kitu 3 pasos hacia adelante y luego gira a la derecha\n\nmoveForward(3);\nturnRight();\n",
+        "validation": {
+            "targetPosition": {"x": 400, "y": 400, "tolerance": 50},
+            "minSteps": 3,
+            "requiredRotation": 90
+        },
         "availableFunctions": {
             "movement": [
                 "moveForward(steps=1)",
-                "moveBackward(steps=1)",
-                "moveUp(steps=1)",
-                "moveDown(steps=1)",
-                "moveLeft(steps=1)",
-                "moveRight(steps=1)"
+                "moveBackward(steps=1)"
+            ],
+            "rotation": [
+                "turnRight(degrees=90)",
+                "turnLeft(degrees=90)"
+            ]
+        }
+    },
+    "2": {
+        "id": "2",
+        "title": "Explorando el Camino",
+        "description": "Combina movimiento y rotación para navegar",
+        "character": "kitu",
+        "objectives": [
+            "Mueve hacia adelante 2 pasos",
+            "Gira a la derecha",
+            "Mueve hacia adelante 2 pasos más",
+            "Gira a la izquierda",
+            "Mueve hacia adelante 1 paso"
+        ],
+        "initialCode": "// Nivel 2: Explorando el Camino\n// Combina movimiento y rotación para crear un camino\n\nmoveForward(2);\nturnRight();\nmoveForward(2);\nturnLeft();\nmoveForward(1);\n",
+        "validation": {
+            "targetPosition": {"x": 400, "y": 300, "tolerance": 50},
+            "minSteps": 5,
+            "requiredActions": ["moveForward", "turnRight", "turnLeft"]
+        },
+        "availableFunctions": {
+            "movement": [
+                "moveForward(steps=1)",
+                "moveBackward(steps=1)"
             ],
             "rotation": [
                 "turnRight(degrees=90)",
                 "turnLeft(degrees=90)",
-                "turn(degrees)",
-                "faceDirection(direction)"
+                "turn(degrees)"
+            ]
+        }
+    },
+    "3": {
+        "id": "3",
+        "title": "Bucles con Kitu",
+        "description": "Aprende a usar bucles para repetir acciones",
+        "character": "kitu",
+        "objectives": [
+            "Usa un bucle for para mover 4 pasos",
+            "Gira a la derecha después de cada movimiento",
+            "Crea un patrón cuadrado"
+        ],
+        "initialCode": "// Nivel 3: Bucles con Kitu\n// Usa un bucle for para repetir acciones\n\nfor (let i = 0; i < 4; i++) {\n  moveForward(2);\n  turnRight();\n}\n",
+        "validation": {
+            "targetPosition": {"x": 100, "y": 400, "tolerance": 50},
+            "minSteps": 8,
+            "minRotations": 4,
+            "requiresLoop": True
+        },
+        "availableFunctions": {
+            "movement": [
+                "moveForward(steps=1)",
+                "moveBackward(steps=1)"
             ],
-            "advanced": [
-                "moveTo(x, y)",
-                "moveDistance(distance)",
-                "sprint(steps=1)"
-            ],
-            "actions": [
-                "jump()",
-                "attack()",
-                "wait(milliseconds)",
-                "teleport(x, y)",
-                "spin()"
+            "rotation": [
+                "turnRight(degrees=90)",
+                "turnLeft(degrees=90)",
+                "turn(degrees)"
             ]
         }
     }

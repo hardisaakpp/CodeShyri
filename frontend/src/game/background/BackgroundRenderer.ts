@@ -13,6 +13,7 @@ import { SmokeRenderer } from './renderers/SmokeRenderer'
 import { PathRenderer } from './renderers/PathRenderer'
 import { TotemRenderer } from './renderers/TotemRenderer'
 import { WaterLilyRenderer } from './renderers/WaterLilyRenderer'
+import { GridRenderer } from './renderers/GridRenderer'
 
 /**
  * Orquestador principal para renderizar todos los elementos del fondo del juego.
@@ -24,12 +25,21 @@ export class BackgroundRenderer {
   private width: number
   private height: number
   private horizonY: number
+  private gridRenderer: GridRenderer
 
   constructor(scene: Phaser.Scene, width: number, height: number) {
     this.scene = scene
     this.width = width
     this.height = height
     this.horizonY = height * 0.33 // 1/3 para paisaje, 2/3 para terreno
+    this.gridRenderer = new GridRenderer(scene)
+  }
+
+  /**
+   * Obtiene el renderer del grid (para uso externo)
+   */
+  public getGridRenderer(): GridRenderer {
+    return this.gridRenderer
   }
 
   /**
@@ -62,7 +72,9 @@ export class BackgroundRenderer {
     
     // Renderizar árboles (evitando el lago)
     const treeRenderer = new TreeRenderer(this.scene, this.width, this.horizonY)
-    const trees = treeRenderer.render(isOverLake)
+    const treeRenderResult = treeRenderer.render(isOverLake)
+    const trees = treeRenderResult.graphics
+    const treePositions = treeRenderResult.positions
     
     // Renderizar rocas (evitando el lago)
     const rockRenderer = new RockRenderer(this.scene, this.width, this.height, this.horizonY)
@@ -78,7 +90,7 @@ export class BackgroundRenderer {
     
     // Renderizar hongos y flores mágicas (evitando el lago)
     const mushroomFlowerRenderer = new MushroomFlowerRenderer(this.scene, this.width, this.height, this.horizonY)
-    const mushroomsFlowers = mushroomFlowerRenderer.render(isOverLake)
+    const mushroomsFlowers = mushroomFlowerRenderer.render(isOverLake, treePositions)
     
     // Renderizar aves volando
     const birdRenderer = new BirdRenderer(this.scene, this.width, this.horizonY)
@@ -100,8 +112,12 @@ export class BackgroundRenderer {
     const waterLilyRenderer = new WaterLilyRenderer(this.scene)
     const waterLilies = waterLilyRenderer.render(lakeRenderer.lakeInfo)
 
+    // Renderizar grid/grid sobre el terreno (último para estar visible)
+    const gridGraphics = this.gridRenderer.render(this.width, this.height, this.horizonY)
+
     return {
       backgroundGraphics: bgGraphics,
+      gridGraphics: gridGraphics,
       animatedElements: [...animatedElements, ...mountainClouds, ...birds, ...smokeElements],
       trees: trees,
       rocks: rocks,

@@ -1,15 +1,78 @@
 import Phaser from 'phaser'
 import { CommandQueue } from './CommandQueue'
+import { GridRenderer } from '../background/renderers/GridRenderer'
 
 export class MovementCommands {
+  // Posición actual en el grid
+  private currentGridX: number = 1
+  private currentGridY: number = 2
+
   constructor(
     private commandQueue: CommandQueue,
     private player: Phaser.GameObjects.Sprite,
-    private log: (message: string, type?: string) => void
-  ) {}
+    private log: (message: string, type?: string) => void,
+    private gridRenderer?: GridRenderer,
+    private onGridPositionChange?: (gridX: number, gridY: number) => void
+  ) {
+    // Si tenemos grid, inicializar posición
+    if (this.gridRenderer) {
+      const initialPos = this.gridRenderer.pixelToGrid(player.x, player.y)
+      this.currentGridX = initialPos.gridX
+      this.currentGridY = initialPos.gridY
+    }
+  }
 
   /**
-   * Crea un movimiento paso a paso
+   * Mueve el jugador en el grid basado en dirección
+   */
+  private moveInGrid(deltaX: number, deltaY: number, steps: number = 1): void {
+    if (!this.gridRenderer) {
+      // Fallback a movimiento libre si no hay grid
+      return
+    }
+
+    for (let step = 0; step < steps; step++) {
+      this.commandQueue.queueCommand(() => {
+        // Calcular nueva posición en grid
+        const newGridX = this.currentGridX + deltaX
+        const newGridY = this.currentGridY + deltaY
+
+        // Obtener posición en píxeles del centro de la celda
+        const targetPosition = this.gridRenderer!.gridToPixel(newGridX, newGridY)
+
+        // Actualizar posición en grid
+        this.currentGridX = newGridX
+        this.currentGridY = newGridY
+
+        // Notificar cambio de posición
+        if (this.onGridPositionChange) {
+          this.onGridPositionChange(this.currentGridX, this.currentGridY)
+        }
+
+        // Mover personaje a la nueva celda
+        this.commandQueue.createSequentialTween({
+          targets: this.player,
+          x: targetPosition.pixelX,
+          y: targetPosition.pixelY,
+          duration: 300,
+          ease: 'Power2'
+        })
+      })
+
+      // Pausa entre pasos
+      if (step < steps - 1) {
+        this.commandQueue.queueCommand(() => {
+          const scene = this.player.scene
+          scene.time.delayedCall(100, () => {
+            this.commandQueue.onCommandComplete()
+          })
+        })
+      }
+    }
+  }
+
+  /**
+   * Crea un movimiento paso a paso (fallback para movimientos sin grid)
    */
   private createStepByStepMovement(
     totalSteps: number,
@@ -17,25 +80,12 @@ export class MovementCommands {
     logMessage: string,
     directionLabel: string
   ) {
-    if (totalSteps <= 1) {
-      this.commandQueue.queueCommand(() => {
-        const { targetX, targetY } = calculateStep(this.player.x, this.player.y, this.player.angle)
-        this.log(`${directionLabel} 1 paso...`, 'info')
-        this.commandQueue.createSequentialTween({
-          targets: this.player,
-          x: targetX,
-          y: targetY,
-          duration: 300,
-          ease: 'Power2'
-        })
-      })
-    } else {
-      this.log(`${logMessage} ${totalSteps} paso(s)...`, 'info')
-      
-      for (let step = 1; step <= totalSteps; step++) {
+    if (!this.gridRenderer) {
+      // Si no hay grid, usar movimiento libre
+      if (totalSteps <= 1) {
         this.commandQueue.queueCommand(() => {
           const { targetX, targetY } = calculateStep(this.player.x, this.player.y, this.player.angle)
-          
+          this.log(`${directionLabel} 1 paso...`, 'info')
           this.commandQueue.createSequentialTween({
             targets: this.player,
             x: targetX,
@@ -44,8 +94,87 @@ export class MovementCommands {
             ease: 'Power2'
           })
         })
+      } else {
+        this.log(`${logMessage} ${totalSteps} paso(s)...`, 'info')
         
-        if (step < totalSteps) {
+        for (let step = 1; step <= totalSteps; step++) {
+          this.commandQueue.queueCommand(() => {
+            const { targetX, targetY } = calculateStep(this.player.x, this.player.y, this.player.angle)
+            
+            this.commandQueue.createSequentialTween({
+              targets: this.player,
+              x: targetX,
+              y: targetY,
+              duration: 300,
+              ease: 'Power2'
+            })
+          })
+          
+          if (step < totalSteps) {
+            this.commandQueue.queueCommand(() => {
+              const scene = this.player.scene
+              scene.time.delayedCall(100, () => {
+                this.commandQueue.onCommandComplete()
+              })
+            })
+          }
+        }
+      }
+    }
+  }
+
+  public moveForward(steps: number = 1) {
+    if (this.gridRenderer) {
+      // Movimiento basado en grid usando el ángulo del personaje
+      this.log(`➡️ Avanzando ${steps} celda(s)...`, 'info')
+      
+      for (let step = 0; step < steps; step++) {
+        this.commandQueue.queueCommand(() => {
+          // Calcular dirección basada en el ángulo actual
+          const angle = this.player.angle
+          let deltaX = 0
+          let deltaY = 0
+          
+          // Convertir ángulo a dirección de grid
+          // 0° = Este, 90° = Sur, 180° = Oeste, 270° = Norte
+          if (angle >= -45 && angle < 45) {
+            deltaX = 1 // Este
+          } else if (angle >= 45 && angle < 135) {
+            deltaY = 1 // Sur
+          } else if (angle >= 135 || angle < -135) {
+            deltaX = -1 // Oeste
+          } else {
+            deltaY = -1 // Norte
+          }
+          
+          // Calcular nueva posición en grid
+          const newGridX = this.currentGridX + deltaX
+          const newGridY = this.currentGridY + deltaY
+          
+          // Obtener posición en píxeles del centro de la celda
+          const targetPosition = this.gridRenderer.gridToPixel(newGridX, newGridY)
+          
+          // Actualizar posición en grid
+          this.currentGridX = newGridX
+          this.currentGridY = newGridY
+          
+          // Notificar cambio de posición
+          if (this.onGridPositionChange) {
+            this.onGridPositionChange(this.currentGridX, this.currentGridY)
+          }
+          
+          // Mover personaje a la nueva celda
+          this.commandQueue.createSequentialTween({
+            targets: this.player,
+            x: targetPosition.pixelX,
+            y: targetPosition.pixelY,
+            duration: 300,
+            ease: 'Power2'
+          })
+        })
+        
+        // Pausa entre pasos
+        if (step < steps - 1) {
           this.commandQueue.queueCommand(() => {
             const scene = this.player.scene
             scene.time.delayedCall(100, () => {
@@ -54,23 +183,22 @@ export class MovementCommands {
           })
         }
       }
+    } else {
+      // Fallback a movimiento libre
+      this.createStepByStepMovement(
+        steps,
+        (currentX, currentY, currentAngle) => {
+          const distance = 50
+          const radians = Phaser.Math.DegToRad(currentAngle)
+          return {
+            targetX: currentX + Math.cos(radians) * distance,
+            targetY: currentY + Math.sin(radians) * distance
+          }
+        },
+        '➡️ Avanzando',
+        '➡️ Avanzando'
+      )
     }
-  }
-
-  public moveForward(steps: number = 1) {
-    this.createStepByStepMovement(
-      steps,
-      (currentX, currentY, currentAngle) => {
-        const distance = 50
-        const radians = Phaser.Math.DegToRad(currentAngle)
-        return {
-          targetX: currentX + Math.cos(radians) * distance,
-          targetY: currentY + Math.sin(radians) * distance
-        }
-      },
-      '➡️ Avanzando',
-      '➡️ Avanzando'
-    )
   }
 
   public moveBackward(steps: number = 1) {

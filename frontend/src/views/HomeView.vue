@@ -94,13 +94,13 @@ const hoveredCard = ref<string | null>(null)
 
 const characters = ref([
   {
-    id: 'human-paladin',
-    name: 'Paladín Humano',
-    icon: '⚔️',
-    description: 'Un noble paladín de la Alianza, maestro del honor y la justicia',
-    color: '#4A90E2',
-    race: 'human',
-    faction: 'alliance'
+    id: 'kitu',
+    name: 'Kitu',
+    icon: '🏔️',
+    description: 'Un valiente aventurero andino, explorador de los misterios de los Andes',
+    color: '#8BC34A',
+    race: 'andino',
+    faction: 'pachamama'
   }
 ])
 

@@ -84,6 +84,18 @@ export class GameEngine {
   }
 
   /**
+   * Obtiene el estado actual del jugador (posición, ángulo, acciones)
+   */
+  public getPlayerState(): { x: number; y: number; angle: number; actionsExecuted: string[]; stepsMoved: number; rotationsMade: number } | null {
+    if (!this.game) return null
+
+    const scene = this.game.scene.getScene('GameScene') as GameScene
+    if (!scene) return null
+
+    return scene.getPlayerState()
+  }
+
+  /**
    * Destruye el juego
    */
   public destroy() {

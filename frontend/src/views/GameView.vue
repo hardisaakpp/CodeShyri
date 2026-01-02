@@ -105,47 +105,31 @@ let gameEngine: GameEngine | null = null
 const currentCharacter = ref<Character | null>(null)
 
 const characters: Record<string, Character> = {
-  'human-paladin': {
-    id: 'human-paladin',
-    name: 'Paladín Humano',
-    icon: '⚔️',
-    description: 'Un noble paladín de la Alianza',
-    color: '#4A90E2'
-  },
-  'orc-warrior': {
-    id: 'orc-warrior',
-    name: 'Guerrero Orco',
-    icon: '🪓',
-    description: 'Un feroz guerrero de la Horda',
-    color: '#8B4513'
-  },
-  'elf-mage': {
-    id: 'elf-mage',
-    name: 'Mago Élfico',
-    icon: '🔮',
-    description: 'Un sabio mago élfico',
-    color: '#9370DB'
-  },
-  'human-warrior': {
-    id: 'human-warrior',
-    name: 'Guerrero Humano',
-    icon: '🛡️',
-    description: 'Un valiente guerrero humano',
-    color: '#1E90FF'
+  'kitu': {
+    id: 'kitu',
+    name: 'Kitu',
+    icon: '🏔️',
+    description: 'Un valiente aventurero andino',
+    color: '#8BC34A'
   }
 }
+
+const levelData = ref<any>(null)
 
 onMounted(async () => {
   const characterId = route.query.character as string
   if (characterId && characters[characterId]) {
     currentCharacter.value = characters[characterId]
   } else {
-    currentCharacter.value = characters['human-paladin']
+    currentCharacter.value = characters['kitu']
   }
+
+  // Cargar datos del nivel desde el backend ANTES de inicializar componentes
+  await loadLevelData()
 
   await nextTick()
   
-  // Inicializar Monaco Editor
+  // Inicializar Monaco Editor con código inicial del nivel
   editor = monaco.editor.create(document.getElementById('monaco-editor')!, {
     value: getInitialCode(),
     language: 'javascript',
@@ -165,18 +149,114 @@ onMounted(async () => {
       consoleOutput.value.scrollTop = consoleOutput.value.scrollHeight
     }
   }
-  gameEngine.onExecutionComplete = () => {
+  gameEngine.onExecutionComplete = async () => {
     isExecuting.value = false
     consoleLogs.value.push({ 
       type: 'success', 
       message: '✅ Ejecución completada', 
       timestamp: getTimestamp() 
     })
+    
+    // Validar objetivos del nivel
+    await validateLevelCompletion()
+    
     if (consoleOutput.value) {
       consoleOutput.value.scrollTop = consoleOutput.value.scrollHeight
     }
   }
 })
+
+const loadLevelData = async () => {
+  try {
+    const response = await fetch(`/api/levels/${levelId.value}`)
+    if (response.ok) {
+      levelData.value = await response.json()
+      // Actualizar personaje si está definido en el nivel
+      if (levelData.value.character && characters[levelData.value.character]) {
+        currentCharacter.value = characters[levelData.value.character]
+      }
+    } else {
+      console.error('Error cargando nivel:', response.statusText)
+      consoleLogs.value.push({ 
+        type: 'error', 
+        message: 'Error al cargar los datos del nivel', 
+        timestamp: getTimestamp() 
+      })
+    }
+  } catch (error) {
+    console.error('Error cargando nivel:', error)
+    consoleLogs.value.push({ 
+      type: 'error', 
+      message: 'Error de conexión al cargar nivel', 
+      timestamp: getTimestamp() 
+    })
+  }
+}
+
+const validateLevelCompletion = async () => {
+  if (!gameEngine || !levelData.value) return
+  
+  try {
+    const playerState = gameEngine.getPlayerState()
+    if (!playerState) return
+
+    const response = await fetch(`/api/levels/${levelId.value}/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        levelId: levelId.value,
+        playerPosition: { x: playerState.x, y: playerState.y },
+        playerAngle: playerState.angle,
+        actionsExecuted: playerState.actionsExecuted || [],
+        stepsMoved: playerState.stepsMoved || 0,
+        rotationsMade: playerState.rotationsMade || 0
+      })
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      
+      if (result.completed) {
+        consoleLogs.value.push({ 
+          type: 'success', 
+          message: `🎉 ${result.message}`, 
+          timestamp: getTimestamp() 
+        })
+        score.value += 50
+      } else {
+        if (result.objectivesCompleted && result.objectivesCompleted.length > 0) {
+          result.objectivesCompleted.forEach((obj: string) => {
+            consoleLogs.value.push({ 
+              type: 'success', 
+              message: `✅ ${obj}`, 
+              timestamp: getTimestamp() 
+            })
+          })
+        }
+        if (result.objectivesPending && result.objectivesPending.length > 0) {
+          result.objectivesPending.forEach((obj: string) => {
+            consoleLogs.value.push({ 
+              type: 'warning', 
+              message: `⚠️ ${obj}`, 
+              timestamp: getTimestamp() 
+            })
+          })
+        }
+        consoleLogs.value.push({ 
+          type: 'info', 
+          message: result.message, 
+          timestamp: getTimestamp() 
+        })
+      }
+      
+      if (consoleOutput.value) {
+        consoleOutput.value.scrollTop = consoleOutput.value.scrollHeight
+      }
+    }
+  } catch (error) {
+    console.error('Error validando nivel:', error)
+  }
+}
 
 onUnmounted(() => {
   editor?.dispose()
@@ -184,41 +264,54 @@ onUnmounted(() => {
 })
 
 const getInitialCode = (): string => {
-  return `// Bienvenido a CodeShyri - El Reino Andino del Código!
-// Controla a ${currentCharacter.value?.name || 'tu personaje'} con estas funciones:
+  // Si tenemos datos del nivel, usar el código inicial del nivel
+  if (levelData.value && levelData.value.initialCode) {
+    return levelData.value.initialCode
+  }
+  
+  // Código por defecto según el nivel
+  const defaultCodes: Record<string, string> = {
+    '1': `// Nivel 1: Primeros Pasos con Kitu
+// Mueve a Kitu 3 pasos hacia adelante y luego gira a la derecha
+
+moveForward(3);
+turnRight();
+`,
+    '2': `// Nivel 2: Explorando el Camino
+// Combina movimiento y rotación para crear un camino
+
+moveForward(2);
+turnRight();
+moveForward(2);
+turnLeft();
+moveForward(1);
+`,
+    '3': `// Nivel 3: Bucles con Kitu
+// Usa un bucle for para repetir acciones
+
+for (let i = 0; i < 4; i++) {
+  moveForward(2);
+  turnRight();
+}
+`
+  }
+  
+  return defaultCodes[levelId.value] || `// Bienvenido a CodeShyri - El Reino Andino del Código!
+// Controla a ${currentCharacter.value?.name || 'Kitu'} con estas funciones:
 
 // === MOVIMIENTO BÁSICO ===
 // moveForward(steps) - Avanza en la dirección actual (por defecto 1 paso)
 // moveBackward(steps) - Retrocede
-// moveUp(steps) - Mueve hacia arriba
-// moveDown(steps) - Mueve hacia abajo
-// moveLeft(steps) - Mueve hacia la izquierda
-// moveRight(steps) - Mueve hacia la derecha
 
 // === ROTACIÓN ===
 // turnRight(degrees) - Gira a la derecha (por defecto 90°)
 // turnLeft(degrees) - Gira a la izquierda (por defecto 90°)
-// turn(degrees) - Gira grados específicos (positivo = derecha, negativo = izquierda)
-// faceDirection('north'|'south'|'east'|'west') - Mira hacia una dirección
-
-// === MOVIMIENTO AVANZADO ===
-// moveTo(x, y) - Mueve a una posición específica
-// moveDistance(pixels) - Mueve una distancia específica en la dirección actual
-// sprint(steps) - Corre más rápido que moveForward
-// teleport(x, y) - Teletransporta instantáneamente
-
-// === ACCIONES ===
-// jump() - Salta
-// attack() - Ataca
-// spin() - Gira 360 grados
-// wait(milliseconds) - Espera (solo para logging)
+// turn(degrees) - Gira grados específicos
 
 // Ejemplo básico:
 moveForward(2);
 turnRight();
 moveForward(1);
-jump();
-attack();
 `
 }
 

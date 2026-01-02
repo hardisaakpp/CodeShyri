@@ -3,6 +3,8 @@ Router para datos del juego (niveles, personajes, funciones)
 """
 from fastapi import APIRouter
 from app.services.data_provider import DataProvider
+from app.services.level_validator import LevelValidator
+from app.models import LevelValidationRequest, LevelValidationResponse
 from app.exceptions import LevelNotFoundError, ServiceError
 from app.logger import setup_logger
 
@@ -66,4 +68,37 @@ async def get_available_functions():
             exc_info=True
         )
         raise ServiceError(f"Error al obtener funciones: {str(e)}")
+
+
+@router.post("/levels/{level_id}/validate", response_model=LevelValidationResponse)
+async def validate_level_completion(level_id: str, request: LevelValidationRequest):
+    """
+    Valida si los objetivos de un nivel fueron completados.
+    Recibe la posición final del personaje, acciones ejecutadas, etc.
+    """
+    try:
+        logger.info(f"Validando nivel {level_id}")
+        
+        completed, message, completed_obj, pending_obj = LevelValidator.validate_level(
+            level_id=level_id,
+            player_position=request.playerPosition,
+            player_angle=request.playerAngle,
+            actions_executed=request.actionsExecuted,
+            steps_moved=request.stepsMoved,
+            rotations_made=request.rotationsMade
+        )
+        
+        return LevelValidationResponse(
+            completed=completed,
+            message=message,
+            objectivesCompleted=completed_obj,
+            objectivesPending=pending_obj
+        )
+        
+    except Exception as e:
+        logger.error(
+            f"Error al validar nivel {level_id}: {str(e)}",
+            exc_info=True
+        )
+        raise ServiceError(f"Error al validar nivel: {str(e)}")
 

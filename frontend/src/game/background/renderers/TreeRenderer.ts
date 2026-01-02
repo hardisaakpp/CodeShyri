@@ -18,8 +18,9 @@ export class TreeRenderer {
 
   /**
    * Renderiza los árboles en las faldas de las montañas, agrupados en pequeños bosques
+   * @returns Objeto con los gráficos de los árboles y sus posiciones
    */
-  public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
+  public render(isOverLake?: (x: number, y: number) => boolean): { graphics: Phaser.GameObjects.Graphics[], positions: Array<{ x: number, y: number }> } {
     const trees: Phaser.GameObjects.Graphics[] = []
     this.treesData = []
     this.leafParticles = []
@@ -45,7 +46,7 @@ export class TreeRenderer {
     
     // Crear árboles agrupados en cada bosquecito
     let totalTrees = 0
-    const maxTrees = 40
+    const maxTrees = 32
     
     for (const groupCenterX of forestGroups) {
       if (totalTrees >= maxTrees) break
@@ -126,7 +127,13 @@ export class TreeRenderer {
     // Iniciar animación de sombras dinámicas
     TreeAnimations.startDynamicShadows(this.scene, this.treesData)
     
-    return [...trees, ...this.leafParticles, ...this.treesData.map(t => t.shadow)]
+    // Extraer posiciones de los árboles
+    const treePositions = this.treesData.map(t => ({ x: t.x, y: t.y }))
+    
+    return {
+      graphics: [...trees, ...this.leafParticles, ...this.treesData.map(t => t.shadow)],
+      positions: treePositions
+    }
   }
 
   /**
@@ -134,7 +141,7 @@ export class TreeRenderer {
    */
   private generateForestGroups(isTooCloseToVillage: (x: number) => boolean): number[] {
     const forestGroups: number[] = []
-    const numForestGroups = 7
+    const numForestGroups = 5
     
     // Generar posiciones de grupos evitando poblados
     for (let g = 0; g < numForestGroups; g++) {

@@ -14,7 +14,7 @@ export class RockRenderer {
   public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
     const rocks: Phaser.GameObjects.Graphics[] = []
     
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 5; i++) {
       let rockX: number
       let rockY: number
       let attempts = 0

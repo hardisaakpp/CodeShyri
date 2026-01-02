@@ -6,6 +6,7 @@ import { CommandQueue } from '../commands/CommandQueue'
 import { MovementCommands } from '../commands/MovementCommands'
 import { RotationCommands } from '../commands/RotationCommands'
 import { ActionCommands } from '../commands/ActionCommands'
+import { GridRenderer } from '../background/renderers/GridRenderer'
 
 export class GameScene extends Phaser.Scene {
   private width!: number
@@ -20,6 +21,16 @@ export class GameScene extends Phaser.Scene {
   private actionCommands!: ActionCommands
   private playerManager!: PlayerManager
   private backgroundRenderer!: BackgroundRenderer
+  private gridRenderer!: GridRenderer
+  
+  // Rastreo de acciones para validación
+  private actionsExecuted: Set<string> = new Set()
+  private stepsMoved: number = 0
+  private rotationsMade: number = 0
+  
+  // Posición actual en el grid
+  private currentGridX: number = 1 // Empezar en celda (1, 2)
+  private currentGridY: number = 2
 
   constructor() {
     super({ key: 'GameScene' })
@@ -44,24 +55,39 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    const centerY = this.height / 2
-
     // Renderizar fondo
     this.backgroundRenderer = new BackgroundRenderer(this, this.width, this.height)
     const backgroundData = this.backgroundRenderer.render()
 
-    // Crear personaje
-    this.playerManager = new PlayerManager(this, 'character', 100, centerY + 50)
+    // Obtener grid renderer
+    this.gridRenderer = this.backgroundRenderer.getGridRenderer()
+
+    // Posicionar personaje en el grid (celda inicial)
+    const initialGridPosition = this.gridRenderer.gridToPixel(this.currentGridX, this.currentGridY)
+    this.playerManager = new PlayerManager(this, 'character', initialGridPosition.pixelX, initialGridPosition.pixelY)
     const player = this.playerManager.create()
 
-    // Inicializar sistema de comandos
+    // Resaltar celda inicial
+    this.updatePlayerGridHighlight()
+
+    // Inicializar sistema de comandos con grid
     this.commandQueue = new CommandQueue(this, () => {
       // Cuando la cola de comandos termine, notificar
       if (this.onExecutionComplete) {
         this.onExecutionComplete()
       }
     })
-    this.movementCommands = new MovementCommands(this.commandQueue, player, this.log.bind(this))
+    this.movementCommands = new MovementCommands(
+      this.commandQueue, 
+      player, 
+      this.log.bind(this),
+      this.gridRenderer,
+      (gridX: number, gridY: number) => {
+        this.currentGridX = gridX
+        this.currentGridY = gridY
+        this.updatePlayerGridHighlight()
+      }
+    )
     this.rotationCommands = new RotationCommands(this.commandQueue, player, this.log.bind(this))
     this.actionCommands = new ActionCommands(this.commandQueue, player, this.log.bind(this))
 
@@ -75,6 +101,7 @@ export class GameScene extends Phaser.Scene {
 
     this.log(`✨ ¡Bienvenido, ${this.character.name}!`)
     this.log(`🎮 Usa moveForward(), turnRight() y turnLeft() para controlar tu personaje`)
+    this.log(`📍 Estás en la celda (${this.currentGridX}, ${this.currentGridY})`)
   }
 
   /**
@@ -87,6 +114,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.commandQueue.clear()
+    // Resetear rastreo de acciones
+    this.actionsExecuted.clear()
+    this.stepsMoved = 0
+    this.rotationsMade = 0
 
     const player = this.playerManager.getPlayer()
     if (!player) {
@@ -95,27 +126,94 @@ export class GameScene extends Phaser.Scene {
     }
 
     try {
-      // Crear funciones disponibles para el usuario (bind para mantener el contexto)
-      const moveForward = this.movementCommands.moveForward.bind(this.movementCommands)
-      const moveBackward = this.movementCommands.moveBackward.bind(this.movementCommands)
-      const moveUp = this.movementCommands.moveUp.bind(this.movementCommands)
-      const moveDown = this.movementCommands.moveDown.bind(this.movementCommands)
-      const moveLeft = this.movementCommands.moveLeft.bind(this.movementCommands)
-      const moveRight = this.movementCommands.moveRight.bind(this.movementCommands)
-      const moveTo = this.movementCommands.moveTo.bind(this.movementCommands)
-      const moveDistance = this.movementCommands.moveDistance.bind(this.movementCommands)
-      const sprint = this.movementCommands.sprint.bind(this.movementCommands)
+      // Crear funciones disponibles para el usuario con rastreo
+      const moveForward = (steps: number = 1) => {
+        this.actionsExecuted.add('moveForward')
+        this.stepsMoved += steps
+        return this.movementCommands.moveForward(steps)
+      }
+      const moveBackward = (steps: number = 1) => {
+        this.actionsExecuted.add('moveBackward')
+        this.stepsMoved += steps
+        return this.movementCommands.moveBackward(steps)
+      }
+      const moveUp = (steps: number = 1) => {
+        this.actionsExecuted.add('moveUp')
+        this.stepsMoved += steps
+        return this.movementCommands.moveUp(steps)
+      }
+      const moveDown = (steps: number = 1) => {
+        this.actionsExecuted.add('moveDown')
+        this.stepsMoved += steps
+        return this.movementCommands.moveDown(steps)
+      }
+      const moveLeft = (steps: number = 1) => {
+        this.actionsExecuted.add('moveLeft')
+        this.stepsMoved += steps
+        return this.movementCommands.moveLeft(steps)
+      }
+      const moveRight = (steps: number = 1) => {
+        this.actionsExecuted.add('moveRight')
+        this.stepsMoved += steps
+        return this.movementCommands.moveRight(steps)
+      }
+      const moveTo = (x: number, y: number) => {
+        this.actionsExecuted.add('moveTo')
+        return this.movementCommands.moveTo(x, y)
+      }
+      const moveDistance = (distance: number) => {
+        this.actionsExecuted.add('moveDistance')
+        this.stepsMoved += Math.floor(distance / 50) // Aproximación
+        return this.movementCommands.moveDistance(distance)
+      }
+      const sprint = (steps: number = 1) => {
+        this.actionsExecuted.add('sprint')
+        this.stepsMoved += steps
+        return this.movementCommands.sprint(steps)
+      }
 
-      const turnRight = this.rotationCommands.turnRight.bind(this.rotationCommands)
-      const turnLeft = this.rotationCommands.turnLeft.bind(this.rotationCommands)
-      const turn = this.rotationCommands.turn.bind(this.rotationCommands)
-      const faceDirection = this.rotationCommands.faceDirection.bind(this.rotationCommands)
+      const turnRight = (degrees: number = 90) => {
+        this.actionsExecuted.add('turnRight')
+        this.rotationsMade++
+        return this.rotationCommands.turnRight(degrees)
+      }
+      const turnLeft = (degrees: number = 90) => {
+        this.actionsExecuted.add('turnLeft')
+        this.rotationsMade++
+        return this.rotationCommands.turnLeft(degrees)
+      }
+      const turn = (degrees: number) => {
+        this.actionsExecuted.add('turn')
+        this.rotationsMade++
+        return this.rotationCommands.turn(degrees)
+      }
+      const faceDirection = (direction: string) => {
+        this.actionsExecuted.add('faceDirection')
+        this.rotationsMade++
+        return this.rotationCommands.faceDirection(direction)
+      }
 
-      const jump = this.actionCommands.jump.bind(this.actionCommands)
-      const attack = this.actionCommands.attack.bind(this.actionCommands)
-      const wait = this.actionCommands.wait.bind(this.actionCommands)
-      const teleport = this.actionCommands.teleport.bind(this.actionCommands)
-      const spin = this.actionCommands.spin.bind(this.actionCommands)
+      const jump = () => {
+        this.actionsExecuted.add('jump')
+        return this.actionCommands.jump()
+      }
+      const attack = () => {
+        this.actionsExecuted.add('attack')
+        return this.actionCommands.attack()
+      }
+      const wait = (milliseconds: number) => {
+        this.actionsExecuted.add('wait')
+        return this.actionCommands.wait(milliseconds)
+      }
+      const teleport = (x: number, y: number) => {
+        this.actionsExecuted.add('teleport')
+        return this.actionCommands.teleport(x, y)
+      }
+      const spin = () => {
+        this.actionsExecuted.add('spin')
+        this.rotationsMade++
+        return this.actionCommands.spin()
+      }
 
       const consoleObj = {
         log: (msg: string) => this.log(msg, 'info')
@@ -191,7 +289,54 @@ export class GameScene extends Phaser.Scene {
    */
   public reset() {
     this.commandQueue.clear()
-    this.playerManager.reset(this.height)
+    
+      // Resetear posición del grid
+      this.currentGridX = 1
+      this.currentGridY = 2
+      
+      // Reposicionar personaje en celda inicial
+      if (this.gridRenderer) {
+        const initialGridPosition = this.gridRenderer.gridToPixel(this.currentGridX, this.currentGridY)
+        const player = this.playerManager.getPlayer()
+        if (player) {
+          player.setPosition(initialGridPosition.pixelX, initialGridPosition.pixelY)
+          player.setAngle(0)
+        }
+        this.updatePlayerGridHighlight()
+      }
+    
+    this.updatePlayerGridHighlight()
+    this.actionsExecuted.clear()
+    this.stepsMoved = 0
+    this.rotationsMade = 0
+  }
+
+  /**
+   * Actualiza el highlight de la celda actual del jugador
+   */
+  private updatePlayerGridHighlight(): void {
+    if (this.gridRenderer) {
+      this.gridRenderer.highlightCell(this.currentGridX, this.currentGridY)
+    }
+  }
+
+  /**
+   * Obtiene el estado actual del jugador para validación
+   */
+  public getPlayerState(): { x: number; y: number; angle: number; actionsExecuted: string[]; stepsMoved: number; rotationsMade: number; gridX: number; gridY: number } | null {
+    const player = this.playerManager.getPlayer()
+    if (!player) return null
+
+    return {
+      x: player.x,
+      y: player.y,
+      angle: player.angle,
+      actionsExecuted: Array.from(this.actionsExecuted),
+      stepsMoved: this.stepsMoved,
+      rotationsMade: this.rotationsMade,
+      gridX: this.currentGridX,
+      gridY: this.currentGridY
+    }
   }
 
   /**
