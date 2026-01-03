@@ -86,12 +86,27 @@ export class MovementCommands {
     logMessage: string,
     directionLabel: string
   ) {
-    if (!this.gridRenderer) {
-      // Si no hay grid, usar movimiento libre
-      if (totalSteps <= 1) {
+    // Usar movimiento libre independientemente de si hay grid o no
+    // (moveUp, moveDown, moveLeft, moveRight siempre usan movimiento libre)
+    if (totalSteps <= 1) {
+      this.commandQueue.queueCommand(() => {
+        const { targetX, targetY } = calculateStep(this.player.x, this.player.y, this.player.angle)
+        this.log(`${directionLabel} 1 paso...`, 'info')
+        this.commandQueue.createSequentialTween({
+          targets: this.player,
+          x: targetX,
+          y: targetY,
+          duration: 300,
+          ease: 'Power2'
+        })
+      })
+    } else {
+      this.log(`${logMessage} ${totalSteps} paso(s)...`, 'info')
+      
+      for (let step = 1; step <= totalSteps; step++) {
         this.commandQueue.queueCommand(() => {
           const { targetX, targetY } = calculateStep(this.player.x, this.player.y, this.player.angle)
-          this.log(`${directionLabel} 1 paso...`, 'info')
+          
           this.commandQueue.createSequentialTween({
             targets: this.player,
             x: targetX,
@@ -100,30 +115,14 @@ export class MovementCommands {
             ease: 'Power2'
           })
         })
-      } else {
-        this.log(`${logMessage} ${totalSteps} paso(s)...`, 'info')
         
-        for (let step = 1; step <= totalSteps; step++) {
+        if (step < totalSteps) {
           this.commandQueue.queueCommand(() => {
-            const { targetX, targetY } = calculateStep(this.player.x, this.player.y, this.player.angle)
-            
-            this.commandQueue.createSequentialTween({
-              targets: this.player,
-              x: targetX,
-              y: targetY,
-              duration: 300,
-              ease: 'Power2'
+            const scene = this.player.scene
+            scene.time.delayedCall(100, () => {
+              this.commandQueue.onCommandComplete()
             })
           })
-          
-          if (step < totalSteps) {
-            this.commandQueue.queueCommand(() => {
-              const scene = this.player.scene
-              scene.time.delayedCall(100, () => {
-                this.commandQueue.onCommandComplete()
-              })
-            })
-          }
         }
       }
     }

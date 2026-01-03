@@ -14,6 +14,10 @@
               <span class="level-badge">Nivel {{ levelId }}</span>
             </div>
           </div>
+          <button @click="showCommandsModal = true" class="commands-button" title="Ver comandos disponibles">
+            <span class="commands-icon">📋</span>
+            <span class="commands-text">Comandos</span>
+          </button>
         </div>
         <div class="header-right">
           <div class="game-stats">
@@ -76,11 +80,52 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Comandos -->
+    <div v-if="showCommandsModal" class="commands-modal-overlay" @click.self="showCommandsModal = false">
+      <div class="commands-modal">
+        <div class="commands-modal-header">
+          <div class="commands-modal-title">
+            <span class="commands-modal-icon">📋</span>
+            <span>Comandos Disponibles</span>
+          </div>
+          <button @click="showCommandsModal = false" class="commands-modal-close">✕</button>
+        </div>
+        <div class="commands-modal-content">
+          <div v-if="loadingCommands" class="commands-loading">
+            <span>Cargando comandos...</span>
+          </div>
+          <div v-else-if="commandsError" class="commands-error">
+            <span>Error al cargar los comandos: {{ commandsError }}</span>
+          </div>
+          <div v-else-if="availableCommands" class="commands-list">
+            <div v-for="(category, key) in availableCommands" :key="key" class="command-category">
+              <h3 class="category-title">{{ category.category }}</h3>
+              <p class="category-description">{{ category.description }}</p>
+              <div class="command-items">
+                <div v-for="(func, index) in category.list" :key="index" class="command-item">
+                  <div class="command-signature">{{ func.signature }}</div>
+                  <div class="command-description">{{ func.description }}</div>
+                  <div v-if="func.parameters && func.parameters.length > 0" class="command-parameters">
+                    <div v-for="(param, pIndex) in func.parameters" :key="pIndex" class="parameter">
+                      <span class="parameter-name">{{ param.name }}</span>
+                      <span class="parameter-type">: {{ param.type }}</span>
+                      <span v-if="param.default !== undefined" class="parameter-default"> (default: {{ param.default }})</span>
+                      <span class="parameter-description"> - {{ param.description }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as monaco from 'monaco-editor'
 import { GameEngine } from '@/game/GameEngine'
@@ -112,6 +157,10 @@ const characters: Record<string, Character> = {
 }
 
 const levelData = ref<any>(null)
+const showCommandsModal = ref(false)
+const availableCommands = ref<any>(null)
+const loadingCommands = ref(false)
+const commandsError = ref<string | null>(null)
 
 onMounted(async () => {
   const characterId = route.query.character as string
@@ -214,6 +263,38 @@ const loadLevelData = async () => {
     })
   }
 }
+
+const loadCommands = async () => {
+  if (availableCommands.value) {
+    // Ya están cargados, no recargar
+    return
+  }
+  
+  loadingCommands.value = true
+  commandsError.value = null
+  
+  try {
+    const response = await fetch('/api/functions')
+    if (response.ok) {
+      const data = await response.json()
+      availableCommands.value = data.functions
+    } else {
+      commandsError.value = response.statusText
+    }
+  } catch (error) {
+    console.error('Error cargando comandos:', error)
+    commandsError.value = error instanceof Error ? error.message : 'Error desconocido'
+  } finally {
+    loadingCommands.value = false
+  }
+}
+
+// Cargar comandos cuando se abra el modal
+watch(showCommandsModal, (newValue) => {
+  if (newValue) {
+    loadCommands()
+  }
+})
 
 const configureLevelFromData = (data: any) => {
   if (!gameEngine) {
@@ -1238,6 +1319,321 @@ const getButtonText = (): string => {
 
 .console-output::-webkit-scrollbar-thumb:hover {
   background: rgba(139, 195, 74, 0.6);
+}
+
+/* Botón de Comandos */
+.commands-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: 
+    linear-gradient(135deg, rgba(29, 26, 61, 0.8) 0%, rgba(26, 26, 46, 0.8) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
+  border: none;
+  border-radius: 8px;
+  color: rgba(200, 184, 230, 0.9);
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 15px rgba(139, 195, 74, 0.15);
+  transition: all 0.3s;
+  position: relative;
+}
+
+.commands-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%238bc34a' stroke-width='1.5' opacity='0.7'%3E%3Cpath d='M10 1 Q12 6 10 9 Q8 6 10 1'/%3E%3Cpath d='M1 10 Q6 12 9 10 Q6 8 1 10'/%3E%3Cpath d='M10 9 Q12 15 10 19 Q8 15 10 9'/%3E%3Cpath d='M19 10 Q14 12 11 10 Q14 8 19 10'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 20px 20px;
+  background-repeat: repeat;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.commands-button:hover {
+  background: 
+    linear-gradient(135deg, rgba(139, 195, 74, 0.25) 0%, rgba(76, 175, 80, 0.2) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
+  border-color: rgba(139, 195, 74, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(139, 195, 74, 0.5),
+    inset 0 0 15px rgba(139, 195, 74, 0.25);
+}
+
+.commands-button:active {
+  transform: translateY(0);
+}
+
+.commands-icon {
+  font-size: 1.1rem;
+  filter: drop-shadow(0 0 5px rgba(139, 195, 74, 0.6));
+}
+
+.commands-text {
+  font-size: 0.85rem;
+}
+
+/* Modal de Comandos */
+.commands-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.commands-modal {
+  background: 
+    linear-gradient(135deg, rgba(29, 26, 61, 0.95) 0%, rgba(26, 26, 46, 0.95) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(76, 175, 80, 0.1) 5px, rgba(76, 175, 80, 0.1) 10px);
+  border-radius: 12px;
+  border: 2px solid rgba(139, 195, 74, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 0 30px rgba(139, 195, 74, 0.1);
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+.commands-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 2px solid rgba(139, 195, 74, 0.2);
+  position: relative;
+}
+
+.commands-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #8bc34a;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 
+    0 0 10px rgba(139, 195, 74, 0.6),
+    2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.commands-modal-icon {
+  font-size: 1.8rem;
+  filter: drop-shadow(0 0 8px rgba(139, 195, 74, 0.7));
+}
+
+.commands-modal-close {
+  background: rgba(139, 195, 74, 0.2);
+  border: 1px solid rgba(139, 195, 74, 0.4);
+  border-radius: 6px;
+  color: rgba(200, 184, 230, 0.9);
+  cursor: pointer;
+  font-size: 1.2rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.commands-modal-close:hover {
+  background: rgba(139, 195, 74, 0.3);
+  border-color: rgba(139, 195, 74, 0.6);
+  transform: rotate(90deg);
+}
+
+.commands-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.commands-loading,
+.commands-error {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(200, 184, 230, 0.9);
+  font-family: 'Cinzel', serif;
+}
+
+.commands-error {
+  color: #ff6b6b;
+}
+
+.commands-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.command-category {
+  background: rgba(139, 195, 74, 0.05);
+  border: 1px solid rgba(139, 195, 74, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.category-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #8bc34a;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(139, 195, 74, 0.5);
+}
+
+.category-description {
+  color: rgba(200, 184, 230, 0.7);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem 0;
+  font-style: italic;
+}
+
+.command-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.command-item {
+  background: rgba(26, 26, 46, 0.5);
+  border-left: 3px solid rgba(139, 195, 74, 0.5);
+  border-radius: 6px;
+  padding: 1rem;
+  transition: all 0.3s;
+}
+
+.command-item:hover {
+  background: rgba(26, 26, 46, 0.7);
+  border-left-color: rgba(139, 195, 74, 0.8);
+  box-shadow: 0 4px 12px rgba(139, 195, 74, 0.2);
+}
+
+.command-signature {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #8bc34a;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 5px rgba(139, 195, 74, 0.5);
+}
+
+.command-description {
+  color: rgba(200, 184, 230, 0.9);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.command-parameters {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(139, 195, 74, 0.2);
+}
+
+.parameter {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: rgba(200, 184, 230, 0.8);
+  margin-bottom: 0.4rem;
+  line-height: 1.6;
+}
+
+.parameter-name {
+  color: #8bc34a;
+  font-weight: 600;
+}
+
+.parameter-type {
+  color: #9fa8da;
+}
+
+.parameter-default {
+  color: #ffb74d;
+  font-style: italic;
+}
+
+.parameter-description {
+  color: rgba(200, 184, 230, 0.7);
+}
+
+/* Scrollbar para el modal */
+.commands-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.commands-modal-content::-webkit-scrollbar-track {
+  background: rgba(26, 26, 46, 0.5);
+  border-radius: 4px;
+}
+
+.commands-modal-content::-webkit-scrollbar-thumb {
+  background: rgba(139, 195, 74, 0.4);
+  border-radius: 4px;
+}
+
+.commands-modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 195, 74, 0.6);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
 
