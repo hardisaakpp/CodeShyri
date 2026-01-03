@@ -123,8 +123,11 @@ export class GroundRenderer {
         this.graphics.fillStyle(finalColor, 1)
         this.graphics.fillRect(blockX, blockY, blockWidth, blockHeight)
 
-        // Si es bloque de hierba (verde), agregar textura de hierba en la parte superior
-        if (!isPathBlock) {
+        // Si es bloque de sendero (café), agregar diferentes patrones de diseño
+        if (isPathBlock) {
+          this.drawPathPattern(blockX, blockY, blockWidth, blockHeight, col, row, pathColor)
+        } else {
+          // Si es bloque de hierba (verde), agregar textura de hierba en la parte superior
           this.drawGrassTexture(blockX, blockY, blockWidth, blockHeight)
         }
 
@@ -166,6 +169,298 @@ export class GroundRenderer {
         )
       }
     }
+  }
+
+  /**
+   * Genera una paleta única de 3 colores café basada en la posición del bloque
+   * Usa el mismo color base del bloque principal (pathColor) con variaciones
+   */
+  private generateUniqueColorPalette(col: number, row: number, basePathColor: number): { primary: number; secondary: number; accent: number } {
+    // Función hash determinística para generar valores únicos
+    const hash1 = ((col * 73856093) ^ (row * 19349663)) % 100
+    const hash2 = ((col * 19349663) ^ (row * 73856093)) % 100
+    const hash3 = ((col * 8349271) ^ (row * 2837492)) % 100
+    
+    // Usar el color base del bloque café como referencia
+    // Generar variaciones de brillo y saturación dentro de la misma escala café
+    
+    // Primary: variación más clara del color base
+    const primaryVariation = 8 + (hash1 % 12) // +8 a +20 (más claro)
+    const primary = this.adjustColorBrightness(basePathColor, primaryVariation)
+    
+    // Secondary: variación media del color base
+    const secondaryVariation = -4 + (hash2 % 8) // -4 a +4 (similar al base)
+    const secondary = this.adjustColorBrightness(basePathColor, secondaryVariation)
+    
+    // Accent: variación más oscura del color base
+    const accentVariation = -12 - (hash3 % 8) // -12 a -20 (más oscuro)
+    const accent = this.adjustColorBrightness(basePathColor, accentVariation)
+    
+    return { primary, secondary, accent }
+  }
+
+  /**
+   * Ajusta el brillo de un color RGB
+   */
+  private adjustColorBrightness(color: number, adjustment: number): number {
+    const r = Math.max(0, Math.min(255, ((color >> 16) & 0xFF) + adjustment))
+    const g = Math.max(0, Math.min(255, ((color >> 8) & 0xFF) + adjustment))
+    const b = Math.max(0, Math.min(255, (color & 0xFF) + adjustment))
+    return (r << 16) | (g << 8) | b
+  }
+
+  /**
+   * Dibuja diferentes patrones de diseño para bloques de sendero (café)
+   * Usa una función hash determinística basada en la posición para seleccionar el patrón
+   */
+  private drawPathPattern(blockX: number, blockY: number, blockWidth: number, blockHeight: number, col: number, row: number, basePathColor: number) {
+    // Generar paleta única de 3 colores para este bloque usando el color base
+    const colors = this.generateUniqueColorPalette(col, row, basePathColor)
+    
+    // Función hash simple y determinística para seleccionar patrón
+    const hash = ((col * 73856093) ^ (row * 19349663)) % 7
+    
+    switch (hash) {
+      case 0:
+        this.drawPatternLines(blockX, blockY, blockWidth, blockHeight, colors)
+        break
+      case 1:
+        this.drawPatternDots(blockX, blockY, blockWidth, blockHeight, colors)
+        break
+      case 2:
+        this.drawPatternBricks(blockX, blockY, blockWidth, blockHeight, colors)
+        break
+      case 3:
+        this.drawPatternDiagonal(blockX, blockY, blockWidth, blockHeight, colors)
+        break
+      case 4:
+        this.drawPatternStones(blockX, blockY, blockWidth, blockHeight, colors)
+        break
+      case 5:
+        this.drawPatternWaves(blockX, blockY, blockWidth, blockHeight, colors)
+        break
+      case 6:
+        this.drawPatternGrid(blockX, blockY, blockWidth, blockHeight, colors)
+        break
+    }
+  }
+
+  /**
+   * Dibuja un bloque simple en 2D
+   */
+  private draw2DBlock(x: number, y: number, width: number, height: number, color: number, alpha: number = 0.8) {
+    this.graphics.fillStyle(color, alpha)
+    this.graphics.fillRect(x, y, width, height)
+    
+    // Borde sutil
+    this.graphics.lineStyle(1, 0x000000, 0.2)
+    this.graphics.strokeRect(x, y, width, height)
+  }
+
+  /**
+   * Dibuja un ladrillo simple en 2D con línea de mortero
+   */
+  private draw2DBrick(x: number, y: number, width: number, height: number, color: number, alpha: number = 0.8) {
+    // Dibujar el bloque base
+    this.draw2DBlock(x, y, width, height, color, alpha)
+    
+    // Línea de mortero horizontal (centro)
+    this.graphics.lineStyle(1, 0x000000, 0.15)
+    this.graphics.moveTo(x, y + height * 0.5)
+    this.graphics.lineTo(x + width, y + height * 0.5)
+    this.graphics.strokePath()
+  }
+
+  /**
+   * Patrón 1: Dos mini-bloques horizontales tipo ladrillo (arriba y abajo)
+   */
+  private drawPatternLines(blockX: number, blockY: number, blockWidth: number, blockHeight: number, colors: { primary: number; secondary: number; accent: number }) {
+    const padding = blockWidth * 0.1
+    const miniHeight = blockHeight * 0.35
+    
+    // Mini-bloque superior: ladrillo horizontal con color primary
+    this.draw2DBrick(blockX + padding, blockY + padding, blockWidth - padding * 2, miniHeight, colors.primary, 0.8)
+    
+    // Mini-bloque inferior: ladrillo horizontal con color secondary
+    this.draw2DBrick(blockX + padding, blockY + blockHeight - miniHeight - padding, blockWidth - padding * 2, miniHeight, colors.secondary, 0.8)
+    
+    // Acento: pequeño bloque central con color accent
+    const accentWidth = (blockWidth - padding * 2) * 0.3
+    const accentHeight = blockHeight * 0.1
+    this.draw2DBlock(
+      blockX + blockWidth * 0.5 - accentWidth * 0.5,
+      blockY + blockHeight * 0.5 - accentHeight * 0.5,
+      accentWidth,
+      accentHeight,
+      colors.accent,
+      0.7
+    )
+  }
+
+  /**
+   * Patrón 2: Dos bloques cuadrados tipo piedra (izquierda y derecha)
+   */
+  private drawPatternDots(blockX: number, blockY: number, blockWidth: number, blockHeight: number, colors: { primary: number; secondary: number; accent: number }) {
+    const padding = blockWidth * 0.15
+    const blockSize = Math.min(blockWidth, blockHeight) * 0.35
+    
+    // Mini-bloque izquierdo: bloque cuadrado con color primary
+    this.draw2DBlock(blockX + padding, blockY + blockHeight * 0.5 - blockSize * 0.5, blockSize, blockSize, colors.primary, 0.8)
+    
+    // Mini-bloque derecho: bloque cuadrado con color secondary
+    this.draw2DBlock(blockX + blockWidth - blockSize - padding, blockY + blockHeight * 0.5 - blockSize * 0.5, blockSize, blockSize, colors.secondary, 0.8)
+    
+    // Acento: pequeño bloque central con color accent
+    const accentSize = blockSize * 0.5
+    this.draw2DBlock(
+      blockX + blockWidth * 0.5 - accentSize * 0.5,
+      blockY + blockHeight * 0.5 - accentSize * 0.5,
+      accentSize,
+      accentSize,
+      colors.accent,
+      0.7
+    )
+  }
+
+  /**
+   * Patrón 3: Dos ladrillos en esquinas opuestas
+   */
+  private drawPatternBricks(blockX: number, blockY: number, blockWidth: number, blockHeight: number, colors: { primary: number; secondary: number; accent: number }) {
+    const padding = blockWidth * 0.15
+    const brickSize = Math.min(blockWidth, blockHeight) * 0.35
+    
+    // Ladrillo superior izquierdo con color primary
+    this.draw2DBrick(blockX + padding, blockY + padding, brickSize, brickSize, colors.primary, 0.8)
+    
+    // Ladrillo inferior derecho con color secondary
+    this.draw2DBrick(blockX + blockWidth - brickSize - padding, blockY + blockHeight - brickSize - padding, brickSize, brickSize, colors.secondary, 0.8)
+    
+    // Acento: pequeño bloque central con color accent
+    const accentSize = brickSize * 0.5
+    this.draw2DBlock(
+      blockX + blockWidth * 0.5 - accentSize * 0.5,
+      blockY + blockHeight * 0.5 - accentSize * 0.5,
+      accentSize,
+      accentSize,
+      colors.accent,
+      0.7
+    )
+  }
+
+  /**
+   * Patrón 4: Dos bloques rectangulares en diagonal
+   */
+  private drawPatternDiagonal(blockX: number, blockY: number, blockWidth: number, blockHeight: number, colors: { primary: number; secondary: number; accent: number }) {
+    const padding = blockWidth * 0.1
+    const blockWidth_size = blockWidth * 0.35
+    const blockHeight_size = blockHeight * 0.35
+    
+    // Bloque superior derecho con color primary
+    this.draw2DBlock(
+      blockX + blockWidth - blockWidth_size - padding,
+      blockY + padding,
+      blockWidth_size,
+      blockHeight_size,
+      colors.primary,
+      0.8
+    )
+    
+    // Bloque inferior izquierdo con color secondary
+    this.draw2DBlock(
+      blockX + padding,
+      blockY + blockHeight - blockHeight_size - padding,
+      blockWidth_size,
+      blockHeight_size,
+      colors.secondary,
+      0.8
+    )
+    
+    // Acento: pequeño bloque central con color accent
+    const accentSize = Math.min(blockWidth_size, blockHeight_size) * 0.5
+    this.draw2DBlock(
+      blockX + blockWidth * 0.5 - accentSize * 0.5,
+      blockY + blockHeight * 0.5 - accentSize * 0.5,
+      accentSize,
+      accentSize,
+      colors.accent,
+      0.7
+    )
+  }
+
+  /**
+   * Patrón 5: Dos bloques verticales tipo columna (lados)
+   */
+  private drawPatternStones(blockX: number, blockY: number, blockWidth: number, blockHeight: number, colors: { primary: number; secondary: number; accent: number }) {
+    const padding = blockWidth * 0.1
+    const columnWidth = blockWidth * 0.25
+    
+    // Columna izquierda con color primary
+    this.draw2DBlock(blockX + padding, blockY + padding, columnWidth, blockHeight - padding * 2, colors.primary, 0.8)
+    
+    // Columna derecha con color secondary
+    this.draw2DBlock(blockX + blockWidth - columnWidth - padding, blockY + padding, columnWidth, blockHeight - padding * 2, colors.secondary, 0.8)
+    
+    // Acento: bloque horizontal central con color accent
+    const accentHeight = blockHeight * 0.15
+    this.draw2DBlock(
+      blockX + padding + columnWidth,
+      blockY + blockHeight * 0.5 - accentHeight * 0.5,
+      blockWidth - (padding + columnWidth) * 2,
+      accentHeight,
+      colors.accent,
+      0.7
+    )
+  }
+
+  /**
+   * Patrón 6: Dos bloques horizontales tipo losa (arriba y abajo)
+   */
+  private drawPatternWaves(blockX: number, blockY: number, blockWidth: number, blockHeight: number, colors: { primary: number; secondary: number; accent: number }) {
+    const padding = blockWidth * 0.1
+    const slabHeight = blockHeight * 0.35
+    
+    // Losa superior con color primary
+    this.draw2DBlock(blockX + padding, blockY + padding, blockWidth - padding * 2, slabHeight, colors.primary, 0.8)
+    
+    // Losa inferior con color secondary
+    this.draw2DBlock(blockX + padding, blockY + blockHeight - slabHeight - padding, blockWidth - padding * 2, slabHeight, colors.secondary, 0.8)
+    
+    // Acento: pequeño bloque central con color accent
+    const accentWidth = (blockWidth - padding * 2) * 0.4
+    const accentHeight = blockHeight * 0.1
+    this.draw2DBlock(
+      blockX + blockWidth * 0.5 - accentWidth * 0.5,
+      blockY + blockHeight * 0.5 - accentHeight * 0.5,
+      accentWidth,
+      accentHeight,
+      colors.accent,
+      0.7
+    )
+  }
+
+  /**
+   * Patrón 7: Dos bloques cuadrados tipo adoquín (esquinas)
+   */
+  private drawPatternGrid(blockX: number, blockY: number, blockWidth: number, blockHeight: number, colors: { primary: number; secondary: number; accent: number }) {
+    const padding = blockWidth * 0.15
+    const cobbleSize = Math.min(blockWidth, blockHeight) * 0.35
+    
+    // Adoquín superior izquierdo con color primary
+    this.draw2DBlock(blockX + padding, blockY + padding, cobbleSize, cobbleSize, colors.primary, 0.8)
+    
+    // Adoquín inferior derecho con color secondary
+    this.draw2DBlock(blockX + blockWidth - cobbleSize - padding, blockY + blockHeight - cobbleSize - padding, cobbleSize, cobbleSize, colors.secondary, 0.8)
+    
+    // Acento: pequeño bloque central con color accent
+    const accentSize = cobbleSize * 0.5
+    this.draw2DBlock(
+      blockX + blockWidth * 0.5 - accentSize * 0.5,
+      blockY + blockHeight * 0.5 - accentSize * 0.5,
+      accentSize,
+      accentSize,
+      colors.accent,
+      0.7
+    )
   }
 
   /**
