@@ -90,6 +90,7 @@ export class CommandQueue {
     this.isExecuting = false
     if (this.currentTween) {
       this.currentTween.stop()
+      this.currentTween.remove()
       this.currentTween = null
     }
   }

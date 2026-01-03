@@ -14,6 +14,7 @@ import { PathRenderer } from './renderers/PathRenderer'
 import { TotemRenderer } from './renderers/TotemRenderer'
 import { WaterLilyRenderer } from './renderers/WaterLilyRenderer'
 import { GridRenderer } from './renderers/GridRenderer'
+import { GoalRenderer } from './renderers/GoalRenderer'
 
 /**
  * Orquestador principal para renderizar todos los elementos del fondo del juego.
@@ -26,6 +27,8 @@ export class BackgroundRenderer {
   private height: number
   private horizonY: number
   private gridRenderer: GridRenderer
+  private groundRenderer?: GroundRenderer
+  private goalRenderer?: GoalRenderer
 
   constructor(scene: Phaser.Scene, width: number, height: number) {
     this.scene = scene
@@ -43,6 +46,20 @@ export class BackgroundRenderer {
   }
 
   /**
+   * Obtiene el renderer del suelo (para configurar bloques de sendero)
+   */
+  public getGroundRenderer(): GroundRenderer | undefined {
+    return this.groundRenderer
+  }
+
+  /**
+   * Obtiene el renderer del objetivo/premio
+   */
+  public getGoalRenderer(): GoalRenderer | undefined {
+    return this.goalRenderer
+  }
+
+  /**
    * Renderiza todo el fondo del juego
    * @returns Objeto con los elementos renderizados (mantiene compatibilidad con código existente)
    */
@@ -57,9 +74,9 @@ export class BackgroundRenderer {
     const mountainRenderer = new MountainRenderer(bgGraphics, this.scene, this.width, this.height, this.horizonY)
     const mountainClouds = mountainRenderer.render()
     
-    // Renderizar suelo
-    const groundRenderer = new GroundRenderer(bgGraphics, this.width, this.height, this.horizonY)
-    groundRenderer.render()
+    // Renderizar suelo (pasar gridRenderer para bloques tipo Minecraft)
+    this.groundRenderer = new GroundRenderer(bgGraphics, this.width, this.height, this.horizonY, this.gridRenderer)
+    this.groundRenderer.render()
     
     // Renderizar lago primero para obtener su información
     const lakeRenderer = new LakeRenderer(this.scene, this.width, this.horizonY)
@@ -115,6 +132,8 @@ export class BackgroundRenderer {
     // Renderizar grid/grid sobre el terreno (último para estar visible)
     const gridGraphics = this.gridRenderer.render(this.width, this.height, this.horizonY)
 
+    // El premio/objetivo se renderiza después (desde GameScene) ya que necesita configuración del nivel
+
     return {
       backgroundGraphics: bgGraphics,
       gridGraphics: gridGraphics,
@@ -127,5 +146,28 @@ export class BackgroundRenderer {
       totems: totems,
       waterLilies: waterLilies
     }
+  }
+
+  /**
+   * Configura el sendero (bloques cafés) para un nivel
+   */
+  public setPathBlocks(pathCoordinates: Array<{ x: number; y: number }>) {
+    if (this.groundRenderer) {
+      this.groundRenderer.setPathBlocks(pathCoordinates)
+    }
+  }
+
+  /**
+   * Renderiza el premio final/objetivo
+   */
+  public renderGoal(goalGridX: number, goalGridY: number): void {
+    this.goalRenderer = new GoalRenderer(
+      this.scene,
+      this.gridRenderer,
+      goalGridX,
+      goalGridY,
+      this.horizonY
+    )
+    this.goalRenderer.render()
   }
 }

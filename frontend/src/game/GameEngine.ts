@@ -7,6 +7,8 @@ export class GameEngine {
   private character: Character
   public onLog?: (message: string, type?: string) => void
   public onExecutionComplete?: () => void
+  public onReward?: (amount: number, total: number, message: string) => void
+  public onGoalReached?: () => void
 
   constructor(canvasId: string, character: Character) {
     this.character = character
@@ -54,6 +56,16 @@ export class GameEngine {
         if (gameEngine.onExecutionComplete) {
           gameEngine.onExecutionComplete()
         }
+      },
+      onReward: (amount: number, total: number, message: string) => {
+        if (gameEngine.onReward) {
+          gameEngine.onReward(amount, total, message)
+        }
+      },
+      onGoalReached: () => {
+        if (gameEngine.onGoalReached) {
+          gameEngine.onGoalReached()
+        }
       }
     })
   }
@@ -86,13 +98,30 @@ export class GameEngine {
   /**
    * Obtiene el estado actual del jugador (posición, ángulo, acciones)
    */
-  public getPlayerState(): { x: number; y: number; angle: number; actionsExecuted: string[]; stepsMoved: number; rotationsMade: number } | null {
+  public getPlayerState(): { x: number; y: number; angle: number; actionsExecuted: string[]; stepsMoved: number; rotationsMade: number; gridX: number; gridY: number } | null {
     if (!this.game) return null
 
     const scene = this.game.scene.getScene('GameScene') as GameScene
     if (!scene) return null
 
     return scene.getPlayerState()
+  }
+
+  /**
+   * Configura el nivel (sendero, objetivo, posición inicial)
+   */
+  public setLevelConfig(config: {
+    startPosition?: { gridX: number; gridY: number }
+    goalPosition?: { gridX: number; gridY: number }
+    path?: Array<{ x: number; y: number }>
+    maizePositions?: Array<{ gridX: number; gridY: number }>
+  }) {
+    if (!this.game) return
+
+    const scene = this.game.scene.getScene('GameScene') as GameScene
+    if (scene) {
+      scene.setLevelConfig(config)
+    }
   }
 
   /**

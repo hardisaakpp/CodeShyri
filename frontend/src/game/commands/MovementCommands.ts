@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 import { CommandQueue } from './CommandQueue'
 import { GridRenderer } from '../background/renderers/GridRenderer'
+import { GroundRenderer } from '../background/renderers/GroundRenderer'
+import { RewardSystem } from '../services/RewardSystem'
 
 export class MovementCommands {
   // Posición actual en el grid
@@ -12,7 +14,11 @@ export class MovementCommands {
     private player: Phaser.GameObjects.Sprite,
     private log: (message: string, type?: string) => void,
     private gridRenderer?: GridRenderer,
-    private onGridPositionChange?: (gridX: number, gridY: number) => void
+    private onGridPositionChange?: (gridX: number, gridY: number) => void,
+    private groundRenderer?: GroundRenderer,
+    private rewardSystem?: RewardSystem,
+    private hasMaizeAt?: (gridX: number, gridY: number) => boolean,
+    private collectMaizeAt?: (gridX: number, gridY: number) => boolean
   ) {
     // Si tenemos grid, inicializar posición
     if (this.gridRenderer) {
@@ -157,6 +163,28 @@ export class MovementCommands {
           // Actualizar posición en grid
           this.currentGridX = newGridX
           this.currentGridY = newGridY
+          
+          // Verificar si hay maíz visible ANTES de dar recompensa
+          const hasVisibleMaize = this.hasMaizeAt ? this.hasMaizeAt(this.currentGridX, this.currentGridY) : false
+          
+          // Si hay maíz visible, recolectarlo primero (desaparecerá visualmente)
+          if (hasVisibleMaize && this.collectMaizeAt) {
+            this.collectMaizeAt(this.currentGridX, this.currentGridY)
+          }
+          
+          // Verificar si es bloque de sendero y dar recompensa
+          if (this.groundRenderer && this.rewardSystem) {
+            const isPathBlock = this.groundRenderer.isPathBlock(this.currentGridX, this.currentGridY)
+            // Pasar también la posición en píxeles y si hay maíz visible para el efecto visual
+            this.rewardSystem.rewardForBlock(
+              this.currentGridX, 
+              this.currentGridY, 
+              isPathBlock,
+              targetPosition.pixelX,
+              targetPosition.pixelY,
+              hasVisibleMaize
+            )
+          }
           
           // Notificar cambio de posición
           if (this.onGridPositionChange) {
@@ -354,6 +382,24 @@ export class MovementCommands {
             })
           })
         }
+      }
+    }
+  }
+
+  /**
+   * Resetea la posición del grid basándose en la posición actual del personaje
+   */
+  public reset(gridX?: number, gridY?: number) {
+    if (this.gridRenderer) {
+      if (gridX !== undefined && gridY !== undefined) {
+        // Si se proporcionan coordenadas del grid, usarlas
+        this.currentGridX = gridX
+        this.currentGridY = gridY
+      } else {
+        // Si no, calcular desde la posición actual del personaje
+        const initialPos = this.gridRenderer.pixelToGrid(this.player.x, this.player.y)
+        this.currentGridX = initialPos.gridX
+        this.currentGridY = initialPos.gridY
       }
     }
   }

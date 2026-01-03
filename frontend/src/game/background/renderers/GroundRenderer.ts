@@ -1,15 +1,22 @@
 import type Phaser from 'phaser'
+import { GridRenderer } from './GridRenderer'
 
 export class GroundRenderer {
   // Seed para ruido determinístico (mejor rendimiento que Math.random)
   private readonly noiseSeed = 12345.6789
+  private cellSize: number = 60 // Tamaño de celda del grid (debe coincidir con GridRenderer)
 
   constructor(
     private graphics: Phaser.GameObjects.Graphics,
     private width: number,
     private height: number,
-    private horizonY: number
-  ) {}
+    private horizonY: number,
+    private gridRenderer?: GridRenderer
+  ) {
+    if (gridRenderer) {
+      this.cellSize = gridRenderer.getCellSize()
+    }
+  }
 
   /**
    * Renderiza el suelo con diseño elegante y textura mejorada
@@ -17,20 +24,159 @@ export class GroundRenderer {
   public render() {
     const groundHeight = this.height - this.horizonY
     
-    // Base con gradiente sofisticado mejorado
-    this.drawElegantGradient(groundHeight)
-    
-    // Variación de profundidad con sombras sutiles mejorada
-    this.drawDepthVariation(groundHeight)
-    
-    // Textura mejorada con ruido procedural
-    this.drawEnhancedTexture(groundHeight)
+    // Si tenemos grid, dibujar bloques tipo Minecraft
+    if (this.gridRenderer) {
+      this.drawBlockGrid(groundHeight)
+    } else {
+      // Fallback al diseño original
+      this.drawElegantGradient(groundHeight)
+      this.drawDepthVariation(groundHeight)
+      this.drawEnhancedTexture(groundHeight)
+    }
     
     // Línea del horizonte refinada
     this.graphics.lineStyle(2, 0x3A5A3A, 0.4)
     this.graphics.moveTo(0, this.horizonY)
     this.graphics.lineTo(this.width, this.horizonY)
     this.graphics.strokePath()
+  }
+
+  /**
+   * Mapa de bloques: true = sendero (café), false = pasto (verde)
+   * Esto se puede configurar por nivel
+   */
+  private pathBlocks: Map<string, boolean> = new Map()
+
+  /**
+   * Define qué bloques son sendero (cafés) para un nivel
+   */
+  public setPathBlocks(pathCoordinates: Array<{ x: number; y: number }>) {
+    this.pathBlocks.clear()
+    pathCoordinates.forEach(coord => {
+      const key = `${coord.x},${coord.y}`
+      this.pathBlocks.set(key, true)
+    })
+  }
+
+  /**
+   * Verifica si un bloque es parte del sendero
+   */
+  public isPathBlock(gridX: number, gridY: number): boolean {
+    const key = `${gridX},${gridY}`
+    return this.pathBlocks.get(key) === true
+  }
+
+  /**
+   * Dibuja bloques tipo Minecraft que representan el grid
+   */
+  private drawBlockGrid(groundHeight: number) {
+    const numCols = Math.ceil(this.width / this.cellSize)
+    const numRows = Math.ceil(groundHeight / this.cellSize)
+
+    // Colores base para los bloques (tierra/hierba andina)
+    const grassTopColor = 0x5A8A5A    // Verde hierba claro
+    const pathColor = 0x8B6F47        // Café/marrón sendero (más claro que tierra)
+    const dirtColor = 0x6A5A3A        // Marrón tierra oscuro
+    const borderColor = 0x3A4A3A      // Borde oscuro
+    const borderLightColor = 0x6A7A6A // Borde claro (highlight)
+
+    for (let row = 0; row < numRows; row++) {
+      for (let col = 0; col < numCols; col++) {
+        const blockX = col * this.cellSize
+        const blockY = this.horizonY + row * this.cellSize
+        const blockWidth = Math.min(this.cellSize, this.width - blockX)
+        const blockHeight = Math.min(this.cellSize, this.height - blockY)
+
+        // Determinar tipo de bloque: sendero, hierba o tierra
+        const isPathBlock = this.isPathBlock(col, row)
+        const isGrassBlock = row === 0 && !isPathBlock
+        
+        let baseColor: number
+        if (isPathBlock) {
+          baseColor = pathColor // Bloque de sendero (café)
+        } else if (isGrassBlock) {
+          baseColor = grassTopColor // Bloque de hierba (verde)
+        } else {
+          baseColor = dirtColor // Bloque de tierra (marrón oscuro)
+        }
+
+        // Variación sutil de color usando ruido para hacer más orgánico
+        const noiseValue = this.fbm(blockX * 0.05, blockY * 0.05, 1)
+        const colorVariation = Math.floor((noiseValue - 0.5) * 8) // -4 a +4
+
+        // Aplicar variación de color
+        const r = Math.max(0, Math.min(255, ((baseColor >> 16) & 0xFF) + colorVariation))
+        const g = Math.max(0, Math.min(255, ((baseColor >> 8) & 0xFF) + colorVariation))
+        const b = Math.max(0, Math.min(255, (baseColor & 0xFF) + colorVariation))
+        const finalColor = (r << 16) | (g << 8) | b
+
+        // Dibujar bloque principal
+        this.graphics.fillStyle(finalColor, 1)
+        this.graphics.fillRect(blockX, blockY, blockWidth, blockHeight)
+
+        // Si es bloque de hierba, agregar textura de hierba en la parte superior
+        if (isGrassBlock) {
+          this.drawGrassTexture(blockX, blockY, blockWidth, blockHeight)
+        }
+
+        // Bordes del bloque para efecto 3D tipo Minecraft
+        const borderWidth = 2
+
+        // Borde superior (más claro - luz)
+        this.graphics.lineStyle(borderWidth, borderLightColor, 0.6)
+        this.graphics.strokeRect(blockX, blockY, blockWidth, borderWidth)
+
+        // Borde izquierdo (más claro - luz)
+        this.graphics.lineStyle(borderWidth, borderLightColor, 0.5)
+        this.graphics.strokeRect(blockX, blockY, borderWidth, blockHeight)
+
+        // Borde inferior (más oscuro - sombra)
+        this.graphics.lineStyle(borderWidth, borderColor, 0.7)
+        this.graphics.strokeRect(blockX, blockY + blockHeight - borderWidth, blockWidth, borderWidth)
+
+        // Borde derecho (más oscuro - sombra)
+        this.graphics.lineStyle(borderWidth, borderColor, 0.6)
+        this.graphics.strokeRect(blockX + blockWidth - borderWidth, blockY, borderWidth, blockHeight)
+
+        // Sombra interna sutil en la esquina inferior derecha
+        this.graphics.fillStyle(0x000000, 0.15)
+        this.graphics.fillRect(
+          blockX + blockWidth * 0.7,
+          blockY + blockHeight * 0.7,
+          blockWidth * 0.3,
+          blockHeight * 0.3
+        )
+
+        // Highlight sutil en la esquina superior izquierda
+        this.graphics.fillStyle(0xFFFFFF, 0.1)
+        this.graphics.fillRect(
+          blockX,
+          blockY,
+          blockWidth * 0.3,
+          blockHeight * 0.3
+        )
+      }
+    }
+  }
+
+  /**
+   * Dibuja textura de hierba en la parte superior del bloque
+   */
+  private drawGrassTexture(blockX: number, blockY: number, blockWidth: number, blockHeight: number) {
+    const grassColor = 0x6A9A6A
+    const grassAlpha = 0.3
+
+    // Dibujar pequeñas manchas de hierba en la parte superior
+    const numGrassSpots = 3 + Math.floor(this.fbm(blockX * 0.1, blockY * 0.1, 1) * 3)
+    
+    for (let i = 0; i < numGrassSpots; i++) {
+      const spotX = blockX + (i / numGrassSpots) * blockWidth + (this.fbm(blockX + i, blockY, 1) - 0.5) * blockWidth * 0.3
+      const spotY = blockY + (this.fbm(blockX + i * 2, blockY, 1) - 0.5) * blockHeight * 0.2
+      const spotSize = 2 + this.fbm(blockX + i * 3, blockY, 1) * 3
+
+      this.graphics.fillStyle(grassColor, grassAlpha)
+      this.graphics.fillCircle(spotX, spotY, spotSize)
+    }
   }
 
   /**

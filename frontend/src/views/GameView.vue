@@ -19,7 +19,7 @@
           <div class="game-stats">
             <div class="stat-item">
               <span class="stat-icon">🌽</span>
-              <span class="stat-value">{{ score }}</span>
+              <span class="stat-value">{{ totalMaize }}</span>
               <span class="stat-label">Maíz</span>
             </div>
             <div class="stat-item">
@@ -94,6 +94,7 @@ const route = useRoute()
 const router = useRouter()
 const levelId = ref(route.params.levelId as string || '1')
 const score = ref(0)
+const totalMaize = ref(0)
 const consoleLogs = ref<Array<{ type: string; message: string; timestamp?: string }>>([])
 const consoleOutput = ref<HTMLElement | null>(null)
 const isRunning = ref(false)
@@ -164,6 +165,26 @@ onMounted(async () => {
       consoleOutput.value.scrollTop = consoleOutput.value.scrollHeight
     }
   }
+  gameEngine.onReward = (_amount: number, total: number, _message: string) => {
+    totalMaize.value = total
+    // El mensaje ya se muestra en los logs
+  }
+  gameEngine.onGoalReached = () => {
+    consoleLogs.value.push({ 
+      type: 'success', 
+      message: '🎯 ¡Premio final recolectado!', 
+      timestamp: getTimestamp() 
+    })
+  }
+  
+  // Esperar un frame para que el motor de juego se inicialice
+  await nextTick()
+  await nextTick()
+  
+  // Configurar nivel cuando se cargan los datos
+  if (levelData.value) {
+    configureLevelFromData(levelData.value)
+  }
 })
 
 const loadLevelData = async () => {
@@ -174,6 +195,11 @@ const loadLevelData = async () => {
       // Actualizar personaje si está definido en el nivel
       if (levelData.value.character && characters[levelData.value.character]) {
         currentCharacter.value = characters[levelData.value.character]
+      }
+      
+      // Configurar nivel en el motor de juego
+      if (gameEngine && levelData.value) {
+        configureLevelFromData(levelData.value)
       }
     } else {
       console.error('Error cargando nivel:', response.statusText)
@@ -191,6 +217,36 @@ const loadLevelData = async () => {
       timestamp: getTimestamp() 
     })
   }
+}
+
+const configureLevelFromData = (data: any) => {
+  if (!gameEngine) return
+  
+  const config: {
+    startPosition?: { gridX: number; gridY: number }
+    goalPosition?: { gridX: number; gridY: number }
+    path?: Array<{ x: number; y: number }>
+    maizePositions?: Array<{ gridX: number; gridY: number }>
+  } = {}
+  
+  if (data.startPosition) {
+    config.startPosition = data.startPosition
+  }
+  
+  if (data.goalPosition) {
+    config.goalPosition = data.goalPosition
+  }
+  
+  if (data.path && Array.isArray(data.path)) {
+    config.path = data.path
+  }
+  
+  // Si hay posiciones de maíz definidas en el backend, usarlas
+  if (data.maizePositions && Array.isArray(data.maizePositions)) {
+    config.maizePositions = data.maizePositions
+  }
+  
+  gameEngine.setLevelConfig(config)
 }
 
 const validateLevelCompletion = async () => {
@@ -358,7 +414,7 @@ const runCode = async () => {
       try {
         isExecuting.value = true
         gameEngine.executeCode(code)
-        score.value += 10
+        // Las recompensas se manejan automáticamente por el sistema de recompensas
       } catch (execError) {
         isExecuting.value = false
         consoleLogs.value.push({ type: 'error', message: `✗ Error al ejecutar código: ${execError}`, timestamp: getTimestamp() })
@@ -381,6 +437,7 @@ const resetCode = () => {
     editor.setValue(getInitialCode())
   }
   consoleLogs.value = []
+  totalMaize.value = 0 // Reiniciar maíz al reiniciar
   if (gameEngine) {
     gameEngine.reset()
   }

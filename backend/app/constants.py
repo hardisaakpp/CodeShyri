@@ -85,9 +85,17 @@ LEVELS: Dict[str, Dict[str, Any]] = {
         "objectives": [
             "Mueve el personaje 3 pasos hacia adelante",
             "Gira a la derecha 90 grados",
-            "Llega al objetivo"
+            "Recolecta el premio final"
         ],
-        "initialCode": "// Nivel 1: Primeros Pasos\n// Mueve a Kitu 3 pasos hacia adelante y luego gira a la derecha\n\nmoveForward(3);\nturnRight();\n",
+        "initialCode": "// Nivel 1: Primeros Pasos\n// Mueve a Kitu 3 pasos hacia adelante y luego gira a la derecha\n// Sigue el sendero café para recolectar más maíz\n\nmoveForward(3);\nturnRight();\n",
+        "startPosition": {"gridX": 1, "gridY": 2},
+        "goalPosition": {"gridX": 4, "gridY": 2},
+        "path": [
+            {"x": 1, "y": 2},
+            {"x": 2, "y": 2},
+            {"x": 3, "y": 2},
+            {"x": 4, "y": 2}
+        ],
         "validation": {
             "targetPosition": {"x": 400, "y": 400, "tolerance": 50},
             "minSteps": 3,

@@ -25,33 +25,19 @@ export class GridRenderer {
 
   /**
    * Renderiza la grilla en el área de juego
+   * Ahora solo dibuja el highlight de la celda actual (los bloques se dibujan en GroundRenderer)
    */
   public render(width: number, height: number, horizonY: number): Phaser.GameObjects.Graphics {
     this.width = width
     this.height = height
     this.horizonY = horizonY
 
-    // Crear graphics para el grid
+    // Crear graphics para el grid (solo para highlights, no líneas)
     this.gridGraphics = this.scene.add.graphics()
     this.gridGraphics.setDepth(5) // Por encima del fondo pero debajo del personaje
 
-    // Dibujar líneas verticales
-    const startX = 0
-    const endX = width
-    const startY = horizonY
-    const endY = height
-
-    // Líneas verticales
-    for (let x = 0; x <= endX; x += this.cellSize) {
-      this.gridGraphics.lineStyle(1, this.gridColor, this.gridAlpha)
-      this.gridGraphics.lineBetween(x, startY, x, endY)
-    }
-
-    // Líneas horizontales
-    for (let y = startY; y <= endY; y += this.cellSize) {
-      this.gridGraphics.lineStyle(1, this.gridColor, this.gridAlpha)
-      this.gridGraphics.lineBetween(startX, y, endX, y)
-    }
+    // Ya no dibujamos líneas aquí - los bloques en GroundRenderer son el grid visual
+    // Solo mantenemos el graphics para el highlight de la celda actual
 
     return this.gridGraphics
   }
