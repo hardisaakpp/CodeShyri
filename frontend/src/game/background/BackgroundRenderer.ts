@@ -131,6 +131,11 @@ export class BackgroundRenderer {
     // Set para rastrear posiciones de grid ocupadas (formato "gridX,gridY")
     const occupiedGridPositions = new Set<string>()
     
+    // TEMPORAL: Bloquear el bloque (5,1) exclusivamente para la fogata
+    // Ningún otro elemento debe colocarse aquí
+    const fireBlockKey = '5,1'
+    occupiedGridPositions.add(fireBlockKey)
+    
     // Renderizar castillos incas PRIMERO (evitando el lago y el camino)
     // Las casas ocupan bloques verdes individuales
     const castleRenderer = new IncaCastleRenderer(this.scene, this.width, this.horizonY)
