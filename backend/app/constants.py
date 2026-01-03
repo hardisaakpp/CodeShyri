@@ -80,26 +80,32 @@ LEVELS: Dict[str, Dict[str, Any]] = {
     "1": {
         "id": "1",
         "title": "Primeros Pasos con Kitu",
-        "description": "Aprende los comandos básicos de movimiento",
+        "description": "Sigue la forma de la letra S: mueve y gira para completar el recorrido",
         "character": "kitu",
         "objectives": [
-            "Mueve el personaje 3 pasos hacia adelante",
-            "Gira a la derecha 90 grados",
+            "Sigue el patrón en forma de S",
+            "Realiza al menos 4 giros",
             "Recolecta el premio final"
         ],
-        "initialCode": "// Nivel 1: Primeros Pasos\n// Mueve a Kitu 3 pasos hacia adelante y luego gira a la derecha\n// Sigue el sendero café para recolectar más maíz\n\nmoveForward(3);\nturnRight();\n",
-        "startPosition": {"gridX": 1, "gridY": 2},
-        "goalPosition": {"gridX": 4, "gridY": 2},
-        "path": [
-            {"x": 1, "y": 2},
-            {"x": 2, "y": 2},
-            {"x": 3, "y": 2},
-            {"x": 4, "y": 2}
+        "initialCode": "// Nivel 1: Primeros Pasos\n// Sigue la forma de la letra \"S\" para llegar al objetivo\n// Recuerda: mueve, gira, mueve, gira...\n\nmoveForward(2);\nturnRight();\nmoveForward(2);\nturnRight();\nmoveForward(2);\nturnRight();\nmoveForward(2);\nturnRight();\nmoveForward(11);\n",
+        "startPosition": {"gridX": 1, "gridY": 1},
+        "goalPosition": {"gridX": 18, "gridY": 5},
+        "maizePositions": [
+            {"gridX": 2, "gridY": 1},
+            {"gridX": 4, "gridY": 1},
+            {"gridX": 3, "gridY": 3},
+            {"gridX": 5, "gridY": 3},
+            {"gridX": 8, "gridY": 5},
+            {"gridX": 10, "gridY": 5},
+            {"gridX": 12, "gridY": 5},
+            {"gridX": 14, "gridY": 5},
+            {"gridX": 16, "gridY": 5},
+            {"gridX": 17, "gridY": 5}
         ],
         "validation": {
-            "targetPosition": {"x": 400, "y": 400, "tolerance": 50},
-            "minSteps": 3,
-            "requiredRotation": 90
+            "targetPosition": {"x": 1110, "y": 530, "tolerance": 50},
+            "minSteps": 19,
+            "minRotations": 4
         },
         "availableFunctions": {
             "movement": [
