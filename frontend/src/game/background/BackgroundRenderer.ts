@@ -62,7 +62,10 @@ export class BackgroundRenderer {
    * Renderiza todo el fondo del juego
    * @returns Objeto con los elementos renderizados (mantiene compatibilidad con código existente)
    */
-  public render() {
+  public render(
+    pathCoordinates?: Array<{ x: number; y: number }>,
+    lakeConfig?: { centerX: number; centerY: number; width?: number; height?: number }
+  ) {
     const bgGraphics = this.scene.add.graphics()
     
     // Renderizar cielo
@@ -75,30 +78,60 @@ export class BackgroundRenderer {
     
     // Renderizar suelo (pasar gridRenderer para bloques tipo Minecraft)
     this.groundRenderer = new GroundRenderer(bgGraphics, this.width, this.height, this.horizonY, this.gridRenderer)
+    
+    // Configurar bloques de camino (path) ANTES de renderizar si están definidos
+    if (pathCoordinates && pathCoordinates.length > 0) {
+      this.groundRenderer.setPathBlocks(pathCoordinates)
+    }
+    
     this.groundRenderer.render()
     
-    // Renderizar lago primero para obtener su información
+    // Renderizar lago primero para obtener su información (pasar configuración si existe)
     const lakeRenderer = new LakeRenderer(this.scene, this.width, this.horizonY)
-    const lake = lakeRenderer.render()
+    const lake = lakeRenderer.render(lakeConfig)
     
     // Función helper para verificar si una posición está sobre el lago
     const isOverLake = (x: number, y: number): boolean => {
       return lakeRenderer.isOverLake(x, y)
     }
     
-    // Renderizar árboles (evitando el lago)
+    // Función helper para verificar si una posición está en el camino (path) - por coordenadas de grid
+    const isGridOnPath = (gridX: number, gridY: number): boolean => {
+      if (!this.groundRenderer) return false
+      return this.groundRenderer.isPathBlock(gridX, gridY)
+    }
+    
+    // Función helper para verificar si una posición en píxeles está en el camino (path)
+    const isOnPath = (x: number, y: number): boolean => {
+      if (!this.groundRenderer) return false
+      return this.groundRenderer.isPixelOnPath(x, y, this.gridRenderer)
+    }
+    
+    // Función combinada para verificar ambas condiciones (lago y path) - por coordenadas de grid
+    const isValidGridPosition = (gridX: number, gridY: number): boolean => {
+      // Convertir grid a píxeles para verificar el lago
+      const pixelPos = this.gridRenderer.gridToPixel(gridX, gridY)
+      return !isOverLake(pixelPos.pixelX, pixelPos.pixelY) && !isGridOnPath(gridX, gridY)
+    }
+    
+    // Función combinada para verificar ambas condiciones (lago y path) - por coordenadas de píxel
+    const isValidPosition = (x: number, y: number): boolean => {
+      return !isOverLake(x, y) && !isOnPath(x, y)
+    }
+    
+    // Renderizar árboles (evitando el lago y el camino)
     const treeRenderer = new TreeRenderer(this.scene, this.width, this.horizonY)
-    const treeRenderResult = treeRenderer.render(isOverLake)
+    const treeRenderResult = treeRenderer.render(isValidGridPosition, isValidPosition)
     const trees = treeRenderResult.graphics
     const treePositions = treeRenderResult.positions
     
-    // Renderizar rocas (evitando el lago)
+    // Renderizar rocas (evitando el lago y el camino)
     const rockRenderer = new RockRenderer(this.scene, this.width, this.height, this.horizonY)
-    const rocks = rockRenderer.render(isOverLake)
+    const rocks = rockRenderer.render(isValidPosition)
     
-    // Renderizar castillos incas (evitando el lago)
+    // Renderizar castillos incas (evitando el lago y el camino)
     const castleRenderer = new IncaCastleRenderer(this.scene, this.width, this.horizonY)
-    const castles = castleRenderer.render(isOverLake)
+    const castles = castleRenderer.render(isValidGridPosition, isValidPosition)
     
     // Renderizar elementos animados
     const animatedRenderer = new AnimatedElementsRenderer(this.scene, this.width, this.height, this.horizonY)
@@ -116,9 +149,9 @@ export class BackgroundRenderer {
     const smokeRenderer = new SmokeRenderer(this.scene, this.width, this.horizonY)
     const smokeElements = smokeRenderer.render(castles.map(c => ({ x: c.x, y: c.y })))
     
-    // Renderizar tótems incas
+    // Renderizar tótems incas (evitando el lago y el camino)
     const totemRenderer = new TotemRenderer(this.scene, this.width, this.horizonY)
-    const totems = totemRenderer.render(isOverLake)
+    const totems = totemRenderer.render(isValidGridPosition, isValidPosition)
     
     // Renderizar lirios acuáticos en el lago
     const waterLilyRenderer = new WaterLilyRenderer(this.scene)

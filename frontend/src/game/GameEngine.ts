@@ -114,6 +114,8 @@ export class GameEngine {
     startPosition?: { gridX: number; gridY: number }
     goalPosition?: { gridX: number; gridY: number }
     maizePositions?: Array<{ gridX: number; gridY: number }>
+    path?: Array<{ x: number; y: number }>
+    lake?: { centerX: number; centerY: number; width?: number; height?: number }
   }) {
     console.log('🎮 GameEngine.setLevelConfig() llamado con:', config)
     console.log('🎮 game disponible:', !!this.game)

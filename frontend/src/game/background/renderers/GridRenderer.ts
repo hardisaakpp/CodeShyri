@@ -95,6 +95,17 @@ export class GridRenderer {
   }
 
   /**
+   * Convierte coordenadas de grid a coordenadas de píxel para el personaje
+   * (parte inferior de la celda, para que el personaje esté sobre el suelo)
+   */
+  public gridToPixelForPlayer(gridX: number, gridY: number): { pixelX: number; pixelY: number } {
+    const pixelX = (gridX * this.cellSize) + (this.cellSize / 2)
+    // Parte inferior de la celda (el personaje tiene origin en la parte inferior)
+    const pixelY = this.horizonY + (gridY * this.cellSize) + this.cellSize
+    return { pixelX, pixelY }
+  }
+
+  /**
    * Ajusta una posición en píxeles a la celda más cercana
    */
   public snapToGrid(pixelX: number, pixelY: number): { pixelX: number; pixelY: number } {

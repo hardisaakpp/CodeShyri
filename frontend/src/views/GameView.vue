@@ -232,6 +232,7 @@ const configureLevelFromData = (data: any) => {
     goalPosition?: { gridX: number; gridY: number }
     path?: Array<{ x: number; y: number }>
     maizePositions?: Array<{ gridX: number; gridY: number }>
+    lake?: { centerX: number; centerY: number; width?: number; height?: number }
   } = {}
   
   if (data.startPosition) {
@@ -255,6 +256,12 @@ const configureLevelFromData = (data: any) => {
   if (data.maizePositions && Array.isArray(data.maizePositions)) {
     config.maizePositions = data.maizePositions
     console.log('✅ maizePositions configurado:', data.maizePositions.length, 'posiciones')
+  }
+  
+  // Si hay configuración del lago definida en el backend, usarla
+  if (data.lake) {
+    config.lake = data.lake
+    console.log('✅ lake configurado:', config.lake)
   }
   
   console.log('📤 Configuración completa a enviar a gameEngine:', config)

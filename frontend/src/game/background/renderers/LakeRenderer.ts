@@ -13,30 +13,45 @@ export class LakeRenderer {
 
   /**
    * Renderiza un lago en las faldas de las montañas
+   * @param config Configuración opcional del lago (posición y tamaño). Si no se proporciona, se usa posición aleatoria.
    */
-  public render(): Phaser.GameObjects.Graphics | null {
-    // Calcular posiciones de las bases de las montañas cercanas
-    const mountainBaseY = this.horizonY
-    const mountainPoints = 10
-    const mountainVariation = 30
-    const seed = mountainBaseY * 0.1
+  public render(config?: { centerX?: number; centerY?: number; width?: number; height?: number }): Phaser.GameObjects.Graphics | null {
+    let lakeCenterX: number
+    let lakeY: number
+    let lakeWidth: number
+    let lakeHeight: number
     
-    // Posición del lago (en el lado izquierdo del escenario, en las faldas)
-    const lakeCenterX = this.width * 0.2 // 20% desde la izquierda
-    const lakeWidth = 180 + Math.random() * 60 // Ancho del lago: 180-240 píxeles
-    const lakeHeight = 80 + Math.random() * 40 // Alto del lago: 80-120 píxeles
-    
-    // Calcular la posición Y en la base de la montaña más cercana
-    const mountainIndex = Math.floor((lakeCenterX / this.width) * mountainPoints)
-    const varAmount = Math.sin(mountainIndex * 0.5 + seed) * mountainVariation + 
-                     Math.cos(mountainIndex * 0.3 + seed * 0.7) * (mountainVariation * 0.6) +
-                     Math.sin(mountainIndex * 1.2 + seed * 1.3) * (mountainVariation * 0.4)
-    const mountainBaseYAtX = mountainBaseY + varAmount
-    
-    // Colocar lago completamente en el terreno plano, más abajo que la base de la montaña
-    // Asegurar que la parte superior del lago no toque la base de la montaña
-    // El lago debe estar en el terreno plano, similar a donde están las casitas
-    const lakeY = mountainBaseYAtX + 30 + Math.random() * 25
+    // Si hay configuración, usar valores configurados
+    if (config && (config.centerX !== undefined || config.centerY !== undefined)) {
+      lakeCenterX = config.centerX ?? this.width * 0.2
+      lakeY = config.centerY ?? this.horizonY + 400
+      lakeWidth = config.width ?? 200
+      lakeHeight = config.height ?? 100
+    } else {
+      // Comportamiento original: posición aleatoria
+      // Calcular posiciones de las bases de las montañas cercanas
+      const mountainBaseY = this.horizonY
+      const mountainPoints = 10
+      const mountainVariation = 30
+      const seed = mountainBaseY * 0.1
+      
+      // Posición del lago (en el lado izquierdo del escenario, en las faldas)
+      lakeCenterX = this.width * 0.2 // 20% desde la izquierda
+      lakeWidth = 180 + Math.random() * 60 // Ancho del lago: 180-240 píxeles
+      lakeHeight = 80 + Math.random() * 40 // Alto del lago: 80-120 píxeles
+      
+      // Calcular la posición Y en la base de la montaña más cercana
+      const mountainIndex = Math.floor((lakeCenterX / this.width) * mountainPoints)
+      const varAmount = Math.sin(mountainIndex * 0.5 + seed) * mountainVariation + 
+                       Math.cos(mountainIndex * 0.3 + seed * 0.7) * (mountainVariation * 0.6) +
+                       Math.sin(mountainIndex * 1.2 + seed * 1.3) * (mountainVariation * 0.4)
+      const mountainBaseYAtX = mountainBaseY + varAmount
+      
+      // Colocar lago completamente en el terreno plano, más abajo que la base de la montaña
+      // Asegurar que la parte superior del lago no toque la base de la montaña
+      // El lago debe estar en el terreno plano, similar a donde están las casitas
+      lakeY = mountainBaseYAtX + 30 + Math.random() * 25
+    }
     
     // Guardar información del lago para otros renderers
     this.lakeInfo = {

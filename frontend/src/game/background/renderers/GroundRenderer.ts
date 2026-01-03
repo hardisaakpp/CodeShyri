@@ -59,11 +59,23 @@ export class GroundRenderer {
   }
 
   /**
-   * Verifica si un bloque es parte del sendero
+   * Verifica si un bloque es parte del sendero (por coordenadas de grid)
    */
   public isPathBlock(gridX: number, gridY: number): boolean {
     const key = `${gridX},${gridY}`
     return this.pathBlocks.get(key) === true
+  }
+
+  /**
+   * Verifica si una posición en píxeles está sobre el sendero (camino café)
+   * @param pixelX Coordenada X en píxeles
+   * @param pixelY Coordenada Y en píxeles
+   * @param gridRenderer Renderer del grid para convertir coordenadas
+   */
+  public isPixelOnPath(pixelX: number, pixelY: number, gridRenderer?: GridRenderer): boolean {
+    if (!gridRenderer) return false
+    const grid = gridRenderer.pixelToGrid(pixelX, pixelY)
+    return this.isPathBlock(grid.gridX, grid.gridY)
   }
 
   /**
@@ -76,7 +88,6 @@ export class GroundRenderer {
     // Colores base para los bloques (tierra/hierba andina)
     const grassTopColor = 0x5A8A5A    // Verde hierba claro
     const pathColor = 0x8B6F47        // Café/marrón sendero (más claro que tierra)
-    const dirtColor = 0x6A5A3A        // Marrón tierra oscuro
     const borderColor = 0x3A4A3A      // Borde oscuro
     const borderLightColor = 0x6A7A6A // Borde claro (highlight)
 
@@ -87,52 +98,20 @@ export class GroundRenderer {
         const blockWidth = Math.min(this.cellSize, this.width - blockX)
         const blockHeight = Math.min(this.cellSize, this.height - blockY)
 
-        // Determinar tipo de bloque: sendero, hierba o tierra
+        // Determinar tipo de bloque: sendero (café) o hierba (verde)
         const isPathBlock = this.isPathBlock(col, row)
         
-        // Combinación de las 4 propuestas para distribución de bloques verdes/cafés:
-        // 1. Probabilidad base
-        // 2. Ruido para parches naturales
-        // 3. Gradiente vertical (más verde arriba)
-        // 4. Parches distribuidos
-        
-        // Calcular ruido para parches naturales (propuesta 2 y 4)
-        const noiseValue = this.fbm(blockX * 0.08, blockY * 0.08, 2)
-        
-        // Gradiente vertical: factor que decrece con la fila (propuesta 3)
-        const maxGrassRows = 5
-        const grassDecayFactor = row < maxGrassRows 
-          ? Math.max(0, 1 - (row / maxGrassRows)) 
-          : 0
-        
-        // Threshold basado en gradiente y ruido (combina propuesta 2, 3 y 4)
-        const baseThreshold = 0.5
-        const gradientBonus = grassDecayFactor * 0.25 // Hasta +25% arriba
-        const noiseThreshold = baseThreshold + gradientBonus
-        
-        // Probabilidad adicional para distribución más uniforme (propuesta 1)
-        const probabilityBonus = row < 3 ? 0.15 : 0 // Bonus en primeras filas
-        
-        // Determinar si es bloque de hierba
-        const isGrassBlock = !isPathBlock && (
-          row === 0 || // Primera fila siempre verde (100%)
-          (row < maxGrassRows && (
-            noiseValue > noiseThreshold || // Parches basados en ruido
-            Math.random() < probabilityBonus // Probabilidad adicional
-          ))
-        )
-        
+        // Lógica simplificada: path = café, resto = verde (sin aleatoriedad)
         let baseColor: number
         if (isPathBlock) {
           baseColor = pathColor // Bloque de sendero (café)
-        } else if (isGrassBlock) {
-          baseColor = grassTopColor // Bloque de hierba (verde)
         } else {
-          baseColor = dirtColor // Bloque de tierra (marrón oscuro)
+          baseColor = grassTopColor // Todos los demás bloques son verdes
         }
 
-        // Variación sutil de color usando ruido para hacer más orgánico
-        const colorVariation = Math.floor((noiseValue - 0.5) * 8) // -4 a +4
+        // Variación sutil de color para hacer más orgánico (usando ruido determinístico)
+        const noiseValue = this.fbm(blockX * 0.08, blockY * 0.08, 2)
+        const colorVariation = Math.floor((noiseValue - 0.5) * 6) // -3 a +3 (variación más sutil)
 
         // Aplicar variación de color
         const r = Math.max(0, Math.min(255, ((baseColor >> 16) & 0xFF) + colorVariation))
@@ -144,8 +123,8 @@ export class GroundRenderer {
         this.graphics.fillStyle(finalColor, 1)
         this.graphics.fillRect(blockX, blockY, blockWidth, blockHeight)
 
-        // Si es bloque de hierba, agregar textura de hierba en la parte superior
-        if (isGrassBlock) {
+        // Si es bloque de hierba (verde), agregar textura de hierba en la parte superior
+        if (!isPathBlock) {
           this.drawGrassTexture(blockX, blockY, blockWidth, blockHeight)
         }
 

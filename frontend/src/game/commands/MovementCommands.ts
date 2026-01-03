@@ -43,8 +43,8 @@ export class MovementCommands {
         const newGridX = this.currentGridX + deltaX
         const newGridY = this.currentGridY + deltaY
 
-        // Obtener posición en píxeles del centro de la celda
-        const targetPosition = this.gridRenderer!.gridToPixel(newGridX, newGridY)
+        // Obtener posición en píxeles para el personaje (parte inferior de la celda)
+        const targetPosition = this.gridRenderer!.gridToPixelForPlayer(newGridX, newGridY)
 
         // Actualizar posición en grid
         this.currentGridX = newGridX
@@ -158,7 +158,7 @@ export class MovementCommands {
           const newGridY = this.currentGridY + deltaY
           
           // Obtener posición en píxeles del centro de la celda
-          const targetPosition = this.gridRenderer.gridToPixel(newGridX, newGridY)
+          const targetPosition = this.gridRenderer.gridToPixelForPlayer(newGridX, newGridY)
           
           // Actualizar posición en grid
           this.currentGridX = newGridX

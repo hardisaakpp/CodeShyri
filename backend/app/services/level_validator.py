@@ -118,3 +118,4 @@ class LevelValidator:
         
         return all_completed, message, completed_objectives, pending_objectives
 
+

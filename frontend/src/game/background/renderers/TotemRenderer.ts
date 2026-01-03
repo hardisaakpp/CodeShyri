@@ -10,7 +10,7 @@ export class TotemRenderer {
   /**
    * Renderiza estatuas de puma inca distribuidas aleatoriamente en el grid de tierra
    */
-  public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
+  public render(isValidGridPosition?: (gridX: number, gridY: number) => boolean, isValidPosition?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
     const totems: Phaser.GameObjects.Graphics[] = []
     
     // Tamaño de celda del grid (debe coincidir con GridRenderer)
@@ -41,12 +41,15 @@ export class TotemRenderer {
     for (let i = 0; i < numTotems && i < shuffledPositions.length; i++) {
       const gridPos = shuffledPositions[i]
       
+      // Verificar primero en coordenadas de grid (más eficiente y preciso)
+      if (isValidGridPosition && !isValidGridPosition(gridPos.gridX, gridPos.gridY)) continue
+      
       // Convertir posición del grid a píxeles (centro de la celda)
       const totemX = (gridPos.gridX * cellSize) + (cellSize / 2)
       const totemY = this.horizonY + (gridPos.gridY * cellSize) + (cellSize / 2)
       
-      // Verificar si está sobre el lago
-      if (isOverLake && isOverLake(totemX, totemY)) continue
+      // Verificar también en píxeles (por si acaso)
+      if (isValidPosition && !isValidPosition(totemX, totemY)) continue
       
       // Estatua de puma grande: más grande que un castillo (castillos son 28-40 píxeles)
       const pumaHeight = 60 + Math.random() * 20 // Altura: 60-80 píxeles

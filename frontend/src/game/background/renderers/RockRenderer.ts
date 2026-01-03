@@ -10,8 +10,9 @@ export class RockRenderer {
 
   /**
    * Renderiza las rocas
+   * @param isValidPosition Función para verificar si una posición es válida (no está en lago ni en camino)
    */
-  public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
+  public render(isValidPosition?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
     const rocks: Phaser.GameObjects.Graphics[] = []
     
     for (let i = 0; i < 5; i++) {
@@ -22,9 +23,9 @@ export class RockRenderer {
         rockX = Math.random() * this.width
         rockY = this.horizonY + 10 + Math.random() * (this.height - this.horizonY - 10)
         attempts++
-      } while (attempts < 30 && isOverLake && isOverLake(rockX, rockY))
+      } while (attempts < 30 && isValidPosition && !isValidPosition(rockX, rockY))
       
-      if (isOverLake && isOverLake(rockX, rockY)) continue
+      if (isValidPosition && !isValidPosition(rockX, rockY)) continue
       
       const rockSize = 8 + Math.random() * 15
       

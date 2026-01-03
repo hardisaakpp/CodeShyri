@@ -90,11 +90,40 @@ LEVELS: Dict[str, Dict[str, Any]] = {
         "initialCode": "// Nivel 1: Primeros Pasos\n// Sigue la forma de la letra \"S\" para llegar al objetivo\n// Recuerda: mueve, gira, mueve, gira...\n\nmoveForward(2);\nturnRight();\nmoveForward(2);\nturnRight();\nmoveForward(2);\nturnRight();\nmoveForward(2);\nturnRight();\nmoveForward(11);\n",
         "startPosition": {"gridX": 1, "gridY": 1},
         "goalPosition": {"gridX": 18, "gridY": 5},
+        "lake": {
+            "centerX": 30,  # Columna 0, centro de celda (60/2 = 30)
+            "centerY": 630,  # Fila 7, centro de celda (horizonY=198 + 7*60 + 30 = 630)
+            "width": 200,
+            "height": 100
+        },
+        "path": [
+            {"x": 1, "y": 1},
+            {"x": 2, "y": 1},
+            {"x": 3, "y": 1},
+            {"x": 4, "y": 1},
+            {"x": 4, "y": 2},
+            {"x": 4, "y": 3},
+            {"x": 5, "y": 3},
+            {"x": 6, "y": 3},
+            {"x": 6, "y": 4},
+            {"x": 7, "y": 5},
+            {"x": 8, "y": 5},
+            {"x": 9, "y": 5},
+            {"x": 10, "y": 5},
+            {"x": 11, "y": 5},
+            {"x": 12, "y": 5},
+            {"x": 13, "y": 5},
+            {"x": 14, "y": 5},
+            {"x": 15, "y": 5},
+            {"x": 16, "y": 5},
+            {"x": 17, "y": 5},
+            {"x": 18, "y": 5}
+        ],
         "maizePositions": [
             {"gridX": 2, "gridY": 1},
             {"gridX": 4, "gridY": 1},
-            {"gridX": 3, "gridY": 3},
-            {"gridX": 5, "gridY": 3},
+            {"gridX": 4, "gridY": 3},
+            {"gridX": 6, "gridY": 3},
             {"gridX": 8, "gridY": 5},
             {"gridX": 10, "gridY": 5},
             {"gridX": 12, "gridY": 5},

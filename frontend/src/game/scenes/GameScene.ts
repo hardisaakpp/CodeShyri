@@ -47,6 +47,8 @@ export class GameScene extends Phaser.Scene {
     startPosition?: { gridX: number; gridY: number }
     goalPosition?: { gridX: number; gridY: number }
     maizePositions?: Array<{ gridX: number; gridY: number }>
+    path?: Array<{ x: number; y: number }>
+    lake?: { centerX: number; centerY: number; width?: number; height?: number }
   }
   
 
@@ -77,20 +79,26 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Renderizar fondo
+    // Renderizar fondo (pasar path y lake si están configurados)
     this.backgroundRenderer = new BackgroundRenderer(this, this.width, this.height)
-    const backgroundData = this.backgroundRenderer.render()
+    const pathCoordinates = this.levelConfig?.path || undefined
+    const lakeConfig = this.levelConfig?.lake || undefined
+    const backgroundData = this.backgroundRenderer.render(pathCoordinates, lakeConfig)
 
     // Obtener grid renderer y ground renderer
     this.gridRenderer = this.backgroundRenderer.getGridRenderer()
     this.groundRenderer = this.backgroundRenderer.getGroundRenderer()
+    
+    if (pathCoordinates) {
+      console.log('✅ Path blocks configurados antes del render:', pathCoordinates.length, 'bloques')
+    }
 
     // Posicionar personaje en el grid (usar configuración del nivel o defaults)
     if (this.levelConfig?.startPosition) {
       this.currentGridX = this.levelConfig.startPosition.gridX
       this.currentGridY = this.levelConfig.startPosition.gridY
     }
-    const initialGridPosition = this.gridRenderer.gridToPixel(this.currentGridX, this.currentGridY)
+    const initialGridPosition = this.gridRenderer.gridToPixelForPlayer(this.currentGridX, this.currentGridY)
     this.playerManager = new PlayerManager(this, 'character', initialGridPosition.pixelX, initialGridPosition.pixelY)
     const player = this.playerManager.create()
 
@@ -555,7 +563,7 @@ export class GameScene extends Phaser.Scene {
     
     // Reposicionar personaje en celda inicial
     if (this.gridRenderer && player) {
-      const initialGridPosition = this.gridRenderer.gridToPixel(this.currentGridX, this.currentGridY)
+      const initialGridPosition = this.gridRenderer.gridToPixelForPlayer(this.currentGridX, this.currentGridY)
       // Usar setPosition inmediatamente sin animación
       player.setPosition(initialGridPosition.pixelX, initialGridPosition.pixelY)
       player.setAngle(0)
@@ -694,6 +702,8 @@ export class GameScene extends Phaser.Scene {
     startPosition?: { gridX: number; gridY: number }
     goalPosition?: { gridX: number; gridY: number }
     maizePositions?: Array<{ gridX: number; gridY: number }>
+    path?: Array<{ x: number; y: number }>
+    lake?: { centerX: number; centerY: number; width?: number; height?: number }
   }) {
     console.log('🔧 setLevelConfig llamado con:', config)
     console.log('🔧 gridRenderer disponible:', !!this.gridRenderer)
@@ -710,13 +720,16 @@ export class GameScene extends Phaser.Scene {
       return
     }
     
+    // NOTA: Los bloques de camino (path) se configuran en create() ANTES del render
+    // No es necesario configurarlos aquí nuevamente
+    
     // Actualizar posición del jugador si hay startPosition
     if (config.startPosition && this.playerManager) {
       this.currentGridX = config.startPosition.gridX
       this.currentGridY = config.startPosition.gridY
       const player = this.playerManager.getPlayer()
       if (player && this.gridRenderer) {
-        const pos = this.gridRenderer.gridToPixel(this.currentGridX, this.currentGridY)
+        const pos = this.gridRenderer.gridToPixelForPlayer(this.currentGridX, this.currentGridY)
         player.setPosition(pos.pixelX, pos.pixelY)
         this.updatePlayerGridHighlight()
         console.log('✅ Posición del jugador actualizada a:', this.currentGridX, this.currentGridY)

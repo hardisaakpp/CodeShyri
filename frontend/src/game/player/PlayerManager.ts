@@ -22,7 +22,9 @@ export class PlayerManager {
     this.player = this.scene.physics.add.sprite(this.initialX, this.initialY, this.characterImageKey)
     this.player.setCollideWorldBounds(true)
     this.player.setScale(scale)
-    this.player.setOrigin(0.5, 0.5)
+    // Cambiar origin a (0.5, 1.0) para que el punto de anclaje esté en la parte inferior del sprite
+    // Esto permite que la parte inferior del personaje toque la parte inferior de la celda
+    this.player.setOrigin(0.5, 1.0)
     this.player.setDepth(10)
     
     // Cancelar cualquier tween de brillo anterior si existe

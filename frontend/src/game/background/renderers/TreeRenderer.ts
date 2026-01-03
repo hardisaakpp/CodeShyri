@@ -18,9 +18,11 @@ export class TreeRenderer {
 
   /**
    * Renderiza los árboles distribuidos en el grid de tierra
+   * @param isValidGridPosition Función para verificar si una posición de grid es válida (no está en lago ni en camino)
+   * @param isValidPosition Función para verificar si una posición en píxeles es válida (no está en lago ni en camino)
    * @returns Objeto con los gráficos de los árboles y sus posiciones
    */
-  public render(isOverLake?: (x: number, y: number) => boolean): { graphics: Phaser.GameObjects.Graphics[], positions: Array<{ x: number, y: number }> } {
+  public render(isValidGridPosition?: (gridX: number, gridY: number) => boolean, isValidPosition?: (x: number, y: number) => boolean): { graphics: Phaser.GameObjects.Graphics[], positions: Array<{ x: number, y: number }> } {
     const trees: Phaser.GameObjects.Graphics[] = []
     this.treesData = []
     this.leafParticles = []
@@ -53,6 +55,9 @@ export class TreeRenderer {
     for (let i = 0; i < maxTrees && i < shuffledPositions.length; i++) {
       const gridPos = shuffledPositions[i]
       
+      // Verificar primero en coordenadas de grid (más eficiente y preciso)
+      if (isValidGridPosition && !isValidGridPosition(gridPos.gridX, gridPos.gridY)) continue
+      
       // Convertir posición del grid a píxeles (centro de la celda con variación pequeña)
       const baseX = (gridPos.gridX * cellSize) + (cellSize / 2)
       const baseY = this.horizonY + (gridPos.gridY * cellSize) + (cellSize / 2)
@@ -64,8 +69,8 @@ export class TreeRenderer {
       // Asegurar que el árbol no esté fuera de los límites
       if (treeX < 0 || treeX > this.width) continue
       
-      // Verificar si está sobre el lago
-      if (isOverLake && isOverLake(treeX, treeY)) continue
+      // Verificar también en píxeles (por si acaso la variación aleatoria lo mueve)
+      if (isValidPosition && !isValidPosition(treeX, treeY)) continue
         
       // Generar propiedades del árbol
       const treeHeight = 40 + Math.random() * 50

@@ -23,7 +23,7 @@ export class IncaCastleRenderer {
    * Renderiza pequeños castillos y casitas incas en el escenario
    * Distribuidas en diferentes posiciones del grid de tierra
    */
-  public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
+  public render(isValidGridPosition?: (gridX: number, gridY: number) => boolean, isValidPosition?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
     const structures: Phaser.GameObjects.Graphics[] = []
     this.structuresData = []
     
@@ -56,11 +56,15 @@ export class IncaCastleRenderer {
     for (let i = 0; i < numStructures && i < shuffledPositions.length; i++) {
       const gridPos = shuffledPositions[i]
       
+      // Verificar primero en coordenadas de grid (más eficiente y preciso)
+      if (isValidGridPosition && !isValidGridPosition(gridPos.gridX, gridPos.gridY)) continue
+      
       // Convertir posición del grid a píxeles (centro de la celda)
       const structureX = (gridPos.gridX * cellSize) + (cellSize / 2)
       const structureY = this.horizonY + (gridPos.gridY * cellSize) + (cellSize / 2)
       
-      if (isOverLake && isOverLake(structureX, structureY)) continue
+      // Verificar también en píxeles (por si acaso)
+      if (isValidPosition && !isValidPosition(structureX, structureY)) continue
       
       // Mezclar casitas y castillos (2 castillos y 6 casitas)
       const isCastle = i < 2 // Primeras 2 son castillos, últimas 6 son casitas
