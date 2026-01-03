@@ -220,7 +220,12 @@ const loadLevelData = async () => {
 }
 
 const configureLevelFromData = (data: any) => {
-  if (!gameEngine) return
+  if (!gameEngine) {
+    console.error('❌ gameEngine no está disponible en configureLevelFromData')
+    return
+  }
+  
+  console.log('📥 Datos recibidos del backend:', data)
   
   const config: {
     startPosition?: { gridX: number; gridY: number }
@@ -231,21 +236,28 @@ const configureLevelFromData = (data: any) => {
   
   if (data.startPosition) {
     config.startPosition = data.startPosition
+    console.log('✅ startPosition configurado:', config.startPosition)
   }
   
   if (data.goalPosition) {
     config.goalPosition = data.goalPosition
+    console.log('✅ goalPosition configurado:', config.goalPosition)
+  } else {
+    console.warn('⚠️ No se encontró goalPosition en los datos del backend')
   }
   
   if (data.path && Array.isArray(data.path)) {
     config.path = data.path
+    console.log('✅ path configurado con', data.path.length, 'puntos')
   }
   
   // Si hay posiciones de maíz definidas en el backend, usarlas
   if (data.maizePositions && Array.isArray(data.maizePositions)) {
     config.maizePositions = data.maizePositions
+    console.log('✅ maizePositions configurado:', data.maizePositions.length, 'posiciones')
   }
   
+  console.log('📤 Configuración completa a enviar a gameEngine:', config)
   gameEngine.setLevelConfig(config)
 }
 

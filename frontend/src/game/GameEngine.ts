@@ -116,12 +116,32 @@ export class GameEngine {
     path?: Array<{ x: number; y: number }>
     maizePositions?: Array<{ gridX: number; gridY: number }>
   }) {
-    if (!this.game) return
-
-    const scene = this.game.scene.getScene('GameScene') as GameScene
-    if (scene) {
-      scene.setLevelConfig(config)
+    console.log('🎮 GameEngine.setLevelConfig() llamado con:', config)
+    console.log('🎮 game disponible:', !!this.game)
+    
+    if (!this.game) {
+      console.error('❌ Game no está disponible en setLevelConfig')
+      return
     }
+
+    // Intentar obtener la escena, si no está lista, esperar un poco y reintentar
+    const trySetConfig = (attempt: number = 0) => {
+      const scene = this.game?.scene.getScene('GameScene') as GameScene
+      console.log(`🎮 Intento ${attempt + 1}: Escena obtenida:`, !!scene)
+      
+      if (scene) {
+        console.log('✅ Llamando a scene.setLevelConfig()...')
+        scene.setLevelConfig(config)
+      } else if (attempt < 10) {
+        // Esperar un poco y reintentar (la escena puede tardar en inicializarse)
+        console.log(`⏳ Escena no disponible aún, reintentando en 100ms... (intento ${attempt + 1}/10)`)
+        setTimeout(() => trySetConfig(attempt + 1), 100)
+      } else {
+        console.error('❌ No se pudo obtener la escena GameScene después de 10 intentos')
+      }
+    }
+    
+    trySetConfig()
   }
 
   /**

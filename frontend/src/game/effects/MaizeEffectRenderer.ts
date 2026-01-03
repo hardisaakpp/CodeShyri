@@ -18,7 +18,7 @@ export class MaizeEffectRenderer {
     const maizeColor = isPathBlock ? 0xFFD700 : 0xFFEB3B // Dorado o amarillo
     
     // Crear partículas de maíz (granos individuales)
-    const numParticles = Math.min(amount / 3, 8) // Máximo 8 partículas
+    const numParticles = Math.min(Math.ceil(amount / 10), 3) // Máximo 3 partículas
     const particles: Phaser.GameObjects.Graphics[] = []
 
     for (let i = 0; i < numParticles; i++) {
@@ -119,84 +119,130 @@ export class MaizeEffectRenderer {
     // Efecto más grande y espectacular para el premio
     const container = this.scene.add.container(x, y)
     container.setDepth(12)
+    container.setVisible(true)
 
-    // Crear más partículas para el premio
-    for (let i = 0; i < 15; i++) {
-      const angle = (i / 15) * Math.PI * 2
-      const distance = 40 + Math.random() * 30
+    // Crear partículas para el premio (monedas/dinero)
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2
+      const distance = 50 + Math.random() * 40
       const particle = this.scene.add.graphics()
       
-      // Grano de maíz más grande y dorado
+      // Dibujar moneda/dinero (círculo dorado)
       particle.fillStyle(0xFFD700, 1)
-      particle.fillEllipse(0, 0, 8, 10)
-      particle.fillStyle(0xFFFFFF, 0.6)
-      particle.fillEllipse(-1, -2, 4, 5)
+      particle.fillCircle(0, 0, 6)
+      particle.lineStyle(2, 0xFFA500, 1)
+      particle.strokeCircle(0, 0, 6)
       
-      particle.setPosition(
-        Math.cos(angle) * 10,
-        Math.sin(angle) * 10
-      )
+      // Highlight en la moneda
+      particle.fillStyle(0xFFFFFF, 0.8)
+      particle.fillCircle(-2, -2, 2)
+      
+      particle.setPosition(0, 0)
+      particle.setDepth(13)
       
       container.add(particle)
 
       this.scene.tweens.add({
         targets: particle,
         x: Math.cos(angle) * distance,
-        y: Math.sin(angle) * distance,
+        y: Math.sin(angle) * distance - 20, // Suben un poco
         alpha: 0,
-        scale: 0.5,
+        scale: 0.3,
         rotation: Math.random() * Math.PI * 2,
-        duration: 1200 + Math.random() * 400,
+        duration: 1000 + Math.random() * 300,
         ease: 'Power2',
-        delay: i * 30,
+        delay: i * 40,
         onComplete: () => {
-          particle.destroy()
+          if (particle && particle.active) {
+            particle.destroy()
+          }
         }
       })
     }
 
     // Texto grande del premio
-    const text = this.scene.add.text(0, -20, `+${amount} MAÍZ!`, {
-      fontSize: '20px',
+    const text = this.scene.add.text(0, -30, `+${amount} MAÍZ!`, {
+      fontSize: '28px',
       fontFamily: 'Arial',
       fill: '#FFD700',
       stroke: '#000000',
-      strokeThickness: 3,
-      fontWeight: 'bold'
+      strokeThickness: 4,
+      fontWeight: 'bold',
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 5,
+        stroke: true,
+        fill: true
+      }
     })
     text.setOrigin(0.5, 0.5)
-    text.setDepth(13)
+    text.setDepth(14)
+    text.setVisible(true)
     container.add(text)
 
     this.scene.tweens.add({
       targets: text,
-      y: -60,
+      y: -70,
       alpha: 0,
-      scale: 1.8,
+      scale: 1.5,
       duration: 1500,
       ease: 'Back.easeOut',
       onComplete: () => {
-        text.destroy()
-        container.destroy()
+        if (text && text.active) {
+          text.destroy()
+        }
+        // Destruir contenedor solo si todas las partículas se han destruido
+        this.scene.time.delayedCall(1200, () => {
+          if (container && container.active) {
+            container.destroy()
+          }
+        })
       }
     })
 
-    // Brillo grande
+    // Brillo grande en el suelo
     const bigGlow = this.scene.add.graphics()
-    bigGlow.fillStyle(0xFFD700, 0.5)
-    bigGlow.fillCircle(0, 0, 25)
+    bigGlow.fillStyle(0xFFD700, 0.6)
+    bigGlow.fillCircle(0, 0, 35)
     bigGlow.setPosition(x, y)
     bigGlow.setDepth(11)
     bigGlow.setBlendMode(Phaser.BlendModes.ADD)
+    bigGlow.setVisible(true)
 
     this.scene.tweens.add({
       targets: bigGlow,
       alpha: 0,
-      scale: 3,
-      duration: 1000,
+      scale: 2.5,
+      duration: 800,
       ease: 'Power2',
       onComplete: () => {
-        bigGlow.destroy()
+        if (bigGlow && bigGlow.active) {
+          bigGlow.destroy()
+        }
+      }
+    })
+
+    // Efecto de pulso adicional
+    const pulseGlow = this.scene.add.graphics()
+    pulseGlow.fillStyle(0xFFD700, 0.3)
+    pulseGlow.fillCircle(0, 0, 20)
+    pulseGlow.setPosition(x, y)
+    pulseGlow.setDepth(10)
+    pulseGlow.setBlendMode(Phaser.BlendModes.ADD)
+    pulseGlow.setVisible(true)
+
+    this.scene.tweens.add({
+      targets: pulseGlow,
+      alpha: 0,
+      scale: 4,
+      duration: 600,
+      ease: 'Power2',
+      onComplete: () => {
+        if (pulseGlow && pulseGlow.active) {
+          pulseGlow.destroy()
+        }
       }
     })
   }

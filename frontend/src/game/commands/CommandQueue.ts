@@ -6,6 +6,7 @@ export class CommandQueue {
   private queue: CommandAction[] = []
   private isExecuting: boolean = false
   private currentTween: Phaser.Tweens.Tween | null = null
+  private delayedCall: Phaser.Time.TimerEvent | null = null
   private scene: Phaser.Scene
   private onQueueComplete?: () => void
 
@@ -50,8 +51,16 @@ export class CommandQueue {
    */
   public onCommandComplete() {
     this.currentTween = null
+    
+    // Cancelar cualquier delayedCall anterior si existe
+    if (this.delayedCall) {
+      this.delayedCall.remove()
+      this.delayedCall = null
+    }
+    
     // Esperar un frame antes de ejecutar el siguiente comando
-    this.scene.time.delayedCall(50, () => {
+    this.delayedCall = this.scene.time.delayedCall(50, () => {
+      this.delayedCall = null
       this.processQueue()
     })
   }
@@ -88,10 +97,18 @@ export class CommandQueue {
   public clear() {
     this.queue = []
     this.isExecuting = false
+    
+    // Cancelar tween actual
     if (this.currentTween) {
       this.currentTween.stop()
       this.currentTween.remove()
       this.currentTween = null
+    }
+    
+    // Cancelar delayedCall si existe
+    if (this.delayedCall) {
+      this.delayedCall.remove()
+      this.delayedCall = null
     }
   }
 

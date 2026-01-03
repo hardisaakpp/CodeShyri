@@ -41,18 +41,18 @@ export class MaizeItemRenderer {
       const container = this.scene.add.container(pixelPos.pixelX, pixelPos.pixelY)
       container.setDepth(10) // Por encima del grid pero debajo del jugador (que está en depth 11+)
 
-      // Crear texto con emoji de maíz - usar un tamaño más grande y visible
-      const maizeText = this.scene.add.text(0, -15, '🌽', {
-        fontSize: '48px',
+      // Crear texto con emoji de maíz - tamaño reducido
+      const maizeText = this.scene.add.text(0, -10, '🌽', {
+        fontSize: '28px', // Tamaño reducido
         fontFamily: 'Arial, sans-serif',
         color: '#FFFFFF',
         stroke: '#000000',
-        strokeThickness: 4,
+        strokeThickness: 2,
         shadow: {
-          offsetX: 3,
-          offsetY: 3,
+          offsetX: 2,
+          offsetY: 2,
           color: '#000000',
-          blur: 10,
+          blur: 6,
           stroke: true,
           fill: true
         }
@@ -60,17 +60,17 @@ export class MaizeItemRenderer {
       maizeText.setOrigin(0.5, 0.5)
       maizeText.setVisible(true) // Asegurar que sea visible
 
-      // Crear brillo sutil alrededor
+      // Crear brillo sutil alrededor - tamaño reducido
       const glow = this.scene.add.graphics()
-      glow.fillStyle(0xFFD700, 0.3)
-      glow.fillCircle(0, 0, 25)
+      glow.fillStyle(0xFFD700, 0.2)
+      glow.fillCircle(0, 0, 15) // Tamaño reducido
       glow.setBlendMode(Phaser.BlendModes.ADD)
       glow.setDepth(-1)
 
-      // Sombra debajo del maíz
+      // Sombra debajo del maíz - tamaño reducido
       const shadow = this.scene.add.graphics()
-      shadow.fillStyle(0x000000, 0.4)
-      shadow.fillEllipse(0, 12, 20, 8)
+      shadow.fillStyle(0x000000, 0.25)
+      shadow.fillEllipse(0, 7, 12, 5) // Tamaño reducido
       shadow.setDepth(-2)
 
       container.add([shadow, glow, maizeText])

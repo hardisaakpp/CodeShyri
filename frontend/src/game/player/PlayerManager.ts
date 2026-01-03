@@ -13,6 +13,8 @@ export class PlayerManager {
   /**
    * Crea el personaje en la escena
    */
+  private glowTween: Phaser.Tweens.Tween | null = null
+
   public create() {
     const targetHeight = 100
     const scale = targetHeight / 270 // 270 es la altura original del sprite
@@ -23,8 +25,14 @@ export class PlayerManager {
     this.player.setOrigin(0.5, 0.5)
     this.player.setDepth(10)
     
+    // Cancelar cualquier tween de brillo anterior si existe
+    if (this.glowTween) {
+      this.scene.tweens.killTweensOf(this.glowTween)
+      this.glowTween = null
+    }
+    
     // Efecto sutil de brillo
-    this.scene.tweens.add({
+    this.glowTween = this.scene.tweens.add({
       targets: this.player,
       alpha: { from: 0.95, to: 1 },
       duration: 2000,
@@ -34,6 +42,19 @@ export class PlayerManager {
     })
     
     return this.player
+  }
+
+  /**
+   * Limpia todos los tweens del personaje
+   */
+  public cleanup() {
+    if (this.player) {
+      this.scene.tweens.killTweensOf(this.player)
+    }
+    if (this.glowTween) {
+      this.scene.tweens.killTweensOf(this.glowTween)
+      this.glowTween = null
+    }
   }
 
   /**

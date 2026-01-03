@@ -111,16 +111,53 @@ export class GameScene extends Phaser.Scene {
       this.log(message, type === 'path' ? 'success' : 'info')
     }, this) // Pasar la escena para efectos visuales
 
-    // Renderizar premio final si tenemos configuración
-    if (this.levelConfig?.goalPosition) {
+    // Renderizar premio final - usar configuración o generar posición aleatoria
+    let goalPosition = this.levelConfig?.goalPosition
+    
+    // Si no hay goalPosition en la configuración, generar una aleatoria
+    if (!goalPosition) {
+      const excludePositions: Array<{ gridX: number; gridY: number }> = []
+      if (this.levelConfig?.startPosition) {
+        excludePositions.push(this.levelConfig.startPosition)
+      }
+      const randomGoalPositions = this.generateRandomPositions(1, excludePositions)
+      if (randomGoalPositions.length > 0) {
+        goalPosition = randomGoalPositions[0]
+        // Guardar en levelConfig para referencia futura
+        if (!this.levelConfig) {
+          this.levelConfig = {}
+        }
+        this.levelConfig.goalPosition = goalPosition
+        console.log('🎲 GoalPosition generada aleatoriamente:', goalPosition)
+      }
+    }
+    
+    if (goalPosition) {
+      console.log('📋 Creando GoalRenderer en create() con config:', goalPosition)
+      console.log('📋 GridRenderer disponible:', !!this.gridRenderer)
+      console.log('📋 Scene disponible:', !!this.scene)
+      
       this.goalRenderer = new GoalRenderer(
         this,
         this.gridRenderer,
-        this.levelConfig.goalPosition.gridX,
-        this.levelConfig.goalPosition.gridY,
+        goalPosition.gridX,
+        goalPosition.gridY,
         this.height * 0.33
       )
-      this.goalRenderer.render()
+      const rendered = this.goalRenderer.render()
+      if (rendered) {
+        this.log(`💰 Bolsa de dinero colocada en (${goalPosition.gridX}, ${goalPosition.gridY})`, 'info')
+        console.log('✅ GoalRenderer creado exitosamente en create():', rendered)
+        console.log('✅ Contenedor activo:', rendered.active)
+        console.log('✅ Contenedor visible:', rendered.visible)
+        console.log('✅ Contenedor depth:', rendered.depth)
+        console.log('✅ Posición del contenedor:', rendered.x, rendered.y)
+      } else {
+        this.log('❌ Error al crear la bolsa de dinero en create()', 'error')
+        console.error('❌ Error: GoalRenderer.render() retornó null/undefined en create()')
+      }
+    } else {
+      this.log('⚠️ No se pudo generar una posición para el premio final', 'warning')
     }
 
     // Crear renderer de items de maíz
@@ -130,36 +167,29 @@ export class GameScene extends Phaser.Scene {
       this.height * 0.33
     )
 
-    // Colocar maíz en algunas celdas si hay configuración
+    // Colocar maíz en posiciones aleatorias del grid
+    // Si hay configuración específica del backend, usarla; sino, generar aleatorias
     if (this.levelConfig?.maizePositions && this.levelConfig.maizePositions.length > 0) {
-      this.maizeItemRenderer.placeMaizeItems(this.levelConfig.maizePositions)
-    } else if (this.levelConfig?.path && this.levelConfig.path.length > 2) {
-      // Si no hay configuración, colocar maíz aleatoriamente en algunos bloques del sendero
-      const pathBlocks = this.levelConfig.path
-      // Seleccionar algunos bloques aleatorios del sendero (máximo 3-4)
-      const numMaizeItems = Math.min(3, Math.floor(pathBlocks.length / 2))
-      const selectedPositions: Array<{ gridX: number; gridY: number }> = []
-      const shuffled = [...pathBlocks].sort(() => Math.random() - 0.5)
-      
-      // No colocar en la primera ni en la última posición (start y goal)
-      const availableBlocks = shuffled.slice(1, -1)
-      
-      for (let i = 0; i < Math.min(numMaizeItems, availableBlocks.length); i++) {
-        selectedPositions.push({
-          gridX: availableBlocks[i].x,
-          gridY: availableBlocks[i].y
-        })
-      }
-      
-      if (selectedPositions.length > 0) {
-        this.maizeItemRenderer.placeMaizeItems(selectedPositions)
+      // Filtrar posiciones que coincidan con goalPosition o startPosition
+      const filteredPositions = this.levelConfig.maizePositions.filter(pos => {
+        const isStart = this.levelConfig?.startPosition && 
+                       pos.gridX === this.levelConfig.startPosition.gridX && 
+                       pos.gridY === this.levelConfig.startPosition.gridY
+        const isGoal = this.levelConfig?.goalPosition && 
+                      pos.gridX === this.levelConfig.goalPosition.gridX && 
+                      pos.gridY === this.levelConfig.goalPosition.gridY
+        return !isStart && !isGoal
+      })
+      if (filteredPositions.length > 0) {
+        this.maizeItemRenderer.placeMaizeItems(filteredPositions)
       } else {
-        // Fallback: colocar al menos uno
-        this.placeTestMaize()
+        // Si todas fueron filtradas, generar aleatorias
+        this.placeRandomMaize(3)
       }
     } else {
-      // Por defecto, colocar UN maíz en una posición fija para probar
-      this.placeTestMaize()
+      // Generar posiciones aleatorias (3-5 maíces)
+      const numMaizeItems = 3 + Math.floor(Math.random() * 3) // Entre 3 y 5
+      this.placeRandomMaize(numMaizeItems)
     }
 
     // Resaltar celda inicial
@@ -411,14 +441,64 @@ export class GameScene extends Phaser.Scene {
    * Reinicia el juego
    */
   public reset() {
-    // Limpiar cola de comandos y cancelar todas las animaciones
+    // Limpiar cola de comandos primero (esto maneja sus propios tweens)
     this.commandQueue.clear()
     
-    // Cancelar todos los tweens del personaje
+    // Cancelar solo los tweens de movimiento del personaje (no el brillo)
     const player = this.playerManager.getPlayer()
     if (player) {
+      // Solo matar tweens que NO son de brillo (que tienen repeat: -1)
+      // Para esto, necesitamos un enfoque diferente: matar todos los tweens del player
+      // y luego recrear el brillo
       this.tweens.killTweensOf(player)
     }
+    
+    // Limpiar contenedores de efectos temporales (partículas de recolección, etc.)
+    // Estos tienen depth 10-12 y son contenedores que deberían haberse destruido
+    this.children.list.slice().forEach((child: any) => {
+      // Solo limpiar contenedores temporales (efectos visuales de recolección)
+      if (child && child.type === 'Container') {
+        // Verificar si es un efecto temporal (depth alto y no es maíz ni cofre)
+        // Los efectos de partículas suelen tener depth 10-12
+        // Pero el maíz tiene depth 10 y el cofre tiene depth 8
+        // Así que solo limpiar contenedores que no están en nuestros maps
+        if (child.depth >= 10 && child.depth <= 12) {
+          // Verificar que no sea un contenedor de maíz o cofre
+          let isMaizeOrChest = false
+          if (this.maizeItemRenderer) {
+            const maizePositions = this.maizeItemRenderer.getMaizePositions()
+            for (const pos of maizePositions) {
+              const pixelPos = this.gridRenderer.gridToPixel(pos.gridX, pos.gridY)
+              if (Math.abs(child.x - pixelPos.pixelX) < 5 && Math.abs(child.y - pixelPos.pixelY) < 5) {
+                isMaizeOrChest = true
+                break
+              }
+            }
+          }
+          if (this.goalRenderer && this.goalRenderer.isVisible()) {
+            const goalPos = this.goalRenderer.getGoalPosition()
+            const pixelPos = this.gridRenderer.gridToPixel(goalPos.gridX, goalPos.gridY)
+            if (Math.abs(child.x - pixelPos.pixelX) < 5 && Math.abs(child.y - pixelPos.pixelY) < 5) {
+              isMaizeOrChest = true
+            }
+          }
+          
+          // Solo destruir si NO es maíz ni cofre (es un efecto temporal)
+          if (!isMaizeOrChest) {
+            try {
+              this.tweens.killTweensOf(child)
+              child.destroy(true)
+            } catch (e) {
+              // Ignorar errores
+            }
+          }
+        }
+      }
+    })
+    
+    // Limpiar delayedCalls temporales (solo los que no son del sistema)
+    // Nota: removeAllEvents puede ser muy agresivo, pero como estamos recreando todo,
+    // está bien en este caso
     
     // Resetear posición del grid
     if (this.levelConfig?.startPosition) {
@@ -434,66 +514,51 @@ export class GameScene extends Phaser.Scene {
       this.rewardSystem.reset()
     }
     
-    // Recrear premio si fue recolectado o si no existe
-    if (this.levelConfig?.goalPosition) {
-      // Cancelar todas las animaciones del premio antes de restaurarlo
-      if (this.goalRenderer) {
-        // Destruir el premio actual si existe
-        this.goalRenderer.destroy()
+    // Recrear premio - generar nueva posición aleatoria si no viene del backend
+    if (this.goalRenderer) {
+      this.goalRenderer.destroy()
+    }
+    
+    // Si hay goalPosition en la config del backend, usarla; sino generar aleatoria
+    let goalPosition = this.levelConfig?.goalPosition
+    if (!goalPosition) {
+      const excludePositions: Array<{ gridX: number; gridY: number }> = []
+      if (this.levelConfig?.startPosition) {
+        excludePositions.push(this.levelConfig.startPosition)
       }
-      
-      // Siempre recrear el premio desde cero
+      const randomGoalPositions = this.generateRandomPositions(1, excludePositions)
+      if (randomGoalPositions.length > 0) {
+        goalPosition = randomGoalPositions[0]
+        // Actualizar levelConfig
+        if (!this.levelConfig) {
+          this.levelConfig = {}
+        }
+        this.levelConfig.goalPosition = goalPosition
+      }
+    }
+    
+    if (goalPosition && this.gridRenderer) {
       this.goalRenderer = new GoalRenderer(
         this,
         this.gridRenderer,
-        this.levelConfig.goalPosition.gridX,
-        this.levelConfig.goalPosition.gridY,
+        goalPosition.gridX,
+        goalPosition.gridY,
         this.height * 0.33
       )
       this.goalRenderer.render()
+      this.log(`💰 Bolsa de dinero reubicada en (${goalPosition.gridX}, ${goalPosition.gridY})`, 'info')
     }
 
-    // Recrear items de maíz siempre
+    // Recrear items de maíz siempre - generar posiciones aleatorias nuevas
     if (this.maizeItemRenderer) {
       // Limpiar todos los items de maíz existentes (esto cancela animaciones también)
       this.maizeItemRenderer.clearAll()
       
-      // Esperar un frame para asegurar que las destrucciones se completen
-      this.time.delayedCall(50, () => {
-        // Intentar colocar maíz según la configuración
-        let maizePlaced = false
-        
-        if (this.levelConfig?.maizePositions && this.levelConfig.maizePositions.length > 0) {
-          this.maizeItemRenderer?.placeMaizeItems(this.levelConfig.maizePositions)
-          maizePlaced = true
-        } else if (this.levelConfig?.path && this.levelConfig.path.length > 2) {
-          // Colocar maíz aleatoriamente en bloques del sendero
-          const pathBlocks = this.levelConfig.path
-          const numMaizeItems = Math.min(3, Math.floor(pathBlocks.length / 2))
-          const selectedPositions: Array<{ gridX: number; gridY: number }> = []
-          const shuffled = [...pathBlocks].sort(() => Math.random() - 0.5)
-          const availableBlocks = shuffled.slice(1, -1)
-          
-          for (let i = 0; i < Math.min(numMaizeItems, availableBlocks.length); i++) {
-            selectedPositions.push({
-              gridX: availableBlocks[i].x,
-              gridY: availableBlocks[i].y
-            })
-          }
-          
-          if (selectedPositions.length > 0 && this.maizeItemRenderer) {
-            this.maizeItemRenderer.placeMaizeItems(selectedPositions)
-            maizePlaced = true
-          }
-        }
-        
-        // Si no se colocó maíz con ninguna configuración, usar maíz de prueba
-        if (!maizePlaced) {
-          this.placeTestMaize()
-        }
-        
-        this.log('🔄 Nivel reiniciado - Emojis de maíz restaurados', 'info')
-      })
+      // Generar nuevas posiciones aleatorias cada vez que se reinicia
+      const numMaizeItems = 3 + Math.floor(Math.random() * 3) // Entre 3 y 5
+      this.placeRandomMaize(numMaizeItems)
+      
+      this.log('🔄 Nivel reiniciado - Emojis de maíz restaurados en nuevas posiciones aleatorias', 'info')
     }
     
     // Reposicionar personaje en celda inicial
@@ -502,6 +567,16 @@ export class GameScene extends Phaser.Scene {
       // Usar setPosition inmediatamente sin animación
       player.setPosition(initialGridPosition.pixelX, initialGridPosition.pixelY)
       player.setAngle(0)
+      
+      // Recrear animación de brillo del personaje (siempre después del reset)
+      this.tweens.add({
+        targets: player,
+        alpha: { from: 0.95, to: 1 },
+        duration: 2000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      })
       
       // Resetear la posición interna de MovementCommands
       if (this.movementCommands) {
@@ -518,25 +593,76 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Coloca un maíz de prueba en una posición fija
+   * Calcula los límites del grid disponible
    */
-  private placeTestMaize(): void {
+  private getGridBounds(): { minX: number; maxX: number; minY: number; maxY: number } {
+    const cellSize = this.gridRenderer?.getCellSize() || 60
+    const numCols = Math.floor(this.width / cellSize)
+    const groundHeight = this.height - (this.height * 0.33) // altura del terreno
+    const numRows = Math.floor(groundHeight / cellSize)
+    
+    return {
+      minX: 0,
+      maxX: numCols - 1,
+      minY: 0,
+      maxY: numRows - 1
+    }
+  }
+
+  /**
+   * Genera posiciones aleatorias dentro del grid, excluyendo posiciones ocupadas
+   */
+  private generateRandomPositions(
+    count: number,
+    excludePositions: Array<{ gridX: number; gridY: number }> = []
+  ): Array<{ gridX: number; gridY: number }> {
+    const bounds = this.getGridBounds()
+    const availablePositions: Array<{ gridX: number; gridY: number }> = []
+    
+    // Generar todas las posiciones posibles dentro de los límites
+    for (let x = bounds.minX; x <= bounds.maxX; x++) {
+      for (let y = bounds.minY; y <= bounds.maxY; y++) {
+        const isExcluded = excludePositions.some(excluded => 
+          excluded.gridX === x && excluded.gridY === y
+        )
+        if (!isExcluded) {
+          availablePositions.push({ gridX: x, gridY: y })
+        }
+      }
+    }
+    
+    // Mezclar aleatoriamente y seleccionar las primeras 'count' posiciones
+    const shuffled = availablePositions.sort(() => Math.random() - 0.5)
+    return shuffled.slice(0, Math.min(count, shuffled.length))
+  }
+
+  /**
+   * Coloca maíz en posiciones aleatorias del grid
+   */
+  private placeRandomMaize(count: number = 3): void {
     if (!this.maizeItemRenderer) return
     
-    // Calcular posición inicial si existe
-    const startX = this.levelConfig?.startPosition?.gridX || 1
-    const startY = this.levelConfig?.startPosition?.gridY || 2
+    const excludePositions: Array<{ gridX: number; gridY: number }> = []
     
-    // Colocar maíz en (3, 2) si no es la posición inicial
-    const testX = startX === 3 ? 4 : 3
-    const testY = startY
+    // Excluir startPosition
+    if (this.levelConfig?.startPosition) {
+      excludePositions.push(this.levelConfig.startPosition)
+    }
     
-    const defaultPosition: Array<{ gridX: number; gridY: number }> = [
-      { gridX: testX, gridY: testY }
-    ]
+    // Excluir goalPosition
+    if (this.levelConfig?.goalPosition) {
+      excludePositions.push(this.levelConfig.goalPosition)
+    }
     
-    this.maizeItemRenderer.placeMaizeItems(defaultPosition)
-    this.log(`🌽 Maíz de prueba colocado en (${testX}, ${testY})`, 'info')
+    // Generar posiciones aleatorias
+    const randomPositions = this.generateRandomPositions(count, excludePositions)
+    
+    if (randomPositions.length > 0) {
+      this.maizeItemRenderer.placeMaizeItems(randomPositions)
+      this.log(`🌽 ${randomPositions.length} maíz(es) colocados aleatoriamente en el grid`, 'info')
+    } else {
+      this.log('⚠️ No se pudo colocar maíz: no hay posiciones disponibles', 'warning')
+    }
   }
 
   /**
@@ -578,30 +704,116 @@ export class GameScene extends Phaser.Scene {
     path?: Array<{ x: number; y: number }>
     maizePositions?: Array<{ gridX: number; gridY: number }>
   }) {
+    console.log('🔧 setLevelConfig llamado con:', config)
+    console.log('🔧 gridRenderer disponible:', !!this.gridRenderer)
+    console.log('🔧 scene disponible:', !!this.scene)
+    
+    // Guardar la configuración siempre (incluso si gridRenderer no está listo)
     this.levelConfig = config
     
+    // Si gridRenderer no está disponible, guardar la config y aplicar después
+    if (!this.gridRenderer) {
+      console.log('⏳ gridRenderer no disponible aún, la configuración se aplicará cuando esté listo')
+      // La configuración ya está guardada en this.levelConfig
+      // Se aplicará cuando create() termine
+      return
+    }
+    
+    // Configurar sendero si tenemos path y groundRenderer está disponible
+    if (config.path && this.groundRenderer) {
+      this.groundRenderer.setPathBlocks(config.path)
+      console.log('✅ Sendero configurado')
+    }
+    
+    // Actualizar posición del jugador si hay startPosition
+    if (config.startPosition && this.playerManager) {
+      this.currentGridX = config.startPosition.gridX
+      this.currentGridY = config.startPosition.gridY
+      const player = this.playerManager.getPlayer()
+      if (player && this.gridRenderer) {
+        const pos = this.gridRenderer.gridToPixel(this.currentGridX, this.currentGridY)
+        player.setPosition(pos.pixelX, pos.pixelY)
+        this.updatePlayerGridHighlight()
+        console.log('✅ Posición del jugador actualizada a:', this.currentGridX, this.currentGridY)
+      }
+    }
+    
+    // Determinar goalPosition: usar config o generar aleatoria
+    let goalPosition = config.goalPosition
+    if (!goalPosition) {
+      // Generar posición aleatoria para el premio final
+      const excludePositions: Array<{ gridX: number; gridY: number }> = []
+      if (config.startPosition) {
+        excludePositions.push(config.startPosition)
+      }
+      const randomGoalPositions = this.generateRandomPositions(1, excludePositions)
+      if (randomGoalPositions.length > 0) {
+        goalPosition = randomGoalPositions[0]
+        // Actualizar levelConfig con la nueva posición
+        this.levelConfig = { ...this.levelConfig, goalPosition }
+        console.log('🎲 GoalPosition generada aleatoriamente:', goalPosition)
+      }
+    }
+    
+    // Crear o actualizar goalRenderer
+    if (goalPosition) {
+      console.log('🎯 Creando/actualizando goalRenderer con goalPosition:', goalPosition)
+      
+      // Si ya existe un goalRenderer, destruirlo primero
+      if (this.goalRenderer) {
+        console.log('🗑️ Destruyendo goalRenderer existente')
+        this.goalRenderer.destroy()
+      }
+      
+      // Crear nuevo goalRenderer con la posición (configurada o aleatoria)
+      console.log('🏗️ Instanciando nuevo GoalRenderer...')
+      this.goalRenderer = new GoalRenderer(
+        this,
+        this.gridRenderer,
+        goalPosition.gridX,
+        goalPosition.gridY,
+        this.height * 0.33
+      )
+      
+      console.log('🎨 Llamando a render() del goalRenderer...')
+      const rendered = this.goalRenderer.render()
+      
+      if (rendered) {
+        this.log(`💰 Bolsa de dinero colocada en (${goalPosition.gridX}, ${goalPosition.gridY})`, 'info')
+        console.log('✅ GoalRenderer creado exitosamente:', rendered)
+      } else {
+        this.log('❌ Error al crear la bolsa de dinero', 'error')
+        console.error('❌ Error: GoalRenderer.render() retornó null/undefined')
+      }
+    } else {
+      console.warn('⚠️ No se pudo generar una posición para el premio final')
+    }
+    
     // Si el renderer de maíz ya existe, actualizar las posiciones
+    // IMPORTANTE: Excluir startPosition y goalPosition para evitar superposición
     if (this.maizeItemRenderer) {
       if (config.maizePositions && config.maizePositions.length > 0) {
-        this.maizeItemRenderer.placeMaizeItems(config.maizePositions)
-      } else if (config.path && config.path.length > 2) {
-        // Colocar maíz aleatoriamente en algunos bloques del sendero
-        const pathBlocks = config.path
-        const numMaizeItems = Math.min(3, Math.floor(pathBlocks.length / 2))
-        const selectedPositions: Array<{ gridX: number; gridY: number }> = []
-        const shuffled = [...pathBlocks].sort(() => Math.random() - 0.5)
-        const availableBlocks = shuffled.slice(1, -1)
-        
-        for (let i = 0; i < Math.min(numMaizeItems, availableBlocks.length); i++) {
-          selectedPositions.push({
-            gridX: availableBlocks[i].x,
-            gridY: availableBlocks[i].y
-          })
+        // Filtrar posiciones que coincidan con goalPosition o startPosition
+        const filteredPositions = config.maizePositions.filter(pos => {
+          const isStart = config.startPosition && 
+                         pos.gridX === config.startPosition.gridX && 
+                         pos.gridY === config.startPosition.gridY
+          const isGoal = goalPosition && 
+                        pos.gridX === goalPosition.gridX && 
+                        pos.gridY === goalPosition.gridY
+          return !isStart && !isGoal
+        })
+        if (filteredPositions.length > 0) {
+          this.maizeItemRenderer.placeMaizeItems(filteredPositions)
+        } else {
+          // Si todas fueron filtradas, generar aleatorias
+          const numMaizeItems = 3 + Math.floor(Math.random() * 3) // Entre 3 y 5
+          this.placeRandomMaize(numMaizeItems)
         }
-        
-        if (selectedPositions.length > 0) {
-          this.maizeItemRenderer.placeMaizeItems(selectedPositions)
-        }
+      } else {
+        // Generar posiciones aleatorias del grid (no solo del path)
+        const numMaizeItems = 3 + Math.floor(Math.random() * 3) // Entre 3 y 5
+        this.placeRandomMaize(numMaizeItems)
       }
     }
   }
