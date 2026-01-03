@@ -21,38 +21,44 @@ export class IncaCastleRenderer {
 
   /**
    * Renderiza pequeños castillos y casitas incas en el escenario
+   * Distribuidas en diferentes posiciones del grid de tierra
    */
   public render(isOverLake?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
     const structures: Phaser.GameObjects.Graphics[] = []
     this.structuresData = []
     
-    // Calcular posiciones de las bases de las montañas cercanas
-    const mountainBaseY = this.horizonY
-    const mountainPoints = 10
-    const mountainVariation = 30
-    const seed = mountainBaseY * 0.1
+    // Tamaño de celda del grid (debe coincidir con GridRenderer)
+    const cellSize = 60
     
-    // Centro del escenario para el primer poblado (con castillos y casitas)
-    const villageCenterX = this.width / 2
+    // Calcular dimensiones del grid de tierra
+    // horizonY divide el mapa: arriba es cielo (horizonY), abajo es tierra
+    // Estimar groundHeight: si horizonY = height * 0.33, entonces groundHeight ≈ horizonY * 2
+    const estimatedGroundHeight = this.horizonY * 2
+    const numCols = Math.floor(this.width / cellSize)
+    const numRows = Math.floor(estimatedGroundHeight / cellSize)
     
-    // Crear 8 estructuras agrupadas como un pequeño poblado en el centro
+    // Crear 8 estructuras distribuidas en el grid de tierra
     // 2 castillos y 6 casitas
-    for (let i = 0; i < 8; i++) {
-      // Agrupar estructuras alrededor del centro con pequeñas variaciones
-      const offsetX = (i - 3.5) * 30 + (Math.random() - 0.5) * 16 // Distribución ajustada para 8 estructuras
-      const structureX = villageCenterX + offsetX
+    const numStructures = 8
+    
+    // Generar posiciones disponibles en el grid de tierra (evitando bordes y zonas muy abajo)
+    const availablePositions: Array<{ gridX: number; gridY: number }> = []
+    for (let col = 2; col < numCols - 2; col++) { // Evitar los bordes (dejar 2 columnas de margen)
+      for (let row = 1; row < Math.min(numRows - 2, 6); row++) { // Solo primeras 6 filas del terreno
+        availablePositions.push({ gridX: col, gridY: row })
+      }
+    }
+    
+    // Mezclar posiciones disponibles para distribución aleatoria
+    const shuffledPositions = availablePositions.sort(() => Math.random() - 0.5)
+    
+    // Colocar estructuras en posiciones del grid
+    for (let i = 0; i < numStructures && i < shuffledPositions.length; i++) {
+      const gridPos = shuffledPositions[i]
       
-      // Calcular la posición Y en la base de la montaña más cercana
-      const mountainIndex = Math.floor((structureX / this.width) * mountainPoints)
-      const varAmount = Math.sin(mountainIndex * 0.5 + seed) * mountainVariation + 
-                       Math.cos(mountainIndex * 0.3 + seed * 0.7) * (mountainVariation * 0.6) +
-                       Math.sin(mountainIndex * 1.2 + seed * 1.3) * (mountainVariation * 0.4)
-      const mountainBaseYAtX = mountainBaseY + varAmount
-      
-      // Colocar estructura en el terreno plano, más abajo que los árboles
-      // Los árboles están en las faldas (mountainBaseYAtX - 15), así que las estructuras
-      // van más abajo en el terreno plano para no superponerse
-      const structureY = mountainBaseYAtX + 20 + Math.random() * 10
+      // Convertir posición del grid a píxeles (centro de la celda)
+      const structureX = (gridPos.gridX * cellSize) + (cellSize / 2)
+      const structureY = this.horizonY + (gridPos.gridY * cellSize) + (cellSize / 2)
       
       if (isOverLake && isOverLake(structureX, structureY)) continue
       
