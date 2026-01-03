@@ -10,9 +10,15 @@ export class MushroomFlowerRenderer {
 
   /**
    * Renderiza hongos grandes, flores mágicas y arbustos en el terreno
-   * @param treePositions Posiciones de los árboles para colocar arbustos cerca de ellos
+   * @param isOverLake Función para verificar si una posición está sobre el lago
+   * @param isValidGridPosition Función para verificar si una posición de grid es válida (no está en lago ni en camino)
+   * @param occupiedGridPositions Set de posiciones de grid ya ocupadas (formato "gridX,gridY")
    */
-  public render(isOverLake?: (x: number, y: number) => boolean, treePositions?: Array<{ x: number, y: number }>): Phaser.GameObjects.Graphics[] {
+  public render(
+    isOverLake?: (x: number, y: number) => boolean,
+    isValidGridPosition?: (gridX: number, gridY: number) => boolean,
+    occupiedGridPositions?: Set<string>
+  ): Phaser.GameObjects.Graphics[] {
     const elements: Phaser.GameObjects.Graphics[] = []
     
     // Calcular posiciones de las bases de las montañas cercanas
@@ -89,49 +95,37 @@ export class MushroomFlowerRenderer {
       elements.push(mushroomGraphics)
     }
     
-    // Crear arbustos pequeños (colocados junto a los árboles si hay árboles)
-    const numBushes = 10
-    for (let i = 0; i < numBushes; i++) {
-      let bushX: number
-      let bushY: number
-      
-      // Si hay posiciones de árboles, colocar arbustos cerca de ellos
-      if (treePositions && treePositions.length > 0 && Math.random() > 0.3) {
-        // 70% de los arbustos se colocan cerca de árboles
-        const randomTree = treePositions[Math.floor(Math.random() * treePositions.length)]
-        // Colocar arbusto a una distancia aleatoria entre 20-60 píxeles del árbol
-        const angle = Math.random() * Math.PI * 2
-        const distance = 20 + Math.random() * 40
-        bushX = randomTree.x + Math.cos(angle) * distance
-        bushY = randomTree.y + Math.sin(angle) * distance + 10 // Ligeramente más abajo
-        
-        // Asegurar que el arbusto esté en los límites
-        if (bushX < 0 || bushX > this.width) {
-          bushX = Math.random() * this.width
-        }
-        if (bushY < this.horizonY || bushY > this.height) {
-          bushY = this.horizonY + 25 + Math.random() * (this.height - this.horizonY - 40)
-        }
-        
-        let attempts = 0
-        while (attempts < 20 && isTooCloseToVillage(bushX)) {
-          bushX = Math.random() * this.width
-          attempts++
-        }
-      } else {
-        // 30% de los arbustos se colocan aleatoriamente
-        let attempts = 0
-        do {
-          bushX = Math.random() * this.width
-          attempts++
-        } while (attempts < 20 && isTooCloseToVillage(bushX))
-        
-        bushY = this.horizonY + 25 + Math.random() * (this.height - this.horizonY - 40)
+    // Crear arbustos pequeños usando posiciones de grid
+    const cellSize = 60 // Tamaño de celda del grid (debe coincidir con GridRenderer)
+    const estimatedGroundHeight = this.horizonY * 2
+    const numCols = Math.floor(this.width / cellSize)
+    const numRows = Math.floor(estimatedGroundHeight / cellSize)
+    
+    // Generar posiciones disponibles en el grid de tierra
+    const availablePositions: Array<{ gridX: number; gridY: number }> = []
+    for (let col = 1; col < numCols - 1; col++) {
+      for (let row = 0; row < Math.min(numRows - 1, 8); row++) {
+        availablePositions.push({ gridX: col, gridY: row })
       }
+    }
+    
+    // Mezclar posiciones disponibles para distribución aleatoria
+    const shuffledPositions = availablePositions.sort(() => Math.random() - 0.5)
+    
+    const numBushes = 10
+    for (let i = 0; i < numBushes && i < shuffledPositions.length; i++) {
+      const gridPos = shuffledPositions[i]
+      const gridKey = `${gridPos.gridX},${gridPos.gridY}`
       
-      if (isTooCloseToVillage(bushX)) continue
+      // Verificar si la posición es válida (no está en lago ni en camino)
+      if (isValidGridPosition && !isValidGridPosition(gridPos.gridX, gridPos.gridY)) continue
       
-      if (isOverLake && isOverLake(bushX, bushY)) continue
+      // Verificar si la posición ya está ocupada
+      if (occupiedGridPositions && occupiedGridPositions.has(gridKey)) continue
+      
+      // Convertir posición del grid a píxeles (centro de la celda)
+      const bushX = (gridPos.gridX * cellSize) + (cellSize / 2)
+      const bushY = this.horizonY + (gridPos.gridY * cellSize) + (cellSize / 2)
       const bushSize = 12 + Math.random() * 8 // Arbustos: 12-20 píxeles
       const bushType = Math.random()
       
@@ -180,6 +174,11 @@ export class MushroomFlowerRenderer {
       bushGraphics.setPosition(bushX, bushY)
       bushGraphics.setDepth(1) // Detrás de otros elementos pero visibles
       elements.push(bushGraphics)
+      
+      // Marcar posición como ocupada
+      if (occupiedGridPositions) {
+        occupiedGridPositions.add(gridKey)
+      }
     }
     
     // Crear flores mágicas en la base de las montañas

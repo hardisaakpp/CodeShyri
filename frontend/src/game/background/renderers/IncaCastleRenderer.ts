@@ -23,8 +23,13 @@ export class IncaCastleRenderer {
    * Renderiza pequeños castillos y casitas incas en el escenario
    * Distribuidas en diferentes posiciones del grid de tierra
    */
-  public render(isValidGridPosition?: (gridX: number, gridY: number) => boolean, isValidPosition?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
+  public render(
+    isValidGridPosition?: (gridX: number, gridY: number) => boolean, 
+    isValidPosition?: (x: number, y: number) => boolean,
+    occupiedGridPositions?: Set<string>
+  ): { graphics: Phaser.GameObjects.Graphics[], gridPositions: Array<{ gridX: number; gridY: number }> } {
     const structures: Phaser.GameObjects.Graphics[] = []
+    const gridPositions: Array<{ gridX: number; gridY: number }> = []
     this.structuresData = []
     
     // Tamaño de celda del grid (debe coincidir con GridRenderer)
@@ -55,9 +60,13 @@ export class IncaCastleRenderer {
     // Colocar estructuras en posiciones del grid
     for (let i = 0; i < numStructures && i < shuffledPositions.length; i++) {
       const gridPos = shuffledPositions[i]
+      const gridKey = `${gridPos.gridX},${gridPos.gridY}`
       
       // Verificar primero en coordenadas de grid (más eficiente y preciso)
       if (isValidGridPosition && !isValidGridPosition(gridPos.gridX, gridPos.gridY)) continue
+      
+      // Verificar si la posición ya está ocupada
+      if (occupiedGridPositions && occupiedGridPositions.has(gridKey)) continue
       
       // Convertir posición del grid a píxeles (centro de la celda)
       const structureX = (gridPos.gridX * cellSize) + (cellSize / 2)
@@ -104,12 +113,21 @@ export class IncaCastleRenderer {
         isCastle: isCastle
       }
       this.structuresData.push(structureData)
+      
+      // Marcar posición como ocupada
+      if (occupiedGridPositions) {
+        occupiedGridPositions.add(gridKey)
+      }
+      gridPositions.push(gridPos)
     }
     
     // Iniciar animación de sombras dinámicas
     this.startDynamicShadows()
     
-    return [...structures, ...this.structuresData.map(s => s.shadow)]
+    return {
+      graphics: [...structures, ...this.structuresData.map(s => s.shadow)],
+      gridPositions: gridPositions
+    }
   }
 
   /**

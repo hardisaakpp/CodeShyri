@@ -10,22 +10,47 @@ export class RockRenderer {
 
   /**
    * Renderiza las rocas
-   * @param isValidPosition Función para verificar si una posición es válida (no está en lago ni en camino)
+   * @param isValidGridPosition Función para verificar si una posición de grid es válida (no está en lago ni en camino)
+   * @param occupiedGridPositions Set de posiciones de grid ya ocupadas (formato "gridX,gridY")
    */
-  public render(isValidPosition?: (x: number, y: number) => boolean): Phaser.GameObjects.Graphics[] {
+  public render(
+    isValidGridPosition?: (gridX: number, gridY: number) => boolean,
+    occupiedGridPositions?: Set<string>
+  ): Phaser.GameObjects.Graphics[] {
     const rocks: Phaser.GameObjects.Graphics[] = []
+    const cellSize = 60 // Tamaño de celda del grid (debe coincidir con GridRenderer)
     
-    for (let i = 0; i < 5; i++) {
-      let rockX: number
-      let rockY: number
-      let attempts = 0
-      do {
-        rockX = Math.random() * this.width
-        rockY = this.horizonY + 10 + Math.random() * (this.height - this.horizonY - 10)
-        attempts++
-      } while (attempts < 30 && isValidPosition && !isValidPosition(rockX, rockY))
+    // Calcular dimensiones del grid de tierra
+    const estimatedGroundHeight = this.horizonY * 2
+    const numCols = Math.floor(this.width / cellSize)
+    const numRows = Math.floor(estimatedGroundHeight / cellSize)
+    
+    // Generar posiciones disponibles en el grid de tierra
+    const availablePositions: Array<{ gridX: number; gridY: number }> = []
+    for (let col = 1; col < numCols - 1; col++) {
+      for (let row = 0; row < Math.min(numRows - 1, 8); row++) {
+        availablePositions.push({ gridX: col, gridY: row })
+      }
+    }
+    
+    // Mezclar posiciones disponibles para distribución aleatoria
+    const shuffledPositions = availablePositions.sort(() => Math.random() - 0.5)
+    
+    // Colocar rocas en posiciones del grid
+    const numRocks = 5
+    for (let i = 0; i < numRocks && i < shuffledPositions.length; i++) {
+      const gridPos = shuffledPositions[i]
+      const gridKey = `${gridPos.gridX},${gridPos.gridY}`
       
-      if (isValidPosition && !isValidPosition(rockX, rockY)) continue
+      // Verificar si la posición es válida (no está en lago ni en camino)
+      if (isValidGridPosition && !isValidGridPosition(gridPos.gridX, gridPos.gridY)) continue
+      
+      // Verificar si la posición ya está ocupada
+      if (occupiedGridPositions && occupiedGridPositions.has(gridKey)) continue
+      
+      // Convertir posición del grid a píxeles (centro de la celda)
+      const rockX = (gridPos.gridX * cellSize) + (cellSize / 2)
+      const rockY = this.horizonY + (gridPos.gridY * cellSize) + (cellSize / 2)
       
       const rockSize = 8 + Math.random() * 15
       
@@ -58,6 +83,11 @@ export class RockRenderer {
       rockGraphics.setPosition(rockX, rockY)
       rockGraphics.setDepth(1.8) // Detrás de los árboles (árboles tienen depth 2)
       rocks.push(rockGraphics)
+      
+      // Marcar posición como ocupada
+      if (occupiedGridPositions) {
+        occupiedGridPositions.add(gridKey)
+      }
     }
     
     return rocks

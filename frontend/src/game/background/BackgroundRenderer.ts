@@ -119,35 +119,42 @@ export class BackgroundRenderer {
       return !isOverLake(x, y) && !isOnPath(x, y)
     }
     
-    // Renderizar árboles (evitando el lago y el camino)
+    // Set para rastrear posiciones de grid ocupadas (formato "gridX,gridY")
+    const occupiedGridPositions = new Set<string>()
+    
+    // Renderizar castillos incas PRIMERO (evitando el lago y el camino)
+    // Las casas ocupan bloques verdes individuales
+    const castleRenderer = new IncaCastleRenderer(this.scene, this.width, this.horizonY)
+    const castleRenderResult = castleRenderer.render(isValidGridPosition, isValidPosition, occupiedGridPositions)
+    const castles = castleRenderResult.graphics
+    
+    // Renderizar árboles (evitando el lago, el camino, y las casas)
     const treeRenderer = new TreeRenderer(this.scene, this.width, this.horizonY)
-    const treeRenderResult = treeRenderer.render(isValidGridPosition, isValidPosition)
+    const treeRenderResult = treeRenderer.render(isValidGridPosition, isValidPosition, occupiedGridPositions)
     const trees = treeRenderResult.graphics
     const treePositions = treeRenderResult.positions
     
-    // Renderizar rocas (evitando el lago y el camino)
+    // Renderizar rocas (evitando el lago, el camino, y las casas)
+    // Las rocas ocupan bloques verdes individuales
     const rockRenderer = new RockRenderer(this.scene, this.width, this.height, this.horizonY)
-    const rocks = rockRenderer.render(isValidPosition)
-    
-    // Renderizar castillos incas (evitando el lago y el camino)
-    const castleRenderer = new IncaCastleRenderer(this.scene, this.width, this.horizonY)
-    const castles = castleRenderer.render(isValidGridPosition, isValidPosition)
+    const rocks = rockRenderer.render(isValidGridPosition, occupiedGridPositions)
     
     // Renderizar elementos animados
     const animatedRenderer = new AnimatedElementsRenderer(this.scene, this.width, this.height, this.horizonY)
     const animatedElements = animatedRenderer.render()
     
-    // Renderizar hongos y flores mágicas (evitando el lago)
+    // Renderizar hongos, flores y arbustos (evitando el lago)
+    // Los arbustos ocupan bloques verdes individuales y evitan casas y rocas
     const mushroomFlowerRenderer = new MushroomFlowerRenderer(this.scene, this.width, this.height, this.horizonY)
-    const mushroomsFlowers = mushroomFlowerRenderer.render(isOverLake, treePositions)
+    const mushroomsFlowers = mushroomFlowerRenderer.render(isOverLake, isValidGridPosition, occupiedGridPositions)
     
     // Renderizar aves volando
     const birdRenderer = new BirdRenderer(this.scene, this.width, this.horizonY)
     const birds = birdRenderer.render()
     
-    // Renderizar humo de chimeneas (necesita posiciones de los castillos)
+    // Renderizar humo de chimeneas (no necesita posiciones específicas de castillos)
     const smokeRenderer = new SmokeRenderer(this.scene, this.width, this.horizonY)
-    const smokeElements = smokeRenderer.render(castles.map(c => ({ x: c.x, y: c.y })))
+    const smokeElements = smokeRenderer.render()
     
     // Renderizar tótems incas (evitando el lago y el camino)
     const totemRenderer = new TotemRenderer(this.scene, this.width, this.horizonY)

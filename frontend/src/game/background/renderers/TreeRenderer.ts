@@ -20,9 +20,14 @@ export class TreeRenderer {
    * Renderiza los árboles distribuidos en el grid de tierra
    * @param isValidGridPosition Función para verificar si una posición de grid es válida (no está en lago ni en camino)
    * @param isValidPosition Función para verificar si una posición en píxeles es válida (no está en lago ni en camino)
+   * @param occupiedGridPositions Set de posiciones de grid ya ocupadas (formato "gridX,gridY")
    * @returns Objeto con los gráficos de los árboles y sus posiciones
    */
-  public render(isValidGridPosition?: (gridX: number, gridY: number) => boolean, isValidPosition?: (x: number, y: number) => boolean): { graphics: Phaser.GameObjects.Graphics[], positions: Array<{ x: number, y: number }> } {
+  public render(
+    isValidGridPosition?: (gridX: number, gridY: number) => boolean, 
+    isValidPosition?: (x: number, y: number) => boolean,
+    occupiedGridPositions?: Set<string>
+  ): { graphics: Phaser.GameObjects.Graphics[], positions: Array<{ x: number, y: number }> } {
     const trees: Phaser.GameObjects.Graphics[] = []
     this.treesData = []
     this.leafParticles = []
@@ -54,9 +59,13 @@ export class TreeRenderer {
     // Colocar árboles en posiciones del grid
     for (let i = 0; i < maxTrees && i < shuffledPositions.length; i++) {
       const gridPos = shuffledPositions[i]
+      const gridKey = `${gridPos.gridX},${gridPos.gridY}`
       
       // Verificar primero en coordenadas de grid (más eficiente y preciso)
       if (isValidGridPosition && !isValidGridPosition(gridPos.gridX, gridPos.gridY)) continue
+      
+      // Verificar si la posición ya está ocupada
+      if (occupiedGridPositions && occupiedGridPositions.has(gridKey)) continue
       
       // Convertir posición del grid a píxeles (centro de la celda con variación pequeña)
       const baseX = (gridPos.gridX * cellSize) + (cellSize / 2)
