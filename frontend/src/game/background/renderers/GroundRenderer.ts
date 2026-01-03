@@ -89,7 +89,38 @@ export class GroundRenderer {
 
         // Determinar tipo de bloque: sendero, hierba o tierra
         const isPathBlock = this.isPathBlock(col, row)
-        const isGrassBlock = row === 0 && !isPathBlock
+        
+        // Combinación de las 4 propuestas para distribución de bloques verdes/cafés:
+        // 1. Probabilidad base
+        // 2. Ruido para parches naturales
+        // 3. Gradiente vertical (más verde arriba)
+        // 4. Parches distribuidos
+        
+        // Calcular ruido para parches naturales (propuesta 2 y 4)
+        const noiseValue = this.fbm(blockX * 0.08, blockY * 0.08, 2)
+        
+        // Gradiente vertical: factor que decrece con la fila (propuesta 3)
+        const maxGrassRows = 5
+        const grassDecayFactor = row < maxGrassRows 
+          ? Math.max(0, 1 - (row / maxGrassRows)) 
+          : 0
+        
+        // Threshold basado en gradiente y ruido (combina propuesta 2, 3 y 4)
+        const baseThreshold = 0.5
+        const gradientBonus = grassDecayFactor * 0.25 // Hasta +25% arriba
+        const noiseThreshold = baseThreshold + gradientBonus
+        
+        // Probabilidad adicional para distribución más uniforme (propuesta 1)
+        const probabilityBonus = row < 3 ? 0.15 : 0 // Bonus en primeras filas
+        
+        // Determinar si es bloque de hierba
+        const isGrassBlock = !isPathBlock && (
+          row === 0 || // Primera fila siempre verde (100%)
+          (row < maxGrassRows && (
+            noiseValue > noiseThreshold || // Parches basados en ruido
+            Math.random() < probabilityBonus // Probabilidad adicional
+          ))
+        )
         
         let baseColor: number
         if (isPathBlock) {
@@ -101,7 +132,6 @@ export class GroundRenderer {
         }
 
         // Variación sutil de color usando ruido para hacer más orgánico
-        const noiseValue = this.fbm(blockX * 0.05, blockY * 0.05, 1)
         const colorVariation = Math.floor((noiseValue - 0.5) * 8) // -4 a +4
 
         // Aplicar variación de color
