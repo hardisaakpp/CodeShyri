@@ -113,6 +113,29 @@ export class RewardSystem {
   }
 
   /**
+   * Penaliza al jugador por tocar un obstáculo (como la fogata)
+   */
+  public penalizeForObstacle(pixelX?: number, pixelY?: number, obstacleType: string = 'fire'): number {
+    const penalty = 10 // Penalización de 10 maíz
+    const message = `🔥 -${penalty} maíz - ¡Cuidado con la fogata!`
+    
+    // Restar del total (no permitir negativo)
+    this.totalMaize = Math.max(0, this.totalMaize - penalty)
+    
+    // Mostrar efecto visual de penalización
+    if (this.effectRenderer && pixelX !== undefined && pixelY !== undefined) {
+      this.effectRenderer.showPenalty(pixelX, pixelY, penalty)
+    }
+    
+    if (this.onRewardCallback) {
+      // Usar type 'grass' para el callback, pero el mensaje ya indica la penalización
+      this.onRewardCallback(-penalty, 'grass', message)
+    }
+
+    return -penalty
+  }
+
+  /**
    * Obtiene el total de maíz acumulado
    */
   public getTotalMaize(): number {

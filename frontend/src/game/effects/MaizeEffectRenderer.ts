@@ -246,5 +246,109 @@ export class MaizeEffectRenderer {
       }
     })
   }
+
+  /**
+   * Muestra un efecto visual de penalización (por ejemplo, tocar una fogata)
+   */
+  public showPenalty(x: number, y: number, amount: number): void {
+    // Crear contenedor para el efecto
+    const container = this.scene.add.container(x, y)
+    container.setDepth(10) // Por encima del grid y suelo
+
+    // Color de penalización: rojo/naranja para fuego
+    const penaltyColor = 0xFF4400 // Naranja rojizo
+    
+    // Crear partículas de fuego/chispas (menos partículas que maíz)
+    const numParticles = 3
+    const particles: Phaser.GameObjects.Graphics[] = []
+
+    for (let i = 0; i < numParticles; i++) {
+      const particle = this.scene.add.graphics()
+      
+      // Dibujar chispa/fuego (forma de gota pequeña)
+      particle.fillStyle(penaltyColor, 1)
+      particle.fillCircle(0, 0, 4)
+      particle.fillStyle(0xFFFF00, 0.8) // Centro amarillo
+      particle.fillCircle(0, 0, 2)
+      
+      particle.setPosition(
+        (Math.random() - 0.5) * 25, // Distribución aleatoria
+        (Math.random() - 0.5) * 25
+      )
+      
+      container.add(particle)
+      particles.push(particle)
+    }
+
+    // Crear texto de cantidad (en rojo)
+    const textStyle = {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      fill: '#FF4400',
+      stroke: '#000000',
+      strokeThickness: 3,
+      fontWeight: 'bold'
+    }
+    
+    const text = this.scene.add.text(0, -15, `-${Math.abs(amount)}`, textStyle)
+    text.setOrigin(0.5, 0.5)
+    text.setDepth(11)
+    container.add(text)
+
+    // Animación: partículas se dispersan y se desvanecen
+    particles.forEach((particle, index) => {
+      const angle = (index / numParticles) * Math.PI * 2 + Math.random() * 0.5
+      const distance = 35 + Math.random() * 20
+      const finalX = Math.cos(angle) * distance
+      const finalY = Math.sin(angle) * distance - 10 // Se dispersan
+
+      this.scene.tweens.add({
+        targets: particle,
+        x: finalX,
+        y: finalY,
+        alpha: 0,
+        scale: 0.2,
+        duration: 600 + Math.random() * 300,
+        ease: 'Power2',
+        delay: index * 50,
+        onComplete: () => {
+          particle.destroy()
+        }
+      })
+    })
+
+    // Animación del texto: se mueve hacia abajo y desaparece
+    this.scene.tweens.add({
+      targets: text,
+      y: 20,
+      alpha: 0,
+      scale: 1.3,
+      duration: 800,
+      ease: 'Power2',
+      onComplete: () => {
+        text.destroy()
+        container.destroy()
+      }
+    })
+
+    // Efecto de resplandor rojo en el suelo
+    const glow = this.scene.add.graphics()
+    glow.fillStyle(penaltyColor, 0.4)
+    glow.fillCircle(0, 0, 18)
+    glow.setPosition(x, y)
+    glow.setDepth(9)
+    glow.setBlendMode(Phaser.BlendModes.ADD)
+
+    this.scene.tweens.add({
+      targets: glow,
+      alpha: 0,
+      scale: 2.5,
+      duration: 500,
+      ease: 'Power2',
+      onComplete: () => {
+        glow.destroy()
+      }
+    })
+  }
 }
 

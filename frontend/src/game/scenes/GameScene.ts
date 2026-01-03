@@ -11,6 +11,7 @@ import { RewardSystem } from '../services/RewardSystem'
 import { GoalRenderer } from '../background/renderers/GoalRenderer'
 import { GroundRenderer } from '../background/renderers/GroundRenderer'
 import { MaizeItemRenderer } from '../background/renderers/MaizeItemRenderer'
+import { FireRenderer } from '../background/renderers/FireRenderer'
 
 export class GameScene extends Phaser.Scene {
   private width!: number
@@ -32,6 +33,7 @@ export class GameScene extends Phaser.Scene {
   private goalRenderer?: GoalRenderer
   private groundRenderer?: GroundRenderer
   private maizeItemRenderer?: MaizeItemRenderer
+  private fireRenderer?: FireRenderer
   
   // Rastreo de acciones para validación
   private actionsExecuted: Set<string> = new Set()
@@ -88,6 +90,7 @@ export class GameScene extends Phaser.Scene {
     // Obtener grid renderer y ground renderer
     this.gridRenderer = this.backgroundRenderer.getGridRenderer()
     this.groundRenderer = this.backgroundRenderer.getGroundRenderer()
+    this.fireRenderer = this.backgroundRenderer.getFireRenderer()
     
     if (pathCoordinates) {
       console.log('✅ Path blocks configurados antes del render:', pathCoordinates.length, 'bloques')
@@ -679,14 +682,20 @@ export class GameScene extends Phaser.Scene {
    */
   private checkRewardsAndGoal(): void {
     // Nota: La recolección de maíz visible y las recompensas ya se manejan en MovementCommands
-    // Este método ahora solo verifica el objetivo/premio final
+    // Este método ahora solo verifica el objetivo/premio final y obstáculos como la fogata
+
+    const player = this.playerManager.getPlayer()
+    const playerX = player?.x || 0
+    const playerY = player?.y || 0
+
+    // Verificar si el jugador tocó la fogata (penalización)
+    if (this.fireRenderer && this.rewardSystem && this.fireRenderer.isPlayerAtFire(this.currentGridX, this.currentGridY)) {
+      this.rewardSystem.penalizeForObstacle(playerX, playerY, 'fire')
+      this.log('🔥 ¡Cuidado! Tocaste la fogata y perdiste maíz', 'error')
+    }
 
     // Verificar si alcanzó el objetivo/premio
     if (this.goalRenderer && this.rewardSystem && this.goalRenderer.isPlayerAtGoal(this.currentGridX, this.currentGridY)) {
-      const player = this.playerManager.getPlayer()
-      const playerX = player?.x || 0
-      const playerY = player?.y || 0
-      
       this.goalRenderer.collect()
       this.rewardSystem.rewardForGoal(playerX, playerY)
       if (this.onGoalReached) {

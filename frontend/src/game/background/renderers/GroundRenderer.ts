@@ -6,12 +6,15 @@ export class GroundRenderer {
   private readonly noiseSeed = 12345.6789
   private cellSize: number = 60 // Tamaño de celda del grid (debe coincidir con GridRenderer)
 
+  private blockLabels: Phaser.GameObjects.Text[] = []
+
   constructor(
     private graphics: Phaser.GameObjects.Graphics,
     private width: number,
     private height: number,
     private horizonY: number,
-    private gridRenderer?: GridRenderer
+    private gridRenderer?: GridRenderer,
+    private scene?: Phaser.Scene
   ) {
     if (gridRenderer) {
       this.cellSize = gridRenderer.getCellSize()
@@ -22,6 +25,9 @@ export class GroundRenderer {
    * Renderiza el suelo con diseño elegante y textura mejorada
    */
   public render() {
+    // Limpiar labels anteriores si existen
+    this.clearLabels()
+    
     const groundHeight = this.height - this.horizonY
     
     // Si tenemos grid, dibujar bloques tipo Minecraft
@@ -167,6 +173,27 @@ export class GroundRenderer {
           blockWidth * 0.3,
           blockHeight * 0.3
         )
+
+        // TEMPORAL: Agregar número/coordenadas en cada bloque para reconocimiento
+        if (this.scene) {
+          const labelText = `${col},${row}`
+          const label = this.scene.add.text(
+            blockX + blockWidth / 2,
+            blockY + blockHeight / 2,
+            labelText,
+            {
+              fontSize: '12px',
+              fontFamily: 'Arial, sans-serif',
+              color: isPathBlock ? '#FFFFFF' : '#000000',
+              stroke: isPathBlock ? '#000000' : '#FFFFFF',
+              strokeThickness: 2,
+              fontWeight: 'bold'
+            }
+          )
+          label.setOrigin(0.5, 0.5)
+          label.setDepth(6) // Por encima del grid pero debajo de otros elementos
+          this.blockLabels.push(label)
+        }
       }
     }
   }
@@ -734,6 +761,25 @@ export class GroundRenderer {
         }
       }
     }
+  }
+
+  /**
+   * Limpia los labels temporales de los bloques
+   */
+  private clearLabels(): void {
+    this.blockLabels.forEach(label => {
+      if (label && label.active) {
+        label.destroy()
+      }
+    })
+    this.blockLabels = []
+  }
+
+  /**
+   * Destruye todos los labels (llamar cuando se destruye el renderer)
+   */
+  public destroyLabels(): void {
+    this.clearLabels()
   }
 }
 

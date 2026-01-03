@@ -14,6 +14,7 @@ import { TotemRenderer } from './renderers/TotemRenderer'
 import { WaterLilyRenderer } from './renderers/WaterLilyRenderer'
 import { GridRenderer } from './renderers/GridRenderer'
 import { GoalRenderer } from './renderers/GoalRenderer'
+import { FireRenderer } from './renderers/FireRenderer'
 
 /**
  * Orquestador principal para renderizar todos los elementos del fondo del juego.
@@ -28,6 +29,7 @@ export class BackgroundRenderer {
   private gridRenderer: GridRenderer
   private groundRenderer?: GroundRenderer
   private goalRenderer?: GoalRenderer
+  private fireRenderer?: FireRenderer
 
   constructor(scene: Phaser.Scene, width: number, height: number) {
     this.scene = scene
@@ -59,6 +61,13 @@ export class BackgroundRenderer {
   }
 
   /**
+   * Obtiene el renderer de la fogata
+   */
+  public getFireRenderer(): FireRenderer | undefined {
+    return this.fireRenderer
+  }
+
+  /**
    * Renderiza todo el fondo del juego
    * @returns Objeto con los elementos renderizados (mantiene compatibilidad con código existente)
    */
@@ -76,8 +85,8 @@ export class BackgroundRenderer {
     const mountainRenderer = new MountainRenderer(bgGraphics, this.scene, this.width, this.height, this.horizonY)
     const mountainClouds = mountainRenderer.render()
     
-    // Renderizar suelo (pasar gridRenderer para bloques tipo Minecraft)
-    this.groundRenderer = new GroundRenderer(bgGraphics, this.width, this.height, this.horizonY, this.gridRenderer)
+    // Renderizar suelo (pasar gridRenderer para bloques tipo Minecraft y scene para labels temporales)
+    this.groundRenderer = new GroundRenderer(bgGraphics, this.width, this.height, this.horizonY, this.gridRenderer, this.scene)
     
     // Configurar bloques de camino (path) ANTES de renderizar si están definidos
     if (pathCoordinates && pathCoordinates.length > 0) {
@@ -164,8 +173,20 @@ export class BackgroundRenderer {
     const waterLilyRenderer = new WaterLilyRenderer(this.scene)
     const waterLilies = waterLilyRenderer.render(lakeRenderer.lakeInfo)
 
-    // Renderizar grid/grid sobre el terreno (último para estar visible)
+    // Renderizar grid/grid sobre el terreno (antes de la fogata para que la fogata esté visible)
     const gridGraphics = this.gridRenderer.render(this.width, this.height, this.horizonY)
+
+    // Renderizar fogata en el bloque (5,1)
+    // TEMPORAL: Colocada en coordenadas fijas para testing
+    const firePosition = { gridX: 5, gridY: 1 }
+    this.fireRenderer = new FireRenderer(this.scene, this.gridRenderer, this.horizonY)
+    const fireContainer = this.fireRenderer.render(firePosition.gridX, firePosition.gridY)
+    if (fireContainer) {
+      console.log('🔥 Fogata colocada en el bloque:', firePosition)
+      console.log('🔥 Posición en píxeles:', this.gridRenderer.gridToPixel(firePosition.gridX, firePosition.gridY))
+    } else {
+      console.error('❌ Error: No se pudo crear la fogata')
+    }
 
     // El premio/objetivo se renderiza después (desde GameScene) ya que necesita configuración del nivel
 
