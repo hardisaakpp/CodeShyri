@@ -53,10 +53,6 @@
                 <span v-else class="button-icon">▶️</span>
                 <span class="button-text">{{ getButtonText() }}</span>
               </button>
-              <button @click="resetCode" class="reset-button" :disabled="isRunning || isExecuting">
-                <span class="button-icon">🔄</span>
-                <span class="button-text">Reiniciar</span>
-              </button>
             </div>
           </div>
           <div id="monaco-editor" class="monaco-editor" :class="{ 'editor-disabled': isRunning || isExecuting }"></div>
@@ -448,17 +444,6 @@ const runCode = async () => {
     consoleLogs.value.push({ type: 'error', message: `✗ Error de conexión: ${errorMessage}`, timestamp: getTimestamp() })
   } finally {
     isRunning.value = false
-  }
-}
-
-const resetCode = () => {
-  if (editor) {
-    editor.setValue(getInitialCode())
-  }
-  consoleLogs.value = []
-  totalMaize.value = 0 // Reiniciar maíz al reiniciar
-  if (gameEngine) {
-    gameEngine.reset()
   }
 }
 
@@ -914,8 +899,7 @@ const getButtonText = (): string => {
   gap: 0.75rem;
 }
 
-.run-button,
-.reset-button {
+.run-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1010,57 +994,6 @@ const getButtonText = (): string => {
   to {
     transform: rotate(360deg);
   }
-}
-
-.reset-button {
-  background: 
-    linear-gradient(135deg, #5d4037 0%, #6d4c41 50%, #8d6e63 100%),
-    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(76, 175, 80, 0.1) 3px, rgba(76, 175, 80, 0.1) 6px);
-  color: #fff;
-  border: none;
-  box-shadow: 
-    0 4px 15px rgba(0, 0, 0, 0.6),
-    inset 0 0 10px rgba(139, 195, 74, 0.15);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  position: relative;
-}
-
-.reset-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: inherit;
-  padding: 2px;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.5' opacity='0.6'%3E%3Cpath d='M10 1 Q12 6 10 9 Q8 6 10 1'/%3E%3Cpath d='M1 10 Q6 12 9 10 Q6 8 1 10'/%3E%3Cpath d='M10 9 Q12 15 10 19 Q8 15 10 9'/%3E%3Cpath d='M19 10 Q14 12 11 10 Q14 8 19 10'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 20px 20px;
-  background-repeat: repeat;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.reset-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 6px 20px rgba(93, 64, 55, 0.6),
-    inset 0 0 15px rgba(139, 195, 74, 0.25);
-  border-color: rgba(139, 195, 74, 0.7);
-}
-
-.reset-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .button-icon {
