@@ -12,6 +12,7 @@ export class GoalRenderer {
   private goalGridY: number
   private cellSize: number
   private horizonY: number
+  private isCollected: boolean = false // Flag para rastrear si ya fue recolectado
 
   constructor(
     private scene: Phaser.Scene,
@@ -122,7 +123,8 @@ export class GoalRenderer {
    * Verifica si el jugador está en la misma celda que el premio
    */
   public isPlayerAtGoal(playerGridX: number, playerGridY: number): boolean {
-    return playerGridX === this.goalGridX && playerGridY === this.goalGridY
+    // Solo devolver true si no ha sido recolectado y está en la posición correcta
+    return !this.isCollected && playerGridX === this.goalGridX && playerGridY === this.goalGridY
   }
 
   /**
@@ -137,7 +139,11 @@ export class GoalRenderer {
    * Nota: Los efectos visuales de partículas se manejan en MaizeEffectRenderer
    */
   public collect(): void {
-    if (!this.goalGraphics) return
+    // Si ya fue recolectado, no hacer nada
+    if (this.isCollected || !this.goalGraphics) return
+    
+    // Marcar como recolectado
+    this.isCollected = true
 
     // Cancelar todas las animaciones activas del contenedor y sus hijos
     this.scene.tweens.killTweensOf(this.goalGraphics)
@@ -169,6 +175,9 @@ export class GoalRenderer {
    * Restaura el premio si fue recolectado
    */
   public restore(): void {
+    // Resetear el flag de recolectado
+    this.isCollected = false
+    
     // Verificar si el premio necesita ser recreado
     const needsRestore = !this.goalGraphics || 
                          !this.goalGraphics.active || 

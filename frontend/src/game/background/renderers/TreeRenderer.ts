@@ -17,7 +17,7 @@ export class TreeRenderer {
   ) {}
 
   /**
-   * Renderiza los árboles en las faldas de las montañas, agrupados en pequeños bosques
+   * Renderiza los árboles distribuidos en el grid de tierra
    * @returns Objeto con los gráficos de los árboles y sus posiciones
    */
   public render(isOverLake?: (x: number, y: number) => boolean): { graphics: Phaser.GameObjects.Graphics[], positions: Array<{ x: number, y: number }> } {
@@ -25,103 +25,94 @@ export class TreeRenderer {
     this.treesData = []
     this.leafParticles = []
     
-    // Calcular posiciones de las bases de las montañas cercanas
-    const mountainBaseY = this.horizonY
-    const mountainPoints = 10
-    const mountainVariation = 30
-    const seed = mountainBaseY * 0.1
+    // Tamaño de celda del grid (debe coincidir con GridRenderer)
+    const cellSize = 60
     
-    // Zonas de poblados a evitar (con margen de seguridad)
-    const village1Center = this.width / 2 // Poblado central
-    const village1Radius = 120 // Radio del poblado central + margen
+    // Calcular dimensiones del grid de tierra
+    // horizonY divide el mapa: arriba es cielo, abajo es tierra
+    // Estimar groundHeight: si horizonY = height * 0.33, entonces groundHeight ≈ horizonY * 2
+    const estimatedGroundHeight = this.horizonY * 2
+    const numCols = Math.floor(this.width / cellSize)
+    const numRows = Math.floor(estimatedGroundHeight / cellSize)
     
-    // Función para verificar si una posición está demasiado cerca de un poblado
-    const isTooCloseToVillage = (x: number): boolean => {
-      const distToVillage1 = Math.abs(x - village1Center)
-      return distToVillage1 < village1Radius
+    // Crear árboles distribuidos en el grid de tierra
+    const maxTrees = 18 // Reducido de 24 a 18
+    
+    // Generar posiciones disponibles en el grid de tierra (evitando bordes)
+    const availablePositions: Array<{ gridX: number; gridY: number }> = []
+    for (let col = 1; col < numCols - 1; col++) { // Evitar los bordes (dejar 1 columna de margen)
+      for (let row = 0; row < Math.min(numRows - 1, 8); row++) { // Primeras 8 filas del terreno
+        availablePositions.push({ gridX: col, gridY: row })
+      }
     }
     
-    // Crear grupos de bosques pequeños dispersos
-    const forestGroups = this.generateForestGroups(isTooCloseToVillage)
+    // Mezclar posiciones disponibles para distribución aleatoria
+    const shuffledPositions = availablePositions.sort(() => Math.random() - 0.5)
     
-    // Crear árboles agrupados en cada bosquecito
-    let totalTrees = 0
-    const maxTrees = 32
-    
-    for (const groupCenterX of forestGroups) {
-      if (totalTrees >= maxTrees) break
+    // Colocar árboles en posiciones del grid
+    for (let i = 0; i < maxTrees && i < shuffledPositions.length; i++) {
+      const gridPos = shuffledPositions[i]
       
-      // Cada grupo tiene un número variable de árboles (4-6) - reducido para más separación
-      const treesPerGroup = 4 + Math.floor(Math.random() * 3)
-      const treesInThisGroup = Math.min(treesPerGroup, maxTrees - totalTrees)
+      // Convertir posición del grid a píxeles (centro de la celda con variación pequeña)
+      const baseX = (gridPos.gridX * cellSize) + (cellSize / 2)
+      const baseY = this.horizonY + (gridPos.gridY * cellSize) + (cellSize / 2)
       
-      for (let i = 0; i < treesInThisGroup; i++) {
-        // Calcular posición del árbol
-        const treePosition = this.calculateTreePosition(
-          groupCenterX,
-          mountainBaseY,
-          mountainPoints,
-          mountainVariation,
-          seed,
-          isTooCloseToVillage
-        )
+      // Pequeña variación aleatoria para que no estén exactamente en el centro
+      const treeX = baseX + (Math.random() - 0.5) * (cellSize * 0.4)
+      const treeY = baseY + (Math.random() - 0.5) * (cellSize * 0.3)
+      
+      // Asegurar que el árbol no esté fuera de los límites
+      if (treeX < 0 || treeX > this.width) continue
+      
+      // Verificar si está sobre el lago
+      if (isOverLake && isOverLake(treeX, treeY)) continue
         
-        if (!treePosition) continue
-        
-        const { treeX, treeY } = treePosition
-        
-        // Verificar si está sobre el lago
-        if (isOverLake && isOverLake(treeX, treeY)) continue
-        
-        // Generar propiedades del árbol
-        const treeHeight = 40 + Math.random() * 50
-        const trunkWidth = 8 + Math.random() * 6
-        const crownSize = 25 + Math.random() * 30
-        
-        // Seleccionar color y forma únicos para este árbol
-        const treeColor = TreeColorGenerator.getTreeColor(totalTrees, treeX)
-        const treeColorVariations = TreeColorGenerator.getTreeColorVariations(treeColor)
-        const treeShapeType = TreeColorGenerator.getTreeShapeType(totalTrees, treeX)
-        
-        // Crear y renderizar el árbol
-        const treeGraphics = this.scene.add.graphics()
-        TreeTrunkRenderer.render(treeGraphics, trunkWidth, treeHeight)
-        TreeCrownRenderer.draw(treeGraphics, treeShapeType, crownSize, treeHeight, treeColorVariations)
-        
-        // Crear contenedor para el árbol
-        const treeContainer = this.scene.add.container(treeX, treeY + treeHeight * 0.7)
-        treeContainer.add(treeGraphics)
-        treeContainer.setDepth(2)
-        treeGraphics.setPosition(0, -treeHeight * 0.7)
-        
-        trees.push(treeGraphics)
-        
-        // Crear sombra dinámica del árbol
-        const shadowGraphics = this.scene.add.graphics()
-        TreeShadowRenderer.draw(shadowGraphics, treeX, treeY, treeHeight, crownSize)
-        shadowGraphics.setDepth(1.5)
-        
-        // Guardar datos del árbol para animaciones
-        const treeData: TreeData = {
-          graphics: treeGraphics,
-          container: treeContainer,
-          shadow: shadowGraphics,
-          leaves: [],
-          x: treeX,
-          y: treeY,
-          crownSize: crownSize,
-          treeHeight: treeHeight,
-          treeColor: treeColor
-        }
-        
-        this.treesData.push(treeData)
-        
-        // Añadir animaciones
-        TreeAnimations.addWindSway(this.scene, treeContainer)
-        TreeAnimations.startFallingLeaves(this.scene, treeData, this.leafParticles)
-        
-        totalTrees++
+      // Generar propiedades del árbol
+      const treeHeight = 40 + Math.random() * 50
+      const trunkWidth = 8 + Math.random() * 6
+      const crownSize = 25 + Math.random() * 30
+      
+      // Seleccionar color y forma únicos para este árbol
+      const treeColor = TreeColorGenerator.getTreeColor(i, treeX)
+      const treeColorVariations = TreeColorGenerator.getTreeColorVariations(treeColor)
+      const treeShapeType = TreeColorGenerator.getTreeShapeType(i, treeX)
+      
+      // Crear y renderizar el árbol
+      const treeGraphics = this.scene.add.graphics()
+      TreeTrunkRenderer.render(treeGraphics, trunkWidth, treeHeight)
+      TreeCrownRenderer.draw(treeGraphics, treeShapeType, crownSize, treeHeight, treeColorVariations)
+      
+      // Crear contenedor para el árbol
+      const treeContainer = this.scene.add.container(treeX, treeY + treeHeight * 0.7)
+      treeContainer.add(treeGraphics)
+      treeContainer.setDepth(2)
+      treeGraphics.setPosition(0, -treeHeight * 0.7)
+      
+      trees.push(treeGraphics)
+      
+      // Crear sombra dinámica del árbol
+      const shadowGraphics = this.scene.add.graphics()
+      TreeShadowRenderer.draw(shadowGraphics, treeX, treeY, treeHeight, crownSize)
+      shadowGraphics.setDepth(1.5)
+      
+      // Guardar datos del árbol para animaciones
+      const treeData: TreeData = {
+        graphics: treeGraphics,
+        container: treeContainer,
+        shadow: shadowGraphics,
+        leaves: [],
+        x: treeX,
+        y: treeY,
+        crownSize: crownSize,
+        treeHeight: treeHeight,
+        treeColor: treeColor
       }
+      
+      this.treesData.push(treeData)
+      
+      // Añadir animaciones
+      TreeAnimations.addWindSway(this.scene, treeContainer)
+      TreeAnimations.startFallingLeaves(this.scene, treeData, this.leafParticles)
     }
     
     // Iniciar animación de sombras dinámicas
@@ -136,67 +127,4 @@ export class TreeRenderer {
     }
   }
 
-  /**
-   * Genera las posiciones de los grupos de bosques evitando poblados
-   */
-  private generateForestGroups(isTooCloseToVillage: (x: number) => boolean): number[] {
-    const forestGroups: number[] = []
-    const numForestGroups = 5
-    
-    // Generar posiciones de grupos evitando poblados
-    for (let g = 0; g < numForestGroups; g++) {
-      let groupX: number
-      let attempts = 0
-      do {
-        groupX = this.width * (0.15 + Math.random() * 0.7) // Entre 15% y 85% del ancho
-        attempts++
-      } while (attempts < 50 && isTooCloseToVillage(groupX))
-      
-      if (!isTooCloseToVillage(groupX)) {
-        forestGroups.push(groupX)
-      }
-    }
-    
-    // Agregar un grupo adicional en el área donde estaba el segundo poblado (75% del ancho)
-    const secondVillageAreaX = this.width * 0.75
-    if (!isTooCloseToVillage(secondVillageAreaX)) {
-      forestGroups.push(secondVillageAreaX)
-    }
-    
-    return forestGroups
-  }
-
-  /**
-   * Calcula la posición de un árbol dentro de un grupo
-   */
-  private calculateTreePosition(
-    groupCenterX: number,
-    mountainBaseY: number,
-    mountainPoints: number,
-    mountainVariation: number,
-    seed: number,
-    isTooCloseToVillage: (x: number) => boolean
-  ): { treeX: number; treeY: number } | null {
-    // Agrupar árboles alrededor del centro del grupo con mayor separación
-    const groupSpread = 60 + Math.random() * 40 // Radio del grupo: 60-100 píxeles (aumentado)
-    const angle = Math.random() * Math.PI * 2 // Ángulo aleatorio
-    const distance = Math.random() * groupSpread // Distancia del centro
-    const treeX = groupCenterX + Math.cos(angle) * distance
-    
-    // Asegurar que el árbol no esté fuera de los límites
-    if (treeX < 0 || treeX > this.width) return null
-    if (isTooCloseToVillage(treeX)) return null
-    
-    // Calcular la posición Y en la base de la montaña más cercana
-    const mountainIndex = Math.floor((treeX / this.width) * mountainPoints)
-    const varAmount = Math.sin(mountainIndex * 0.5 + seed) * mountainVariation + 
-                     Math.cos(mountainIndex * 0.3 + seed * 0.7) * (mountainVariation * 0.6) +
-                     Math.sin(mountainIndex * 1.2 + seed * 1.3) * (mountainVariation * 0.4)
-    const mountainBaseYAtX = mountainBaseY + varAmount
-    
-    // Colocar árbol en la falda de la montaña (más arriba en la ladera)
-    const treeY = mountainBaseYAtX - 15 + Math.random() * 20
-    
-    return { treeX, treeY }
-  }
 }
