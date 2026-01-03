@@ -10,7 +10,6 @@ import { MushroomFlowerRenderer } from './renderers/MushroomFlowerRenderer'
 import { LakeRenderer } from './renderers/LakeRenderer'
 import { BirdRenderer } from './renderers/BirdRenderer'
 import { SmokeRenderer } from './renderers/SmokeRenderer'
-import { PathRenderer } from './renderers/PathRenderer'
 import { TotemRenderer } from './renderers/TotemRenderer'
 import { WaterLilyRenderer } from './renderers/WaterLilyRenderer'
 import { GridRenderer } from './renderers/GridRenderer'
@@ -46,7 +45,7 @@ export class BackgroundRenderer {
   }
 
   /**
-   * Obtiene el renderer del suelo (para configurar bloques de sendero)
+   * Obtiene el renderer del suelo
    */
   public getGroundRenderer(): GroundRenderer | undefined {
     return this.groundRenderer
@@ -117,10 +116,6 @@ export class BackgroundRenderer {
     const smokeRenderer = new SmokeRenderer(this.scene, this.width, this.horizonY)
     const smokeElements = smokeRenderer.render(castles.map(c => ({ x: c.x, y: c.y })))
     
-    // Renderizar camino/sendero
-    const pathRenderer = new PathRenderer(bgGraphics, this.width, this.horizonY)
-    pathRenderer.render()
-    
     // Renderizar tótems incas
     const totemRenderer = new TotemRenderer(this.scene, this.width, this.horizonY)
     const totems = totemRenderer.render(isOverLake)
@@ -145,15 +140,6 @@ export class BackgroundRenderer {
       lake: lake,
       totems: totems,
       waterLilies: waterLilies
-    }
-  }
-
-  /**
-   * Configura el sendero (bloques cafés) para un nivel
-   */
-  public setPathBlocks(pathCoordinates: Array<{ x: number; y: number }>) {
-    if (this.groundRenderer) {
-      this.groundRenderer.setPathBlocks(pathCoordinates)
     }
   }
 

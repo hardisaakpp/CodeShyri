@@ -84,7 +84,7 @@ export class LakeRenderer {
     
     // Reflejos y brillos en el agua
     lakeGraphics.fillStyle(0x5BA8C0, 0.5) // Azul claro
-    for (let i = 0; i < 5; i++) { // Reducido de 8 a 5
+    for (let i = 0; i < 2; i++) { // Reducido a 2 reflejos estáticos
       const reflectionX = (Math.random() - 0.5) * lakeWidth * 0.6
       const reflectionY = (Math.random() - 0.5) * lakeHeight * 0.6
       const reflectionSize = 15 + Math.random() * 20
@@ -211,7 +211,7 @@ export class LakeRenderer {
     lakeHeight: number
   ): void {
     // Reducir número de reflejos para mejor rendimiento
-    const numReflections = 3 // Reducido de 8 a 5 a 3
+    const numReflections = 1 // Reducido a 1 reflejo animado
     
     for (let i = 0; i < numReflections; i++) {
       const reflectionGraphics = this.scene.add.graphics()

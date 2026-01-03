@@ -108,12 +108,11 @@ export class GameEngine {
   }
 
   /**
-   * Configura el nivel (sendero, objetivo, posición inicial)
+   * Configura el nivel (objetivo, posición inicial)
    */
   public setLevelConfig(config: {
     startPosition?: { gridX: number; gridY: number }
     goalPosition?: { gridX: number; gridY: number }
-    path?: Array<{ x: number; y: number }>
     maizePositions?: Array<{ gridX: number; gridY: number }>
   }) {
     console.log('🎮 GameEngine.setLevelConfig() llamado con:', config)

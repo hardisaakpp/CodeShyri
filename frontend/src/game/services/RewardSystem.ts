@@ -24,7 +24,7 @@ export class RewardSystem {
    * Procesa recompensa por pisar un bloque
    * SOLO da recompensa si hay maíz visible - no por pisar bloques normalmente
    */
-  public rewardForBlock(gridX: number, gridY: number, isPathBlock: boolean, pixelX?: number, pixelY?: number, hasVisibleMaize: boolean = false): number {
+  public rewardForBlock(gridX: number, gridY: number, _isPathBlock: boolean, pixelX?: number, pixelY?: number, hasVisibleMaize: boolean = false): number {
     const blockKey = `${gridX},${gridY}`
     
     // Si no hay maíz visible, NO dar recompensa (solo marcar el bloque como visitado)
@@ -48,14 +48,14 @@ export class RewardSystem {
 
     // SOLO dar recompensa cuando hay maíz visible
     if (hasVisibleMaize) {
-      // Recompensa por recolectar maíz visible
-      reward = isPathBlock ? 20 : 10 // Mayor recompensa en sendero
-      message = `🌽 +${reward} maíz - ¡Recolectaste maíz del sendero!`
-      type = 'path'
+      // Recompensa por recolectar maíz visible (recompensa uniforme)
+      reward = 10
+      message = `🌽 +${reward} maíz - ¡Recolectaste maíz!`
+      type = 'grass'
       
       // Mostrar efecto visual
       if (this.effectRenderer && pixelX !== undefined && pixelY !== undefined) {
-        this.effectRenderer.showMaizeCollect(pixelX, pixelY, reward, true)
+        this.effectRenderer.showMaizeCollect(pixelX, pixelY, reward, false)
       }
 
       this.totalMaize += reward
@@ -100,11 +100,9 @@ export class RewardSystem {
   /**
    * Recompensa por completar el nivel
    */
-  public rewardForLevelCompletion(followedPath: boolean): number {
-    const reward = followedPath ? 100 : 50
-    const message = followedPath 
-      ? `🏆 ¡Nivel completado siguiendo el sendero! +${reward} maíz bonus`
-      : `🏆 ¡Nivel completado! +${reward} maíz bonus`
+  public rewardForLevelCompletion(_followedPath: boolean): number {
+    const reward = 50
+    const message = `🏆 ¡Nivel completado! +${reward} maíz bonus`
     
     this.totalMaize += reward
     if (this.onRewardCallback) {

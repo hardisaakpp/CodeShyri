@@ -105,17 +105,17 @@ export class MountainRenderer {
     this.graphics.fillStyle(0x2A8C5A, 0.7)
     MountainEffectsRenderer.drawShadow(this.graphics, this.width, this.horizonY, this.horizonY - 6, 6, 18)
     
-    // Nubes mágicas animadas en montañas medias
-    const clouds2 = MountainCloudRenderer.draw(
-      this.scene,
-      this.width,
-      this.horizonY - 6,
-      6,
-      72,
-      0xF0F8FF,
-      0.98
-    )
-    this.cloudElements.push(...clouds2)
+    // Nubes mágicas animadas en montañas medias (deshabilitadas para reducir cantidad)
+    // const clouds2 = MountainCloudRenderer.draw(
+    //   this.scene,
+    //   this.width,
+    //   this.horizonY - 6,
+    //   6,
+    //   72,
+    //   0xF0F8FF,
+    //   0.98
+    // )
+    // this.cloudElements.push(...clouds2)
     
     // Resaltes de luz mágica
     this.graphics.fillStyle(0x5ACC9A, 0.5)

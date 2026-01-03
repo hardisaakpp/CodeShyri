@@ -22,8 +22,8 @@ export class MountainCloudRenderer {
       const peakVariation = 0.5 + Math.sin(i * 0.7 + seed) * 0.5
       const currentPeakY = baseY - peakHeight * peakVariation - Math.abs(varAmount) * 2.2
       
-      // Solo dibujar nubes en picos altos
-      if (currentPeakY < baseY - peakHeight * 0.4 && Math.random() > 0.4) {
+      // Solo dibujar nubes en picos altos (reducido probabilidad)
+      if (currentPeakY < baseY - peakHeight * 0.4 && Math.random() > 0.75) {
         const cloudY = currentPeakY - 15 - Math.random() * 20
         const cloudBaseX = x + (Math.random() - 0.5) * 30
         

@@ -46,7 +46,6 @@ export class GameScene extends Phaser.Scene {
   private levelConfig?: {
     startPosition?: { gridX: number; gridY: number }
     goalPosition?: { gridX: number; gridY: number }
-    path?: Array<{ x: number; y: number }>
     maizePositions?: Array<{ gridX: number; gridY: number }>
   }
   
@@ -85,13 +84,6 @@ export class GameScene extends Phaser.Scene {
     // Obtener grid renderer y ground renderer
     this.gridRenderer = this.backgroundRenderer.getGridRenderer()
     this.groundRenderer = this.backgroundRenderer.getGroundRenderer()
-
-    // Configurar sendero si tenemos configuración del nivel
-    // Nota: El sendero se configura ANTES de renderizar, pero como ya se renderizó,
-    // necesitamos re-renderizar o configurarlo antes. Por ahora lo configuramos para futuras referencias.
-    if (this.levelConfig?.path && this.groundRenderer) {
-      this.groundRenderer.setPathBlocks(this.levelConfig.path)
-    }
 
     // Posicionar personaje en el grid (usar configuración del nivel o defaults)
     if (this.levelConfig?.startPosition) {
@@ -696,12 +688,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Configura el nivel (sendero, objetivo, posición inicial)
+   * Configura el nivel (objetivo, posición inicial)
    */
   public setLevelConfig(config: {
     startPosition?: { gridX: number; gridY: number }
     goalPosition?: { gridX: number; gridY: number }
-    path?: Array<{ x: number; y: number }>
     maizePositions?: Array<{ gridX: number; gridY: number }>
   }) {
     console.log('🔧 setLevelConfig llamado con:', config)
@@ -717,12 +708,6 @@ export class GameScene extends Phaser.Scene {
       // La configuración ya está guardada en this.levelConfig
       // Se aplicará cuando create() termine
       return
-    }
-    
-    // Configurar sendero si tenemos path y groundRenderer está disponible
-    if (config.path && this.groundRenderer) {
-      this.groundRenderer.setPathBlocks(config.path)
-      console.log('✅ Sendero configurado')
     }
     
     // Actualizar posición del jugador si hay startPosition

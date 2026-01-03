@@ -172,14 +172,13 @@ export class MovementCommands {
             this.collectMaizeAt(this.currentGridX, this.currentGridY)
           }
           
-          // Verificar si es bloque de sendero y dar recompensa
-          if (this.groundRenderer && this.rewardSystem) {
-            const isPathBlock = this.groundRenderer.isPathBlock(this.currentGridX, this.currentGridY)
+          // Dar recompensa si hay maíz visible
+          if (this.rewardSystem) {
             // Pasar también la posición en píxeles y si hay maíz visible para el efecto visual
             this.rewardSystem.rewardForBlock(
               this.currentGridX, 
               this.currentGridY, 
-              isPathBlock,
+              false, // Ya no se usa isPathBlock, pero mantenemos el parámetro por compatibilidad
               targetPosition.pixelX,
               targetPosition.pixelY,
               hasVisibleMaize
